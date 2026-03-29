@@ -53,14 +53,13 @@ export default async function RootLayout({
 
   return (
     <html lang="en" style={cssVars} className={`${dmSans.variable} ${fraunces.variable} ${jetbrainsMono.variable} antialiased`}>
-      <head>
+      <head />
+      <body className="font-[family-name:var(--font-sans)] bg-bg text-foreground min-h-screen">
         <Script
           src="https://umami.hrolgar.com/script.js"
           data-website-id="4c80368f-5246-4407-9733-abca5084b9e6"
           strategy="afterInteractive"
         />
-      </head>
-      <body className="font-[family-name:var(--font-sans)] bg-bg text-foreground min-h-screen">
         {children}
       </body>
     </html>
