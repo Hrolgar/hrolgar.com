@@ -12,7 +12,7 @@ export default defineConfig({
   title: "Ullrhome",
   projectId,
   dataset,
-  plugins: [structureTool({ structure }), visionTool(), colorInput(), codeInput()],
+  plugins: [structureTool({ structure, name: "studio", title: "Studio" }), visionTool(), colorInput(), codeInput()],
   schema: {
     types: schemaTypes,
   },
