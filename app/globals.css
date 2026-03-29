@@ -1,0 +1,187 @@
+@import "tailwindcss";
+
+/* Nordic Editorial — dark theme */
+:root {
+  --color-primary: #5eaba8;
+  --color-secondary: #7ec8c5;
+  --color-accent: #e07a5f;
+  --color-bg: #111116;
+  --color-surface: #1a1a22;
+  --color-surface-hover: #24242e;
+  --color-text: #e8e4e0;
+  --color-text-secondary: #9a9590;
+  --color-border: #2e2e38;
+  --radius: 8px;
+}
+
+@theme {
+  --color-primary: var(--color-primary);
+  --color-secondary: var(--color-secondary);
+  --color-accent: var(--color-accent);
+  --color-bg: var(--color-bg);
+  --color-surface: var(--color-surface);
+  --color-surface-hover: var(--color-surface-hover);
+  --color-foreground: var(--color-text);
+  --color-muted: var(--color-text-secondary);
+  --color-border: var(--color-border);
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+  background: var(--color-bg);
+}
+
+body {
+  position: relative;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-secondary);
+}
+
+/* Selection */
+::selection {
+  background: color-mix(in srgb, var(--color-accent) 24%, transparent);
+  color: var(--color-text);
+}
+
+/* Focus styles */
+*:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Fade-in animation for scroll reveals */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  opacity: 0;
+  animation: fadeInUp 0.6s ease-out forwards;
+}
+
+.animate-delay-120 { animation-delay: 120ms; }
+.animate-delay-200 { animation-delay: 200ms; }
+.animate-delay-240 { animation-delay: 240ms; }
+.animate-delay-360 { animation-delay: 360ms; }
+.animate-delay-100 { animation-delay: 100ms; }
+
+.section-surface {
+  position: relative;
+}
+
+.section-surface::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: linear-gradient(to bottom, var(--color-bg), var(--color-surface));
+  pointer-events: none;
+}
+
+.section-surface::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 80px;
+  background: linear-gradient(to top, var(--color-bg), var(--color-surface));
+  pointer-events: none;
+}
+
+a,
+button {
+  transition:
+    color 180ms ease,
+    background-color 180ms ease,
+    border-color 180ms ease,
+    opacity 180ms ease,
+    transform 180ms ease;
+}
+
+/* Prose styles for editorial dark theme */
+.prose-editorial h1,
+.prose-editorial h2,
+.prose-editorial h3,
+.prose-editorial h4 {
+  color: var(--color-text);
+}
+
+.prose-editorial p,
+.prose-editorial li {
+  color: var(--color-text-secondary);
+}
+
+.prose-editorial a {
+  color: var(--color-primary);
+}
+
+.prose-editorial strong {
+  color: var(--color-text);
+}
+
+.prose-editorial code {
+  color: var(--color-accent);
+  background: var(--color-surface);
+  padding: 0.2em 0.4em;
+  border-radius: 4px;
+  font-size: 0.9em;
+}
+
+.prose-editorial pre {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+}
+
+.prose-editorial pre code {
+  background: transparent;
+  padding: 0;
+}
+
+.prose-editorial blockquote {
+  border-left-color: var(--color-primary);
+  color: var(--color-text-secondary);
+}
+
+.prose-editorial img {
+  border-radius: var(--radius);
+}
