@@ -2,13 +2,25 @@
 
 import { useState, useEffect, useCallback } from "react";
 
-const pages = [
+const defaultPages = [
   { label: "Home", href: "/" },
   { label: "Services", href: "/services" },
   { label: "Blog", href: "/blog" },
+  { label: "Contact", href: "/contact" },
 ];
 
-export default function Navbar() {
+interface NavItem {
+  _key: string;
+  label: string;
+  href: string;
+}
+
+interface Props {
+  navItems?: NavItem[] | null;
+}
+
+export default function Navbar({ navItems }: Props) {
+  const pages = navItems && navItems.length > 0 ? navItems : defaultPages;
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 

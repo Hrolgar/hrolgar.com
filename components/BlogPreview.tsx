@@ -4,6 +4,7 @@ import type { Post } from "@/sanity/types";
 
 interface Props {
   posts: Post[];
+  heading?: string | null;
 }
 
 function formatDate(dateStr: string): string {
@@ -14,7 +15,7 @@ function formatDate(dateStr: string): string {
   });
 }
 
-export default function BlogPreview({ posts }: Props) {
+export default function BlogPreview({ posts, heading }: Props) {
   if (!posts?.length) return null;
 
   const [featured, ...rest] = posts;
@@ -23,7 +24,7 @@ export default function BlogPreview({ posts }: Props) {
     <section id="blog" className="py-20 md:py-28 px-6">
       <div className="max-w-5xl mx-auto">
         <div className="flex items-end justify-between mb-12">
-          <h2 className="font-[family-name:var(--font-serif)] text-4xl md:text-5xl font-bold text-foreground">Blog</h2>
+          <h2 className="font-[family-name:var(--font-serif)] text-4xl md:text-5xl font-bold text-foreground">{heading || 'Blog'}</h2>
           <a
             href="/blog"
             className="text-sm text-primary hover:text-secondary transition-colors font-medium"

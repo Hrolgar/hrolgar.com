@@ -5,9 +5,10 @@ import type { Project } from "@/sanity/types";
 
 interface Props {
   projects: Project[];
+  heading?: string | null;
 }
 
-export default function Projects({ projects }: Props) {
+export default function Projects({ projects, heading }: Props) {
   if (!projects?.length) return null;
 
   const [featured, ...rest] = projects;
@@ -16,7 +17,7 @@ export default function Projects({ projects }: Props) {
     <section id="projects" className="section-surface bg-surface py-20 md:py-28 px-6">
       <div className="max-w-5xl mx-auto">
         <ScrollReveal>
-          <h2 className="font-[family-name:var(--font-serif)] text-4xl md:text-5xl font-bold text-foreground mb-12">Projects</h2>
+          <h2 className="font-[family-name:var(--font-serif)] text-4xl md:text-5xl font-bold text-foreground mb-12">{heading || 'Projects'}</h2>
         </ScrollReveal>
 
         {/* Featured project — big layout */}

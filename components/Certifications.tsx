@@ -4,16 +4,17 @@ import type { Certification } from "@/sanity/types";
 
 interface Props {
   certifications: Certification[];
+  heading?: string | null;
 }
 
-export default function Certifications({ certifications }: Props) {
+export default function Certifications({ certifications, heading }: Props) {
   if (!certifications?.length) return null;
 
   return (
     <section id="certifications" className="section-surface bg-surface py-20 md:py-28 px-6">
       <div className="max-w-5xl mx-auto">
         <span className="text-xs font-semibold uppercase tracking-wider text-muted block mb-6">
-          Certifications
+          {heading || 'Certifications'}
         </span>
         <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
           {certifications.map((cert) => (

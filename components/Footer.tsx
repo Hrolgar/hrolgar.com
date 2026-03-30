@@ -12,9 +12,10 @@ const linkedinPath = "M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.03
 
 interface Props {
   contact?: ContactInfo | null;
+  footerTagline?: string | null;
 }
 
-export default function Footer({ contact }: Props) {
+export default function Footer({ contact, footerTagline }: Props) {
   const socials = [
     { key: "github", url: contact?.github, label: "GitHub", iconPath: githubPath },
     { key: "linkedin", url: contact?.linkedin, label: "LinkedIn", iconPath: linkedinPath },
@@ -33,7 +34,7 @@ export default function Footer({ contact }: Props) {
             Ullrhome
           </a>
           <p className="mt-3 max-w-sm text-sm leading-relaxed text-muted">
-            Freelance backend engineering for integrations, APIs, and reliable systems.
+            {footerTagline || 'Freelance backend engineering for integrations, APIs, and reliable systems.'}
           </p>
         </div>
 

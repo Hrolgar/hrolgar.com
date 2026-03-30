@@ -7,6 +7,7 @@ import type { Experience as ExperienceType } from "@/sanity/types";
 
 interface Props {
   experience: ExperienceType[];
+  heading?: string | null;
 }
 
 function formatDate(dateStr: string): string {
@@ -16,14 +17,14 @@ function formatDate(dateStr: string): string {
   });
 }
 
-export default function Experience({ experience }: Props) {
+export default function Experience({ experience, heading }: Props) {
   if (!experience?.length) return null;
 
   return (
     <section id="experience" className="section-surface bg-surface py-20 md:py-28 px-6">
       <div className="max-w-5xl mx-auto">
         <ScrollReveal>
-          <h2 className="font-[family-name:var(--font-serif)] text-4xl md:text-5xl font-bold text-foreground mb-12">Experience</h2>
+          <h2 className="font-[family-name:var(--font-serif)] text-4xl md:text-5xl font-bold text-foreground mb-12">{heading || 'Experience'}</h2>
         </ScrollReveal>
 
         <div>

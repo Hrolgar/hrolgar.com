@@ -2,7 +2,11 @@
 
 import { useState, useEffect } from "react";
 
-export default function FloatingCTA() {
+interface Props {
+  floatingCtaText?: string | null;
+}
+
+export default function FloatingCTA({ floatingCtaText }: Props) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -37,7 +41,7 @@ export default function FloatingCTA() {
       }`}
     >
       <span className="h-2 w-2 rounded-full bg-bg/30" />
-      Available for hire
+      {floatingCtaText || 'Available for hire'}
     </a>
   );
 }

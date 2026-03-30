@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import { portableTextComponents } from "@/lib/portableText";
-import { getContact, getServiceBySlug, getServiceSlugs } from "@/sanity/lib/queries";
+import { getContact, getPageContent, getServiceBySlug, getServiceSlugs } from "@/sanity/lib/queries";
 
 export const revalidate = 3600;
 
@@ -46,7 +46,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function ServicePage({ params }: PageProps) {
   const { slug } = await params;
-  const [service, contact] = await Promise.all([getServiceBySlug(slug), getContact()]);
+  const [service, contact, pageContent] = await Promise.all([getServiceBySlug(slug), getContact(), getPageContent()]);
 
   if (!service) {
     notFound();
@@ -54,7 +54,7 @@ export default async function ServicePage({ params }: PageProps) {
 
   return (
     <>
-      <Navbar />
+      <Navbar navItems={pageContent?.navItems} />
       <main id="main-content" className="px-6 pb-16 pt-24">
         <article className="mx-auto max-w-3xl">
           <a
@@ -92,21 +92,21 @@ export default async function ServicePage({ params }: PageProps) {
           <section className="mt-16 rounded-[calc(var(--radius)*2)] border border-border bg-surface p-8 md:p-10">
             <p className="text-sm uppercase tracking-[0.24em] text-accent">Next step</p>
             <h2 className="mt-4 font-[family-name:var(--font-serif)] text-2xl font-bold text-foreground">
-              Interested in this service?
+              {pageContent?.serviceDetailCtaHeading || 'Interested in this service?'}
             </h2>
             <p className="mt-3 max-w-xl leading-relaxed text-muted">
-              Let&apos;s discuss your project, the constraints you&apos;re working with, and what a practical delivery plan could look like.
+              {pageContent?.serviceDetailCtaDescription || "Let\u2019s discuss your project, the constraints you\u2019re working with, and what a practical delivery plan could look like."}
             </p>
             <a
               href="/contact"
               className="mt-6 inline-flex min-h-11 items-center justify-center rounded-[var(--radius)] bg-accent px-6 py-3 text-sm font-semibold text-bg transition-colors hover:bg-[color:color-mix(in_srgb,var(--color-accent)_88%,white)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
-              Start a conversation
+              {pageContent?.serviceDetailCtaButtonText || 'Start a conversation'}
             </a>
           </section>
         </article>
       </main>
-      <Footer contact={contact} />
+      <Footer contact={contact} footerTagline={pageContent?.footerTagline} />
     </>
   );
 }

@@ -7,9 +7,10 @@ import type { About as AboutType } from "@/sanity/types";
 
 interface Props {
   about: AboutType | null;
+  heading?: string | null;
 }
 
-export default function About({ about }: Props) {
+export default function About({ about, heading }: Props) {
   if (!about?.body) return null;
 
   const profileImageUrl = about.profileImage
@@ -21,7 +22,7 @@ export default function About({ about }: Props) {
       <div className="max-w-5xl mx-auto">
         <ScrollReveal>
           <h2 className="font-[family-name:var(--font-serif)] text-4xl md:text-5xl font-bold text-foreground mb-12">
-            About
+            {heading || 'About'}
           </h2>
         </ScrollReveal>
 

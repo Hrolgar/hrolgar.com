@@ -2,9 +2,11 @@ import type { ContactInfo } from "@/sanity/types";
 
 interface Props {
   contact: ContactInfo | null;
+  heading?: string | null;
+  tagline?: string | null;
 }
 
-export default function Contact({ contact }: Props) {
+export default function Contact({ contact, heading, tagline }: Props) {
   if (!contact) return null;
 
   return (
@@ -17,10 +19,10 @@ export default function Contact({ contact }: Props) {
           </span>
         )}
         <h2 className="font-[family-name:var(--font-serif)] text-4xl font-bold text-foreground md:text-5xl">
-          Let&apos;s Work Together
+          {heading || "Let\u2019s Work Together"}
         </h2>
         <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-muted md:text-lg">
-          Have a project in mind? I&apos;d love to hear about it.
+          {tagline || "Have a project in mind? I\u2019d love to hear about it."}
         </p>
         <a
           href="/contact"

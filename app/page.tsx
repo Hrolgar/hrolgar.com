@@ -44,21 +44,21 @@ export default async function Home() {
   return (
     <>
       <ScrollProgress />
-      <Navbar />
+      <Navbar navItems={pageContent?.navItems} />
       <main id="main-content">
         <Hero about={about} pageContent={pageContent} />
-        <About about={about} />
-        <Experience experience={experience} />
-        <Skills skills={skills} />
-        <Projects projects={projects} />
-        <Homelab services={homelabServices} />
-        <Certifications certifications={certifications} />
-        <BlogPreview posts={featuredPosts} />
-        <Contact contact={contact} />
+        <About about={about} heading={pageContent?.aboutHeading} />
+        <Experience experience={experience} heading={pageContent?.experienceHeading} />
+        <Skills skills={skills} heading={pageContent?.skillsHeading} />
+        <Projects projects={projects} heading={pageContent?.projectsHeading} />
+        <Homelab services={homelabServices} heading={pageContent?.homelabHeading} subtitle={pageContent?.homelabSubtitle} />
+        <Certifications certifications={certifications} heading={pageContent?.certificationsHeading} />
+        <BlogPreview posts={featuredPosts} heading={pageContent?.blogPreviewHeading} />
+        <Contact contact={contact} heading={pageContent?.contactSectionHeading} tagline={pageContent?.contactSectionTagline} />
       </main>
-      <Footer contact={contact} />
+      <Footer contact={contact} footerTagline={pageContent?.footerTagline} />
       <BackToTop />
-      <FloatingCTA />
+      <FloatingCTA floatingCtaText={pageContent?.floatingCtaText} />
       <SectionDots />
     </>
   );

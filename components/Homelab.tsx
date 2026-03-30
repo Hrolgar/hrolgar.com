@@ -5,6 +5,8 @@ import type { HomelabService } from "@/sanity/types";
 
 interface Props {
   services: HomelabService[];
+  heading?: string | null;
+  subtitle?: string | null;
 }
 
 const categoryLabels: Record<string, string> = {
@@ -20,7 +22,7 @@ const categoryLabels: Record<string, string> = {
   other: "Other",
 };
 
-export default function Homelab({ services }: Props) {
+export default function Homelab({ services, heading, subtitle }: Props) {
   if (!services?.length) return null;
 
   const categories = services.reduce<Record<string, HomelabService[]>>((acc, svc) => {
@@ -33,8 +35,8 @@ export default function Homelab({ services }: Props) {
   return (
     <section id="homelab" className="py-20 md:py-28 px-6">
       <div className="max-w-5xl mx-auto">
-        <h2 className="font-[family-name:var(--font-serif)] text-4xl md:text-5xl font-bold text-foreground mb-2">Homelab</h2>
-        <p className="text-muted text-sm mb-12 font-[family-name:var(--font-sans)]">Self-hosted infrastructure and services</p>
+        <h2 className="font-[family-name:var(--font-serif)] text-4xl md:text-5xl font-bold text-foreground mb-2">{heading || 'Homelab'}</h2>
+        <p className="text-muted text-sm mb-12 font-[family-name:var(--font-sans)]">{subtitle || 'Self-hosted infrastructure and services'}</p>
 
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-8">
           {Object.entries(categories).map(([category, items], index) => (

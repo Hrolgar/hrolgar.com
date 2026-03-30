@@ -3,9 +3,10 @@ import type { Skill } from "@/sanity/types";
 
 interface Props {
   skills: Skill[];
+  heading?: string | null;
 }
 
-export default function Skills({ skills }: Props) {
+export default function Skills({ skills, heading }: Props) {
   if (!skills?.length) return null;
 
   const groupedSkills = skills.reduce<Record<string, Skill[]>>((acc, skill) => {
@@ -19,7 +20,7 @@ export default function Skills({ skills }: Props) {
     <section id="skills" className="py-20 md:py-28 px-6">
       <div className="max-w-5xl mx-auto">
         <h2 className="font-[family-name:var(--font-serif)] text-4xl md:text-5xl font-bold text-foreground mb-12">
-          Technologies
+          {heading || 'Technologies'}
         </h2>
 
         <div className="grid gap-8 md:grid-cols-2">
