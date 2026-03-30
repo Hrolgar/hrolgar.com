@@ -1,4 +1,5 @@
 import type { About, PageContent } from "@/sanity/types";
+import RotatingText from "./RotatingText";
 
 interface Props {
   about: About | null;
@@ -6,7 +7,8 @@ interface Props {
 }
 
 export default function Hero({ about, pageContent }: Props) {
-  const eyebrow = pageContent?.heroEyebrow || about?.roles?.[0] || "Freelance Backend Engineer";
+  const roles = about?.roles;
+  const staticEyebrow = pageContent?.heroEyebrow || roles?.[0] || "Freelance Backend Engineer";
   const tagline = pageContent?.heroTagline || about?.tagline || "I build robust integrations, APIs, and backend systems that just work.";
   const cta1Text = pageContent?.heroCta1Text || "See my work";
   const cta1Link = pageContent?.heroCta1Link || "/#projects";
@@ -17,7 +19,11 @@ export default function Hero({ about, pageContent }: Props) {
     <section className="min-h-screen px-6 pt-28 pb-16 md:pt-36 md:pb-24 flex items-center">
       <div className="max-w-3xl mx-auto w-full">
         <p className="animate-fade-in-up text-sm uppercase tracking-[0.24em] text-primary mb-5">
-          {eyebrow}
+          {roles && roles.length > 1 ? (
+            <RotatingText texts={roles} />
+          ) : (
+            staticEyebrow
+          )}
         </p>
         <h1 className="animate-fade-in-up animate-delay-120 font-[family-name:var(--font-serif)] text-5xl sm:text-6xl md:text-8xl font-bold text-foreground leading-none tracking-tight">
           {about?.heading || "Hrolgar"}
