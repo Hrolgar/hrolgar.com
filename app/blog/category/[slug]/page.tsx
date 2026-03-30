@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getPostsByCategory, getCategories, getPageContent } from "@/sanity/lib/queries";
+import { getPostsByCategory, getCategories, getPageContent, getSettings } from "@/sanity/lib/queries";
 import { urlFor } from "@/sanity/lib/image";
 import Image from "next/image";
 import Navbar from "@/components/Navbar";
@@ -39,10 +39,11 @@ function formatDate(dateStr: string): string {
 
 export default async function CategoryPage({ params }: PageProps) {
   const { slug } = await params;
-  const [posts, categories, pageContent] = await Promise.all([
+  const [posts, categories, pageContent, settings] = await Promise.all([
     getPostsByCategory(slug),
     getCategories(),
     getPageContent(),
+    getSettings(),
   ]);
 
   const category = categories.find((c) => c.slug.current === slug);
@@ -50,7 +51,7 @@ export default async function CategoryPage({ params }: PageProps) {
 
   return (
     <>
-      <Navbar navItems={pageContent?.navItems} />
+      <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} />
       <main id="main-content" className="pt-24 pb-16 px-6">
         <div className="max-w-5xl mx-auto">
           <div className="mb-12">
@@ -129,7 +130,7 @@ export default async function CategoryPage({ params }: PageProps) {
           )}
         </div>
       </main>
-      <Footer footerTagline={pageContent?.footerTagline} />
+      <Footer footerTagline={pageContent?.footerTagline} siteName={settings?.siteName} />
     </>
   );
 }

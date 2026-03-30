@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import ContactPageClient from "@/components/ContactPageClient";
-import { getContact, getFAQs, getPageContent, getServices, getContactForms } from "@/sanity/lib/queries";
+import { getContact, getFAQs, getPageContent, getServices, getContactForms, getSettings } from "@/sanity/lib/queries";
 import type { FAQ } from "@/sanity/types";
 
 export const revalidate = 3600;
@@ -40,17 +40,18 @@ const defaultFAQs: FAQ[] = [
 ];
 
 export default async function ContactPage() {
-  const [contact, services, pageContent, faqs, forms] = await Promise.all([
+  const [contact, services, pageContent, faqs, forms, settings] = await Promise.all([
     getContact(),
     getServices(),
     getPageContent(),
     getFAQs(),
     getContactForms(),
+    getSettings(),
   ]);
 
   return (
     <>
-      <Navbar navItems={pageContent?.navItems} />
+      <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} />
       <ContactPageClient
         contact={contact}
         services={services}
@@ -59,7 +60,7 @@ export default async function ContactPage() {
         forms={forms}
         defaultFAQs={defaultFAQs}
       />
-      <Footer contact={contact} footerTagline={pageContent?.footerTagline} />
+      <Footer contact={contact} footerTagline={pageContent?.footerTagline} siteName={settings?.siteName} />
     </>
   );
 }

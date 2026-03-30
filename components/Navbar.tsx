@@ -17,9 +17,10 @@ interface NavItem {
 
 interface Props {
   navItems?: NavItem[] | null;
+  siteName?: string | null;
 }
 
-export default function Navbar({ navItems }: Props) {
+export default function Navbar({ navItems, siteName }: Props) {
   const pages = navItems && navItems.length > 0 ? navItems : defaultPages;
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
@@ -64,7 +65,7 @@ export default function Navbar({ navItems }: Props) {
       >
         <div className="max-w-5xl mx-auto px-6 py-4 flex justify-between items-center">
           <a href="/" className="font-[family-name:var(--font-serif)] text-xl font-semibold text-foreground">
-            Ullrhome
+            {siteName || "Hrolgar"}
           </a>
 
           <div className="hidden md:flex items-center gap-8">

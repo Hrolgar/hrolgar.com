@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import { portableTextComponents } from "@/lib/portableText";
-import { getContact, getPageContent, getServiceBySlug, getServiceSlugs } from "@/sanity/lib/queries";
+import { getContact, getPageContent, getServiceBySlug, getServiceSlugs, getSettings } from "@/sanity/lib/queries";
 
 export const revalidate = 3600;
 
@@ -46,7 +46,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function ServicePage({ params }: PageProps) {
   const { slug } = await params;
-  const [service, contact, pageContent] = await Promise.all([getServiceBySlug(slug), getContact(), getPageContent()]);
+  const [service, contact, pageContent, settings] = await Promise.all([getServiceBySlug(slug), getContact(), getPageContent(), getSettings()]);
 
   if (!service) {
     notFound();
@@ -54,7 +54,7 @@ export default async function ServicePage({ params }: PageProps) {
 
   return (
     <>
-      <Navbar navItems={pageContent?.navItems} />
+      <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} />
       <main id="main-content" className="px-6 pb-16 pt-24">
         <article className="mx-auto max-w-3xl">
           <a
@@ -106,7 +106,7 @@ export default async function ServicePage({ params }: PageProps) {
           </section>
         </article>
       </main>
-      <Footer contact={contact} footerTagline={pageContent?.footerTagline} />
+      <Footer contact={contact} footerTagline={pageContent?.footerTagline} siteName={settings?.siteName} />
     </>
   );
 }

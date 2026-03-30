@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { PortableText } from "@portabletext/react";
 import { portableTextComponents } from "@/lib/portableText";
 import Image from "next/image";
-import { getContact, getPageContent, getProjectBySlug, getProjectSlugs } from "@/sanity/lib/queries";
+import { getContact, getPageContent, getProjectBySlug, getProjectSlugs, getSettings } from "@/sanity/lib/queries";
 import { urlFor } from "@/sanity/lib/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -40,12 +40,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function ProjectPage({ params }: PageProps) {
   const { slug } = await params;
-  const [project, contact, pageContent] = await Promise.all([getProjectBySlug(slug), getContact(), getPageContent()]);
+  const [project, contact, pageContent, settings] = await Promise.all([getProjectBySlug(slug), getContact(), getPageContent(), getSettings()]);
   if (!project) notFound();
 
   return (
     <>
-      <Navbar navItems={pageContent?.navItems} />
+      <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} />
       <main id="main-content" className="pt-24 pb-16 px-6">
         <article className="max-w-5xl mx-auto">
           {/* Back link */}
@@ -172,7 +172,7 @@ export default async function ProjectPage({ params }: PageProps) {
           )}
         </article>
       </main>
-      <Footer contact={contact} footerTagline={pageContent?.footerTagline} />
+      <Footer contact={contact} footerTagline={pageContent?.footerTagline} siteName={settings?.siteName} />
     </>
   );
 }

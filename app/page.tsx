@@ -8,6 +8,7 @@ import {
   getHomelabServices,
   getFeaturedPosts,
   getPageContent,
+  getSettings,
 } from "@/sanity/lib/queries";
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
@@ -28,7 +29,7 @@ import SectionDots from "@/components/SectionDots";
 export const revalidate = 3600;
 
 export default async function Home() {
-  const [about, skills, experience, projects, contact, certifications, homelabServices, featuredPosts, pageContent] =
+  const [about, skills, experience, projects, contact, certifications, homelabServices, featuredPosts, pageContent, settings] =
     await Promise.all([
       getAbout(),
       getSkills(),
@@ -39,12 +40,13 @@ export default async function Home() {
       getHomelabServices(),
       getFeaturedPosts(),
       getPageContent(),
+      getSettings(),
     ]);
 
   return (
     <>
       <ScrollProgress />
-      <Navbar navItems={pageContent?.navItems} />
+      <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} />
       <main id="main-content">
         <Hero about={about} />
         <About about={about} heading={pageContent?.aboutHeading} />
@@ -56,7 +58,7 @@ export default async function Home() {
         <BlogPreview posts={featuredPosts} heading={pageContent?.blogPreviewHeading} />
         <Contact contact={contact} heading={pageContent?.contactSectionHeading} tagline={pageContent?.contactSectionTagline} />
       </main>
-      <Footer contact={contact} footerTagline={pageContent?.footerTagline} />
+      <Footer contact={contact} footerTagline={pageContent?.footerTagline} siteName={settings?.siteName} />
       <BackToTop />
       <FloatingCTA floatingCtaText={pageContent?.floatingCtaText} />
       <SectionDots />

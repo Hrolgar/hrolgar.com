@@ -1,12 +1,12 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { getPageContent } from "@/sanity/lib/queries";
+import { getPageContent, getSettings } from "@/sanity/lib/queries";
 
 export default async function NotFound() {
-  const pageContent = await getPageContent();
+  const [pageContent, settings] = await Promise.all([getPageContent(), getSettings()]);
   return (
     <>
-      <Navbar navItems={pageContent?.navItems} />
+      <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} />
       <main id="main-content" className="min-h-screen flex items-center justify-center px-6">
         <div className="text-center animate-fade-in-up">
           <p className="text-sm font-medium text-primary uppercase tracking-widest mb-4">
@@ -34,7 +34,7 @@ export default async function NotFound() {
           </div>
         </div>
       </main>
-      <Footer footerTagline={pageContent?.footerTagline} />
+      <Footer footerTagline={pageContent?.footerTagline} siteName={settings?.siteName} />
     </>
   );
 }

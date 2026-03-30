@@ -1,6 +1,6 @@
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
-import { getContact, getPageContent, getServices } from "@/sanity/lib/queries";
+import { getContact, getPageContent, getServices, getSettings } from "@/sanity/lib/queries";
 import type { Service } from "@/sanity/types";
 
 export const revalidate = 3600;
@@ -17,10 +17,11 @@ function getServiceIcon(service: Service) {
 }
 
 export default async function ServicesPage() {
-  const [services, contact, pageContent] = await Promise.all([
+  const [services, contact, pageContent, settings] = await Promise.all([
     getServices(),
     getContact(),
     getPageContent(),
+    getSettings(),
   ]);
 
   const servicesHeading = pageContent?.servicesHeading || "What I Do";
@@ -34,7 +35,7 @@ export default async function ServicesPage() {
 
   return (
     <>
-      <Navbar navItems={pageContent?.navItems} />
+      <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} />
       <main id="main-content" className="px-6 pb-16 pt-24 md:pb-24">
         <div className="mx-auto max-w-5xl">
           <section className="border-b border-border pb-12 md:pb-16">
@@ -108,7 +109,7 @@ export default async function ServicesPage() {
           </section>
         </div>
       </main>
-      <Footer contact={contact} footerTagline={pageContent?.footerTagline} />
+      <Footer contact={contact} footerTagline={pageContent?.footerTagline} siteName={settings?.siteName} />
     </>
   );
 }

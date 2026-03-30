@@ -1,4 +1,4 @@
-import { getPosts, getCategories, getPageContent } from "@/sanity/lib/queries";
+import { getPosts, getCategories, getPageContent, getSettings } from "@/sanity/lib/queries";
 import { urlFor } from "@/sanity/lib/image";
 import Image from "next/image";
 import Navbar from "@/components/Navbar";
@@ -21,11 +21,11 @@ function formatDate(dateStr: string): string {
 }
 
 export default async function BlogPage() {
-  const [posts, categories, pageContent] = await Promise.all([getPosts(), getCategories(), getPageContent()]);
+  const [posts, categories, pageContent, settings] = await Promise.all([getPosts(), getCategories(), getPageContent(), getSettings()]);
 
   return (
     <>
-      <Navbar navItems={pageContent?.navItems} />
+      <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} />
       <main id="main-content" className="pt-24 pb-16 px-6">
         <div className="max-w-5xl mx-auto">
           <div className="mb-12">
@@ -118,7 +118,7 @@ export default async function BlogPage() {
           )}
         </div>
       </main>
-      <Footer footerTagline={pageContent?.footerTagline} />
+      <Footer footerTagline={pageContent?.footerTagline} siteName={settings?.siteName} />
     </>
   );
 }
