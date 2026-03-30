@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { ContactInfo, Service, PageContent, FAQ, ContactForm } from "@/sanity/types";
 import ContactFormModal from "@/components/ContactFormModal";
 
@@ -24,6 +24,26 @@ const iconMap: Record<string, string> = {
   automation: "▶",
 };
 
+function useIsDesktop(breakpoint = 768) {
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia(`(min-width: ${breakpoint}px)`);
+    const update = (event?: MediaQueryListEvent) => {
+      setIsDesktop(event ? event.matches : mediaQuery.matches);
+    };
+
+    update();
+    mediaQuery.addEventListener("change", update);
+
+    return () => {
+      mediaQuery.removeEventListener("change", update);
+    };
+  }, [breakpoint]);
+
+  return isDesktop;
+}
+
 export default function ContactPageClient({
   contact,
   services,
@@ -33,6 +53,7 @@ export default function ContactPageClient({
   defaultFAQs,
 }: Props) {
   const [openFormSlug, setOpenFormSlug] = useState<string | null>(null);
+  const isDesktop = useIsDesktop();
 
   const projectInquiryForm = forms.find((f) => f.slug?.current === "project-inquiry");
   const generalContactForm = forms.find((f) => f.slug?.current === "general-contact");
@@ -63,8 +84,15 @@ export default function ContactPageClient({
   const helloButtonText = pageContent?.helloButtonText || "Send a Message";
 
   const displayFAQs = faqs.length > 0 ? faqs : defaultFAQs;
-
   const openForm = forms.find((f) => f.slug?.current === openFormSlug);
+  const formVariant = isDesktop ? "desktop" : "inline";
+
+  const toggleForm = (slug: string) => {
+    setOpenFormSlug((current) => {
+      if (!isDesktop && current === slug) return null;
+      return slug;
+    });
+  };
 
   return (
     <>
@@ -132,7 +160,10 @@ export default function ContactPageClient({
 
               {projectInquiryForm ? (
                 <button
-                  onClick={() => setOpenFormSlug("project-inquiry")}
+                  type="button"
+                  onClick={() => toggleForm("project-inquiry")}
+                  aria-expanded={openFormSlug === "project-inquiry"}
+                  aria-controls="contact-form-project-inquiry"
                   className="mt-8 inline-flex min-h-11 items-center justify-center rounded-[var(--radius)] bg-accent px-8 py-3 text-sm font-semibold text-bg transition-colors hover:bg-[color:color-mix(in_srgb,var(--color-accent)_88%,white)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
                 >
                   {hireButtonText}
@@ -154,6 +185,17 @@ export default function ContactPageClient({
                   Available for freelance work
                 </span>
               )}
+
+              {!isDesktop && projectInquiryForm && openFormSlug === "project-inquiry" ? (
+                <div id="contact-form-project-inquiry">
+                  <ContactFormModal
+                    form={projectInquiryForm}
+                    isOpen={true}
+                    variant={formVariant}
+                    onClose={() => setOpenFormSlug(null)}
+                  />
+                </div>
+              ) : null}
             </article>
 
             <article className="rounded-[calc(var(--radius)*2)] border border-border bg-surface p-8 md:p-10">
@@ -167,7 +209,10 @@ export default function ContactPageClient({
 
               {generalContactForm ? (
                 <button
-                  onClick={() => setOpenFormSlug("general-contact")}
+                  type="button"
+                  onClick={() => toggleForm("general-contact")}
+                  aria-expanded={openFormSlug === "general-contact"}
+                  aria-controls="contact-form-general-contact"
                   className="mt-6 inline-flex min-h-11 items-center justify-center rounded-[var(--radius)] border border-border px-6 py-3 text-sm font-semibold text-foreground transition-colors hover:border-primary hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
                 >
                   {helloButtonText}
@@ -211,6 +256,17 @@ export default function ContactPageClient({
                   </div>
                 </div>
               )}
+
+              {!isDesktop && generalContactForm && openFormSlug === "general-contact" ? (
+                <div id="contact-form-general-contact">
+                  <ContactFormModal
+                    form={generalContactForm}
+                    isOpen={true}
+                    variant={formVariant}
+                    onClose={() => setOpenFormSlug(null)}
+                  />
+                </div>
+              ) : null}
             </article>
           </section>
 
@@ -236,10 +292,11 @@ export default function ContactPageClient({
         </div>
       </main>
 
-      {openForm && (
+      {isDesktop && openForm && (
         <ContactFormModal
           form={openForm}
           isOpen={true}
+          variant={formVariant}
           onClose={() => setOpenFormSlug(null)}
         />
       )}
