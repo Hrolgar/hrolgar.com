@@ -11,6 +11,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid form data" }, { status: 400 });
     }
 
+    const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
+    for (const [key, value] of Object.entries(fields)) {
+      if (key === "email" && typeof value === "string" && value.trim() && !emailRegex.test(value.trim())) {
+        return NextResponse.json({ error: "Please provide a valid email address" }, { status: 400 });
+      }
+    }
+
     const fieldLines = Object.entries(fields)
       .filter(([, value]) => typeof value === "string" && value.trim())
       .map(([key, value]) => `**${key}**: ${value}`)

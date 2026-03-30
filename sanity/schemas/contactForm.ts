@@ -21,12 +21,12 @@ export default defineType({
     }),
     defineField({
       name: 'heading',
-      title: 'Modal Heading',
+      title: 'Heading',
       type: 'string',
     }),
     defineField({
       name: 'description',
-      title: 'Modal Description',
+      title: 'Description',
       type: 'text',
       rows: 2,
     }),

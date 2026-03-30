@@ -118,8 +118,11 @@ export default function ContactFormModal({
 
   const validateField = (name: string, value: string) => {
     const field = fields.find((item) => item.name === name);
-    if (!field?.required) return "";
-    return value.trim() ? "" : `${field.label} is required.`;
+    if (field?.required && !value.trim()) return `${field.label} is required.`;
+    if (field?.type === "email" && value.trim() && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value.trim())) {
+      return "Please provide a valid email address.";
+    }
+    return "";
   };
 
   const validateForm = () => {
