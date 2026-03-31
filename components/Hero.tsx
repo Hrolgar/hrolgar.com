@@ -1,5 +1,6 @@
 import type { About } from "@/sanity/types";
 import RotatingText from "./RotatingText";
+import ShaderBackground from "./ShaderBackground";
 
 interface Props {
   about: About | null;
@@ -15,8 +16,9 @@ export default function Hero({ about }: Props) {
   const cta2Link = about?.heroCta2Link || "/contact";
 
   return (
-    <section className="min-h-screen px-6 pt-28 pb-16 md:pt-36 md:pb-24 flex items-center">
-      <div className="max-w-3xl mx-auto w-full">
+    <section className="relative min-h-screen px-6 pt-28 pb-16 md:pt-36 md:pb-24 flex items-center overflow-hidden">
+      <ShaderBackground src="/shaders/shifting-veils.html" />
+      <div className="relative z-10 max-w-3xl mx-auto w-full">
         <p className="animate-fade-in-up text-sm uppercase tracking-[0.24em] text-primary mb-5">
           {roles && roles.length > 1 ? (
             <RotatingText texts={roles} />
