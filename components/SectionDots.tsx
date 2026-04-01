@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-const sections = [
+const allSections = [
   { id: "about", label: "About" },
   { id: "experience", label: "Experience" },
   { id: "skills", label: "Technologies" },
@@ -15,6 +15,13 @@ const sections = [
 
 export default function SectionDots() {
   const [active, setActive] = useState("");
+  const [sections, setSections] = useState(allSections);
+
+  // Only show dots for sections that exist in the DOM
+  useEffect(() => {
+    const visible = allSections.filter(s => document.getElementById(s.id));
+    setSections(visible);
+  }, []);
 
   useEffect(() => {
     const onScroll = () => {
