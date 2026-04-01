@@ -19,6 +19,25 @@ export default defineType({
       validation: (rule) => rule.required(),
     }),
     defineField({
+      name: 'projectType',
+      title: 'Project Type',
+      type: 'string',
+      options: {
+        list: [
+          {title: 'Personal', value: 'personal'},
+          {title: 'Freelance', value: 'freelance'},
+        ],
+      },
+      initialValue: 'personal',
+    }),
+    defineField({
+      name: 'categories',
+      title: 'Categories',
+      type: 'array',
+      of: [{type: 'reference', to: [{type: 'projectCategory'}]}],
+      description: 'Categorize this project (e.g. Web App, Automation, DevOps)',
+    }),
+    defineField({
       name: 'summary',
       title: 'Summary',
       type: 'text',
@@ -113,8 +132,13 @@ export default defineType({
   preview: {
     select: {
       title: 'title',
-      subtitle: 'summary',
+      summary: 'summary',
+      projectType: 'projectType',
       media: 'image',
+    },
+    prepare({title, summary, projectType}: {title: string; summary?: string; projectType?: string}) {
+      const subtitle = [projectType, summary].filter(Boolean).join(' — ')
+      return {title, subtitle}
     },
   },
 })

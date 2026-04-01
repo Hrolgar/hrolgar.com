@@ -146,7 +146,7 @@ export default async function BlogPostPage({ params }: PageProps) {
           )}
         </article>
       </main>
-      <Footer footerTagline={pageContent?.footerTagline} siteName={settings?.siteName} />
+      <Footer footerTagline={pageContent?.footerTagline} siteName={settings?.siteName} navItems={pageContent?.navItems} showBlog={settings?.showBlog} />
     </>
   );
 }

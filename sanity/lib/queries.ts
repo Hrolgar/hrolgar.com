@@ -5,11 +5,13 @@ import type {
   Skill,
   Experience,
   Project,
+  ProjectCategory,
   ContactInfo,
   Post,
   Category,
   Certification,
   HomelabService,
+  HomelabPage,
   Service,
   FAQ,
   PageContent,
@@ -49,13 +51,13 @@ export async function getExperience(): Promise<Experience[]> {
 
 export async function getProjects(): Promise<Project[]> {
   return (await client.fetch(
-    `*[_type == "project"] | order(featured desc, order asc) { ..., technologies[]-> }`
+    `*[_type == "project"] | order(featured desc, order asc) { ..., technologies[]->, categories[]-> }`
   )) || [];
 }
 
 export async function getProjectBySlug(slug: string): Promise<Project | null> {
   return client.fetch(
-    `*[_type == "project" && slug.current == $slug][0] { ..., technologies[]-> }`,
+    `*[_type == "project" && slug.current == $slug][0] { ..., technologies[]->, categories[]-> }`,
     { slug }
   );
 }
@@ -132,6 +134,34 @@ export async function getCertifications(): Promise<Certification[]> {
 export async function getHomelabServices(): Promise<HomelabService[]> {
   return (await client.fetch(
     `*[_type == "homelabService"] | order(category asc, order asc)`
+  )) || [];
+}
+
+export async function getHomelabPage(): Promise<HomelabPage | null> {
+  return client.fetch(`*[_type == "homelabPage"][0]`);
+}
+
+// --- Project Categories ---
+
+export async function getProjectCategories(): Promise<ProjectCategory[]> {
+  return (await client.fetch(
+    `*[_type == "projectCategory"] | order(order asc, title asc)`
+  )) || [];
+}
+
+// --- Project filters ---
+
+export async function getProjectsByType(type: string): Promise<Project[]> {
+  return (await client.fetch(
+    `*[_type == "project" && projectType == $type] | order(featured desc, order asc) { ..., technologies[]-> }`,
+    { type }
+  )) || [];
+}
+
+export async function getFeaturedProjects(limit = 4): Promise<Project[]> {
+  return (await client.fetch(
+    `*[_type == "project" && featured == true] | order(order asc) [0...$limit] { ..., technologies[]-> }`,
+    { limit }
   )) || [];
 }
 

@@ -50,7 +50,7 @@ export default async function ProjectPage({ params }: PageProps) {
         <article className="max-w-5xl mx-auto">
           {/* Back link */}
           <a
-            href="/#projects"
+            href="/projects"
             className="text-sm text-muted hover:text-primary transition-colors mb-8 inline-block"
           >
             ← Back to projects
@@ -172,7 +172,7 @@ export default async function ProjectPage({ params }: PageProps) {
           )}
         </article>
       </main>
-      <Footer contact={contact} footerTagline={pageContent?.footerTagline} siteName={settings?.siteName} />
+      <Footer contact={contact} footerTagline={pageContent?.footerTagline} siteName={settings?.siteName} navItems={pageContent?.navItems} showBlog={settings?.showBlog} />
     </>
   );
 }

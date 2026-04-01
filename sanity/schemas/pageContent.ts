@@ -171,6 +171,14 @@ export default defineType({
       description: 'Projects section title',
     }),
     defineField({
+      name: 'projectsIntro',
+      title: 'Projects Intro',
+      type: 'text',
+      rows: 2,
+      group: 'sections',
+      description: 'Short intro text below the Projects heading on the homepage',
+    }),
+    defineField({
       name: 'skillsHeading',
       title: 'Skills Heading',
       type: 'string',
@@ -239,6 +247,24 @@ export default defineType({
       type: 'string',
       group: 'blog',
       description: 'Blog index page subtitle',
+    }),
+    defineField({
+      name: 'projectsPageHeading',
+      title: 'Projects Page Heading',
+      type: 'string',
+      group: 'sections',
+    }),
+    defineField({
+      name: 'projectsPageSubtitle',
+      title: 'Projects Page Subtitle',
+      type: 'string',
+      group: 'sections',
+    }),
+    defineField({
+      name: 'homelabPageHeading',
+      title: 'Homelab Page Heading',
+      type: 'string',
+      group: 'sections',
     }),
   ],
   preview: {

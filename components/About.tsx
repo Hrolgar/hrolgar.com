@@ -42,16 +42,6 @@ export default function About({ about, heading }: Props) {
               <div className="prose-editorial leading-relaxed text-base">
                 <PortableText value={about.body} components={portableTextComponents} />
               </div>
-              {about.resumeFile?.asset?.url && (
-                <a
-                  href={about.resumeFile.asset.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-block mt-6 text-sm text-primary hover:text-secondary transition-colors font-medium"
-                >
-                  Download resume →
-                </a>
-              )}
             </div>
           </div>
         </ScrollReveal>

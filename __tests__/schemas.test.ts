@@ -12,6 +12,7 @@ const expectedSchemas = [
   'category',
   'certification',
   'homelabService',
+  'homelabPage',
   'service',
   'faq',
   'pageContent',

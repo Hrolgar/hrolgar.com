@@ -34,7 +34,7 @@ export default async function NotFound() {
           </div>
         </div>
       </main>
-      <Footer footerTagline={pageContent?.footerTagline} siteName={settings?.siteName} />
+      <Footer footerTagline={pageContent?.footerTagline} siteName={settings?.siteName} navItems={pageContent?.navItems} showBlog={settings?.showBlog} />
     </>
   );
 }

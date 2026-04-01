@@ -6,18 +6,28 @@ import type { Project } from "@/sanity/types";
 interface Props {
   projects: Project[];
   heading?: string | null;
+  intro?: string | null;
 }
 
-export default function Projects({ projects, heading }: Props) {
+export default function Projects({ projects, heading, intro }: Props) {
   if (!projects?.length) return null;
 
-  const [featured, ...rest] = projects;
+  // Show up to 3: featured first, fill with non-featured if needed
+  const featuredProjects = projects.filter((p) => p.featured);
+  const nonFeatured = projects.filter((p) => !p.featured);
+  const display = [...featuredProjects, ...nonFeatured].slice(0, 3);
+  const [featured, ...rest] = display;
 
   return (
     <section id="projects" className="section-surface bg-surface py-20 md:py-28 px-6">
       <div className="max-w-5xl mx-auto">
         <ScrollReveal>
-          <h2 className="font-[family-name:var(--font-serif)] text-4xl md:text-5xl font-bold text-foreground mb-12">{heading || 'Projects'}</h2>
+          <div className="mb-12">
+            <h2 className="font-[family-name:var(--font-serif)] text-4xl md:text-5xl font-bold text-foreground mb-3">{heading || 'Projects'}</h2>
+            {intro && (
+              <p className="text-muted text-base max-w-2xl">{intro}</p>
+            )}
+          </div>
         </ScrollReveal>
 
         {/* Featured project — big layout */}
@@ -124,6 +134,17 @@ export default function Projects({ projects, heading }: Props) {
             ))}
           </div>
         )}
+
+        <ScrollReveal delay={200}>
+          <div className="mt-8 text-right">
+            <a
+              href="/projects"
+              className="text-sm text-primary hover:text-secondary transition-colors font-medium"
+            >
+              View all projects →
+            </a>
+          </div>
+        </ScrollReveal>
       </div>
     </section>
   );

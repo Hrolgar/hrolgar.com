@@ -60,7 +60,7 @@ export default async function ContactPage() {
         forms={forms}
         defaultFAQs={defaultFAQs}
       />
-      <Footer contact={contact} footerTagline={pageContent?.footerTagline} siteName={settings?.siteName} />
+      <Footer contact={contact} footerTagline={pageContent?.footerTagline} siteName={settings?.siteName} navItems={pageContent?.navItems} showBlog={settings?.showBlog} />
     </>
   );
 }

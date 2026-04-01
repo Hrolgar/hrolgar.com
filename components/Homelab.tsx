@@ -1,86 +1,62 @@
-import { urlFor } from "@/sanity/lib/image";
-import Image from "next/image";
 import ScrollReveal from "./ScrollReveal";
-import type { HomelabService } from "@/sanity/types";
+import ShaderBackground from "./ShaderBackground";
+import type { HomelabStat } from "@/sanity/types";
 
 interface Props {
-  services: HomelabService[];
   heading?: string | null;
   subtitle?: string | null;
+  stats?: HomelabStat[];
 }
 
-const categoryLabels: Record<string, string> = {
-  virtualization: "Virtualization",
-  networking: "Networking",
-  storage: "Storage",
-  media: "Media",
-  security: "Security",
-  monitoring: "Monitoring",
-  development: "Development",
-  identity: "Identity",
-  automation: "Automation",
-  other: "Other",
-};
-
-export default function Homelab({ services, heading, subtitle }: Props) {
-  if (!services?.length) return null;
-
-  const categories = services.reduce<Record<string, HomelabService[]>>((acc, svc) => {
-    const cat = svc.category || "other";
-    if (!acc[cat]) acc[cat] = [];
-    acc[cat].push(svc);
-    return acc;
-  }, {});
-
+export default function Homelab({ heading, subtitle, stats }: Props) {
   return (
-    <section id="homelab" className="py-20 md:py-28 px-6">
-      <div className="max-w-5xl mx-auto">
-        <h2 className="font-[family-name:var(--font-serif)] text-4xl md:text-5xl font-bold text-foreground mb-2">{heading || 'Homelab'}</h2>
-        <p className="text-muted text-sm mb-12 font-[family-name:var(--font-sans)]">{subtitle || 'Self-hosted infrastructure and services'}</p>
+    <section id="homelab" className="relative py-20 md:py-28 px-6 overflow-hidden">
+      {/* Shader on the left side */}
+      <ShaderBackground
+        src="/shaders/kinetic-grid.html"
+        className="hidden md:block !right-auto !left-0 !w-[50%]"
+      />
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-8">
-          {Object.entries(categories).map(([category, items], index) => (
-            <ScrollReveal key={category} delay={index * 80}>
-              <div className="border-l-2 border-primary pl-4">
-                <h3 className="text-xs uppercase tracking-wider text-primary mb-3">
-                  {categoryLabels[category] || category}
-                </h3>
-                <div className="space-y-1.5">
-                  {items.map((svc) => (
-                    <div key={svc._id} className="flex items-center justify-between gap-2 text-sm">
-                      <div className="flex items-center gap-2 min-w-0">
-                        {svc.icon && (
-                          <Image
-                            src={urlFor(svc.icon).width(16).height(16).url()}
-                            alt=""
-                            width={16}
-                            height={16}
-                            className="rounded opacity-70"
-                          />
-                        )}
-                        {svc.url ? (
-                          <a
-                            href={svc.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-foreground hover:text-primary transition-colors truncate"
-                          >
-                            {svc.name}
-                          </a>
-                        ) : (
-                          <span className="text-foreground truncate">{svc.name}</span>
-                        )}
-                      </div>
-                      {svc.selfHosted && (
-                        <span className="text-[10px] text-primary whitespace-nowrap">self-hosted</span>
-                      )}
+      <div className="max-w-5xl mx-auto relative z-10">
+        <ScrollReveal>
+          <div className="flex flex-col md:flex-row md:items-start md:gap-16">
+            {/* Left spacer — shader occupies this space on desktop */}
+            <div className="hidden md:block md:w-1/2 flex-shrink-0" />
+
+            {/* Right side — content */}
+            <div className="md:w-1/2">
+              <p className="text-xs uppercase tracking-[0.24em] text-primary mb-4">
+                Self-Hosted Infrastructure
+              </p>
+              <h2 className="font-[family-name:var(--font-serif)] text-3xl md:text-4xl font-bold text-foreground mb-4">
+                {heading || "Homelab"}
+              </h2>
+              <p className="text-muted text-base leading-relaxed mb-6">
+                {subtitle || "Proxmox virtualization, Docker containers, ZFS storage, and 30+ self-hosted services — all managed with Infrastructure as Code."}
+              </p>
+
+              {/* Stats */}
+              {stats && stats.length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
+                  {stats.map((stat) => (
+                    <div key={stat._key}>
+                      <span className="text-xl font-bold text-primary">{stat.value}</span>
+                      <span className="text-xs text-muted uppercase tracking-wider ml-1.5">{stat.label}</span>
                     </div>
                   ))}
                 </div>
-              </div>
-            </ScrollReveal>
-          ))}
-        </div>
+              )}
+
+              <a
+                href="/homelab"
+                className="inline-flex items-center gap-2 text-primary hover:text-secondary text-sm font-medium transition-colors"
+              >
+                Explore my homelab
+                <span aria-hidden="true">→</span>
+              </a>
+            </div>
+          </div>
+        </ScrollReveal>
       </div>
     </section>
   );

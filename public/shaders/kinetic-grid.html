@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kinetic Grid</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #111116; }
+  canvas { display: block; width: 100vw; height: 100vh; }
+</style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+<script>
+(function() {
+    var canvas = document.getElementById('canvas');
+    var ctx = canvas.getContext('2d');
+    var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var W = 0, H = 0, running = true;
+    var IMPULSE_RATE = 0.25;
+    var SPRING_TENSION = 0.7;
+    var IMPULSE_STRENGTH = 0.4;
+    var COLS = 30, ROWS = 18;
+    var DAMPING = 0.978;
+    var RETURN_FORCE = 0.003;
+    var SPRING_K_BASE = 0.12;
+    var nodeCount = COLS * ROWS;
+    var posX = new Float32Array(nodeCount);
+    var posY = new Float32Array(nodeCount);
+    var velX = new Float32Array(nodeCount);
+    var velY = new Float32Array(nodeCount);
+    var restX = new Float32Array(nodeCount);
+    var restY = new Float32Array(nodeCount);
+    var springs = [];
+    var flashes = [];
+    var lastTime = 0, timeSinceImpulse = 0;
+    var impulseInterval = 1.0 / IMPULSE_RATE;
+    var spacingX = 0, spacingY = 0, marginX = 0, marginY = 0;
+    function idx(c, r) { return r * COLS + c; }
+    function buildGrid() {
+        marginX = W * 0.06; marginY = H * 0.06;
+        spacingX = (W - marginX * 2) / (COLS - 1);
+        spacingY = (H - marginY * 2) / (ROWS - 1);
+        for (var r = 0; r < ROWS; r++) {
+            for (var c = 0; c < COLS; c++) {
+                var i = idx(c, r);
+                var x = marginX + c * spacingX;
+                var y = marginY + r * spacingY;
+                restX[i] = x; restY[i] = y;
+                posX[i] = x; posY[i] = y;
+                velX[i] = 0; velY[i] = 0;
+            }
+        }
+        springs = [];
+        for (var r = 0; r < ROWS; r++) {
+            for (var c = 0; c < COLS; c++) {
+                var i = idx(c, r);
+                if (c < COLS - 1) { var j = idx(c + 1, r); springs.push(i, j, spacingX); }
+                if (r < ROWS - 1) { var j = idx(c, r + 1); springs.push(i, j, spacingY); }
+            }
+        }
+    }
+    function resize() {
+        dpr = Math.min(window.devicePixelRatio || 1, 2);
+        W = window.innerWidth; H = window.innerHeight;
+        canvas.width = Math.round(W * dpr);
+        canvas.height = Math.round(H * dpr);
+        canvas.style.width = W + 'px';
+        canvas.style.height = H + 'px';
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        buildGrid();
+    }
+    window.addEventListener('resize', resize);
+    resize();
+    var screenFlash = 0;
+    function injectSingleImpulse(edge, strength) {
+        var regionSize = 4 + Math.floor(Math.random() * 6);
+        var startNode, flashX, flashY;
+        if (edge === 0) {
+            startNode = Math.floor(Math.random() * Math.max(1, COLS - regionSize));
+            flashX = marginX + (startNode + regionSize * 0.5) * spacingX; flashY = marginY;
+            for (var c = startNode; c < startNode + regionSize && c < COLS; c++) {
+                var i = idx(c, 0); var falloff = 1 - Math.abs(c - startNode - regionSize * 0.5) / (regionSize * 0.5);
+                velY[i] += strength * falloff * falloff;
+            }
+        } else if (edge === 1) {
+            startNode = Math.floor(Math.random() * Math.max(1, ROWS - regionSize));
+            flashX = marginX + (COLS - 1) * spacingX; flashY = marginY + (startNode + regionSize * 0.5) * spacingY;
+            for (var r = startNode; r < startNode + regionSize && r < ROWS; r++) {
+                var i = idx(COLS - 1, r); var falloff = 1 - Math.abs(r - startNode - regionSize * 0.5) / (regionSize * 0.5);
+                velX[i] -= strength * falloff * falloff;
+            }
+        } else if (edge === 2) {
+            startNode = Math.floor(Math.random() * Math.max(1, COLS - regionSize));
+            flashX = marginX + (startNode + regionSize * 0.5) * spacingX; flashY = marginY + (ROWS - 1) * spacingY;
+            for (var c = startNode; c < startNode + regionSize && c < COLS; c++) {
+                var i = idx(c, ROWS - 1); var falloff = 1 - Math.abs(c - startNode - regionSize * 0.5) / (regionSize * 0.5);
+                velY[i] -= strength * falloff * falloff;
+            }
+        } else {
+            startNode = Math.floor(Math.random() * Math.max(1, ROWS - regionSize));
+            flashX = marginX; flashY = marginY + (startNode + regionSize * 0.5) * spacingY;
+            for (var r = startNode; r < startNode + regionSize && r < ROWS; r++) {
+                var i = idx(0, r); var falloff = 1 - Math.abs(r - startNode - regionSize * 0.5) / (regionSize * 0.5);
+                velX[i] += strength * falloff * falloff;
+            }
+        }
+        flashes.push({ x: flashX, y: flashY, life: 1.0, ring: 1.0 });
+    }
+    function injectImpulse() {
+        var baseStrength = (18 + Math.random() * 10) * IMPULSE_STRENGTH;
+        injectSingleImpulse(Math.floor(Math.random() * 4), baseStrength);
+        screenFlash = 0.012;
+    }
+    function simulate(dt) {
+        if (prefersReduced) return;
+        var springK = SPRING_K_BASE * SPRING_TENSION;
+        var springCount = springs.length / 3;
+        for (var s = 0; s < springCount; s++) {
+            var s3 = s * 3; var a = springs[s3]; var b = springs[s3 + 1]; var restLen = springs[s3 + 2];
+            var dx = posX[b] - posX[a]; var dy = posY[b] - posY[a];
+            var dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < 0.001) continue;
+            var force = springK * (dist - restLen) / dist;
+            var fx = dx * force; var fy = dy * force;
+            velX[a] += fx; velY[a] += fy; velX[b] -= fx; velY[b] -= fy;
+        }
+        for (var i = 0; i < nodeCount; i++) {
+            velX[i] += (restX[i] - posX[i]) * RETURN_FORCE;
+            velY[i] += (restY[i] - posY[i]) * RETURN_FORCE;
+            velX[i] *= DAMPING; velY[i] *= DAMPING;
+            posX[i] += velX[i]; posY[i] += velY[i];
+        }
+    }
+    // Teal/coral palette matching hrolgar.com theme
+    function tensionColor(tension) {
+        var t = tension < 0 ? 0 : (tension > 1 ? 1 : tension);
+        var r, g, b, a;
+        if (t < 0.1) {
+            var f = t / 0.1;
+            r = 20 + f * 15; g = 40 + f * 30; b = 38 + f * 28; a = 0.12 + f * 0.06;
+        } else if (t < 0.3) {
+            var f = (t - 0.1) / 0.2;
+            r = 35 + f * 30; g = 70 + f * 80; b = 66 + f * 74; a = 0.18 + f * 0.12;
+        } else if (t < 0.55) {
+            var f = (t - 0.3) / 0.25;
+            r = 65 + f * 29; g = 150 + f * 21; b = 140 + f * 28; a = 0.3 + f * 0.12;
+        } else if (t < 0.8) {
+            var f = (t - 0.55) / 0.25;
+            r = 94 + f * 80; g = 171 + f * 20; b = 168 - f * 50; a = 0.42 + f * 0.1;
+        } else {
+            var f = (t - 0.8) / 0.2;
+            r = 174 + f * 20; g = 191 + f * 30; b = 118 + f * 30; a = 0.52 + f * 0.1;
+        }
+        return { r: Math.round(r), g: Math.round(g), b: Math.round(b), a: a };
+    }
+    function render(now) {
+        if (!running) return;
+        var time = now * 0.001;
+        var dt = lastTime === 0 ? 0.016 : (time - lastTime);
+        if (dt > 0.1) dt = 0.016;
+        lastTime = time;
+        timeSinceImpulse += dt;
+        impulseInterval = 1.8 / IMPULSE_RATE;
+        if (timeSinceImpulse >= impulseInterval) {
+            injectImpulse();
+            timeSinceImpulse -= impulseInterval;
+            timeSinceImpulse -= Math.random() * impulseInterval * 0.3;
+        }
+        simulate(dt);
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.fillStyle = 'rgba(17, 17, 22, 0.35)';
+        ctx.fillRect(0, 0, W, H);
+        if (screenFlash > 0.001) {
+            ctx.fillStyle = 'rgba(94, 171, 168, ' + screenFlash.toFixed(4) + ')';
+            ctx.fillRect(0, 0, W, H);
+            screenFlash *= 0.88;
+        }
+        var avgSpacing = (spacingX + spacingY) * 0.5;
+        var tensionScale = 1.0 / (avgSpacing * 0.35);
+        var breathe = 0.85 + 0.15 * Math.sin(time * 0.8);
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.lineCap = 'round';
+        var springCount = springs.length / 3;
+        for (var s = 0; s < springCount; s++) {
+            var s3 = s * 3; var a = springs[s3]; var b = springs[s3 + 1]; var restLen = springs[s3 + 2];
+            var ax = posX[a], ay = posY[a], bx = posX[b], by = posY[b];
+            var dist = Math.sqrt((bx-ax)*(bx-ax)+(by-ay)*(by-ay));
+            var tension = Math.abs(dist - restLen) * tensionScale;
+            var col = tensionColor(tension);
+            var baseGlowAlpha = (0.03 + tension * 0.15) * breathe;
+            if (baseGlowAlpha > 0.005) {
+                ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by);
+                ctx.strokeStyle = 'rgba(' + col.r + ',' + col.g + ',' + col.b + ',' + baseGlowAlpha.toFixed(4) + ')';
+                ctx.lineWidth = 3 + tension * 7; ctx.stroke();
+            }
+        }
+        for (var s = 0; s < springCount; s++) {
+            var s3 = s * 3; var a = springs[s3]; var b = springs[s3 + 1]; var restLen = springs[s3 + 2];
+            var ax = posX[a], ay = posY[a], bx = posX[b], by = posY[b];
+            var dist = Math.sqrt((bx-ax)*(bx-ax)+(by-ay)*(by-ay));
+            var tension = Math.abs(dist - restLen) * tensionScale;
+            var col = tensionColor(tension);
+            var coreAlpha = (0.1 + tension * 0.5) * breathe;
+            if (coreAlpha > 1) coreAlpha = 1;
+            ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by);
+            ctx.strokeStyle = 'rgba(' + col.r + ',' + col.g + ',' + col.b + ',' + coreAlpha.toFixed(4) + ')';
+            ctx.lineWidth = 0.5 + tension * 1.4; ctx.stroke();
+        }
+        for (var i = 0; i < nodeCount; i++) {
+            var speed = Math.sqrt(velX[i]*velX[i]+velY[i]*velY[i]);
+            var brightness = speed * 0.2;
+            if (brightness < 0.02) continue;
+            if (brightness > 1) brightness = 1;
+            var nr = 94 + brightness * 130, ng = 171 + brightness * 50, nb = 168 - brightness * 70;
+            var nodeAlpha = 0.1 + brightness * 0.7;
+            var nodeRadius = 0.7 + brightness * 1.8;
+            if (speed > 3.0) {
+                var bloomIntensity = Math.min((speed - 3.0) / 15.0, 1);
+                var haloRadius = 3 + bloomIntensity * 10;
+                ctx.beginPath(); ctx.arc(posX[i], posY[i], haloRadius, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(94, 171, 168, ' + (bloomIntensity * 0.3).toFixed(3) + ')';
+                ctx.fill();
+            }
+            ctx.beginPath(); ctx.arc(posX[i], posY[i], nodeRadius, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(' + Math.round(nr) + ',' + Math.round(ng) + ',' + Math.round(nb) + ',' + nodeAlpha.toFixed(3) + ')';
+            ctx.fill();
+        }
+        for (var fi = flashes.length - 1; fi >= 0; fi--) {
+            var flash = flashes[fi]; flash.life -= dt * 2.0;
+            if (flash.ring !== undefined) flash.ring -= dt * 1.8;
+            if (flash.life <= 0) { flashes.splice(fi, 1); continue; }
+            var fl = flash.life;
+            var flashRadius = (1 - fl) * 80 + 15;
+            var flashAlpha = fl * fl * 0.3;
+            var grad = ctx.createRadialGradient(flash.x, flash.y, 0, flash.x, flash.y, flashRadius);
+            grad.addColorStop(0, 'rgba(126, 200, 197, ' + flashAlpha.toFixed(3) + ')');
+            grad.addColorStop(0.3, 'rgba(94, 171, 168, ' + (flashAlpha * 0.5).toFixed(3) + ')');
+            grad.addColorStop(1, 'rgba(94, 171, 168, 0)');
+            ctx.beginPath(); ctx.arc(flash.x, flash.y, flashRadius, 0, Math.PI * 2);
+            ctx.fillStyle = grad; ctx.fill();
+            if (flash.ring !== undefined && flash.ring > 0) {
+                var ringRadius = 12 + (1 - flash.ring) * 100;
+                ctx.beginPath(); ctx.arc(flash.x, flash.y, ringRadius, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(94, 171, 168, ' + (flash.ring * flash.ring * 0.4).toFixed(3) + ')';
+                ctx.lineWidth = 1.5 * flash.ring; ctx.stroke();
+            }
+        }
+        ctx.globalCompositeOperation = 'source-over';
+        var vcx = W * 0.5, vcy = H * 0.5, maxDim = Math.max(W, H);
+        var vignette = ctx.createRadialGradient(vcx, vcy, maxDim * 0.25, vcx, vcy, maxDim * 0.72);
+        vignette.addColorStop(0, 'rgba(17, 17, 22, 0)');
+        vignette.addColorStop(1, 'rgba(17, 17, 22, 0.65)');
+        ctx.fillStyle = vignette; ctx.fillRect(0, 0, W, H);
+        requestAnimationFrame(render);
+    }
+    ctx.fillStyle = '#111116'; ctx.fillRect(0, 0, W, H);
+    injectImpulse();
+    requestAnimationFrame(render);
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) { running = false; } else { running = true; lastTime = 0; requestAnimationFrame(render); }
+    });
+})();
+</script>
+</body>
+</html>

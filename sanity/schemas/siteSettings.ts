@@ -27,6 +27,14 @@ export default defineType({
       description: 'Used in meta tags and as default page description',
     }),
     defineField({
+      name: 'showBlog',
+      title: 'Show Blog',
+      type: 'boolean',
+      group: 'general',
+      initialValue: true,
+      description: 'Show blog section on homepage and blog link in navigation',
+    }),
+    defineField({
       name: 'ogImage',
       title: 'Default Social Image',
       type: 'image',
