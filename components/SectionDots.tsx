@@ -18,20 +18,26 @@ export default function SectionDots() {
 
   useEffect(() => {
     const onScroll = () => {
-      let current = "";
+      const viewportMiddle = window.innerHeight * 0.35;
+      let closest = "";
+      let closestDist = Infinity;
 
       for (const section of sections) {
         const el = document.getElementById(section.id);
-        if (el) {
-          const rect = el.getBoundingClientRect();
-          if (rect.top <= 200) current = section.id;
+        if (!el) continue;
+        const rect = el.getBoundingClientRect();
+        // Find the section whose top is closest to (but above) the viewport trigger point
+        const dist = Math.abs(rect.top - viewportMiddle);
+        if (rect.top <= viewportMiddle + rect.height * 0.5 && dist < closestDist) {
+          closestDist = dist;
+          closest = section.id;
         }
       }
 
       const nearBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 100;
-      if (nearBottom) current = "contact";
+      if (nearBottom) closest = "contact";
 
-      setActive(current);
+      setActive(closest);
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });
