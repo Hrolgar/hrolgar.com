@@ -6,6 +6,7 @@ import {
   getContact,
   getCertifications,
   getHomelabServices,
+  getHomelabPage,
   getFeaturedPosts,
   getPageContent,
   getSettings,
@@ -29,7 +30,7 @@ import SectionDots from "@/components/SectionDots";
 export const revalidate = 3600;
 
 export default async function Home() {
-  const [about, skills, experience, projects, contact, certifications, homelabServices, featuredPosts, pageContent, settings] =
+  const [about, skills, experience, projects, contact, certifications, homelabServices, homelabPage, featuredPosts, pageContent, settings] =
     await Promise.all([
       getAbout(),
       getSkills(),
@@ -38,6 +39,7 @@ export default async function Home() {
       getContact(),
       getCertifications(),
       getHomelabServices(),
+      getHomelabPage(),
       getFeaturedPosts(),
       getPageContent(),
       getSettings(),
@@ -46,16 +48,16 @@ export default async function Home() {
   return (
     <>
       <ScrollProgress />
-      <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} />
+      <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} showBlog={settings?.showBlog} />
       <main id="main-content">
         <Hero about={about} />
         <About about={about} heading={pageContent?.aboutHeading} />
         <Experience experience={experience} heading={pageContent?.experienceHeading} />
         <Skills skills={skills} heading={pageContent?.skillsHeading} />
         <Projects projects={projects} heading={pageContent?.projectsHeading} />
-        <Homelab services={homelabServices} heading={pageContent?.homelabHeading} subtitle={pageContent?.homelabSubtitle} />
+        <Homelab services={homelabServices} heading={pageContent?.homelabHeading} subtitle={pageContent?.homelabSubtitle} stats={homelabPage?.stats} />
         <Certifications certifications={certifications} heading={pageContent?.certificationsHeading} />
-        <BlogPreview posts={featuredPosts} heading={pageContent?.blogPreviewHeading} />
+        {settings?.showBlog !== false && <BlogPreview posts={featuredPosts} heading={pageContent?.blogPreviewHeading} showBlog={settings?.showBlog} />}
         <Contact contact={contact} heading={pageContent?.contactSectionHeading} tagline={pageContent?.contactSectionTagline} />
       </main>
       <Footer contact={contact} footerTagline={pageContent?.footerTagline} siteName={settings?.siteName} />
