@@ -19,6 +19,7 @@ export interface SiteSettings {
   _type: "siteSettings";
   siteName?: string;
   siteDescription?: string;
+  showBlog?: boolean;
   ogImage?: SanityImage;
   primaryColor?: string;
   secondaryColor?: string;
@@ -77,6 +78,7 @@ export interface Project {
   _type: "project";
   title: string;
   slug: { current: string };
+  projectType?: "personal" | "freelance";
   summary?: string;
   description?: PortableTextBlock[];
   image?: SanityImage;
@@ -169,6 +171,9 @@ export interface PageContent {
   floatingCtaText?: string;
   blogPageHeading?: string;
   blogPageSubtitle?: string;
+  projectsPageHeading?: string;
+  projectsPageSubtitle?: string;
+  homelabPageHeading?: string;
 }
 
 export interface Service {
@@ -226,4 +231,27 @@ export interface HomelabService {
   selfHosted?: boolean;
   url?: string;
   order?: number;
+}
+
+export interface HomelabHardware {
+  _key: string;
+  name: string;
+  description?: string;
+  specs?: string;
+  image?: SanityImage;
+}
+
+export interface HomelabStat {
+  _key: string;
+  label: string;
+  value: string;
+}
+
+export interface HomelabPage {
+  _id: string;
+  _type: "homelabPage";
+  intro?: PortableTextBlock[];
+  hardware?: HomelabHardware[];
+  architecture?: PortableTextBlock[];
+  stats?: HomelabStat[];
 }

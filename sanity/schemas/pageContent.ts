@@ -240,6 +240,24 @@ export default defineType({
       group: 'blog',
       description: 'Blog index page subtitle',
     }),
+    defineField({
+      name: 'projectsPageHeading',
+      title: 'Projects Page Heading',
+      type: 'string',
+      group: 'sections',
+    }),
+    defineField({
+      name: 'projectsPageSubtitle',
+      title: 'Projects Page Subtitle',
+      type: 'string',
+      group: 'sections',
+    }),
+    defineField({
+      name: 'homelabPageHeading',
+      title: 'Homelab Page Heading',
+      type: 'string',
+      group: 'sections',
+    }),
   ],
   preview: {
     prepare() {
