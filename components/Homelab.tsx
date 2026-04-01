@@ -1,13 +1,5 @@
-import { urlFor } from "@/sanity/lib/image";
-import Image from "next/image";
 import ScrollReveal from "./ScrollReveal";
-import type { HomelabService } from "@/sanity/types";
-
-interface Props {
-  services: HomelabService[];
-  heading?: string | null;
-  subtitle?: string | null;
-}
+import type { HomelabService, HomelabStat } from "@/sanity/types";
 
 const categoryLabels: Record<string, string> = {
   virtualization: "Virtualization",
@@ -22,65 +14,64 @@ const categoryLabels: Record<string, string> = {
   other: "Other",
 };
 
-export default function Homelab({ services, heading, subtitle }: Props) {
+interface Props {
+  services: HomelabService[];
+  heading?: string | null;
+  subtitle?: string | null;
+  stats?: HomelabStat[];
+}
+
+export default function Homelab({ services, heading, subtitle, stats }: Props) {
   if (!services?.length) return null;
 
-  const categories = services.reduce<Record<string, HomelabService[]>>((acc, svc) => {
-    const cat = svc.category || "other";
-    if (!acc[cat]) acc[cat] = [];
-    acc[cat].push(svc);
-    return acc;
-  }, {});
+  const preview = services.slice(0, 8);
 
   return (
     <section id="homelab" className="py-20 md:py-28 px-6">
       <div className="max-w-5xl mx-auto">
-        <h2 className="font-[family-name:var(--font-serif)] text-4xl md:text-5xl font-bold text-foreground mb-2">{heading || 'Homelab'}</h2>
-        <p className="text-muted text-sm mb-12 font-[family-name:var(--font-sans)]">{subtitle || 'Self-hosted infrastructure and services'}</p>
+        <div className="flex items-end justify-between mb-2">
+          <h2 className="font-[family-name:var(--font-serif)] text-4xl md:text-5xl font-bold text-foreground">
+            {heading || "Homelab"}
+          </h2>
+          <a
+            href="/homelab"
+            className="text-sm text-primary hover:text-secondary transition-colors font-medium"
+          >
+            Explore my homelab →
+          </a>
+        </div>
+        <p className="text-muted text-sm mb-8 font-[family-name:var(--font-sans)]">
+          {subtitle || "Self-hosted infrastructure and services"}
+        </p>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-8">
-          {Object.entries(categories).map(([category, items], index) => (
-            <ScrollReveal key={category} delay={index * 80}>
-              <div className="border-l-2 border-primary pl-4">
-                <h3 className="text-xs uppercase tracking-wider text-primary mb-3">
-                  {categoryLabels[category] || category}
-                </h3>
-                <div className="space-y-1.5">
-                  {items.map((svc) => (
-                    <div key={svc._id} className="flex items-center justify-between gap-2 text-sm">
-                      <div className="flex items-center gap-2 min-w-0">
-                        {svc.icon && (
-                          <Image
-                            src={urlFor(svc.icon).width(16).height(16).url()}
-                            alt=""
-                            width={16}
-                            height={16}
-                            className="rounded opacity-70"
-                          />
-                        )}
-                        {svc.url ? (
-                          <a
-                            href={svc.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-foreground hover:text-primary transition-colors truncate"
-                          >
-                            {svc.name}
-                          </a>
-                        ) : (
-                          <span className="text-foreground truncate">{svc.name}</span>
-                        )}
-                      </div>
-                      {svc.selfHosted && (
-                        <span className="text-[10px] text-primary whitespace-nowrap">self-hosted</span>
-                      )}
-                    </div>
-                  ))}
+        {/* Stats bar */}
+        {stats && stats.length > 0 && (
+          <div className="flex flex-wrap gap-4 mb-10">
+            {stats.map((stat) => (
+              <div key={stat._key} className="flex items-baseline gap-2">
+                <span className="text-primary font-bold text-lg">{stat.value}</span>
+                <span className="text-muted text-xs uppercase tracking-wider">{stat.label}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Preview grid — flat list of first 8 services */}
+        <ScrollReveal>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {preview.map((svc) => (
+              <div
+                key={svc._id}
+                className="bg-surface border border-border rounded px-3 py-2 text-sm"
+              >
+                <div className="text-foreground font-medium truncate">{svc.name}</div>
+                <div className="text-muted text-xs mt-0.5">
+                  {categoryLabels[svc.category || "other"] || svc.category || "Other"}
                 </div>
               </div>
-            </ScrollReveal>
-          ))}
-        </div>
+            ))}
+          </div>
+        </ScrollReveal>
       </div>
     </section>
   );
