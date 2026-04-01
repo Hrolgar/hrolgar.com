@@ -25,7 +25,7 @@ export default function Skills({ skills, heading }: Props) {
 
         <div className="grid gap-8 md:grid-cols-2">
           {Object.entries(groupedSkills).map(([category, items], index) => (
-            <ScrollReveal key={category} delay={index * 100}>
+            <ScrollReveal key={category} delay={index * 40}>
               <div>
                 <h3 className="mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-muted">
                   {category}

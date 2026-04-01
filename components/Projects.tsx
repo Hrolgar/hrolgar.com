@@ -101,7 +101,7 @@ export default function Projects({ projects, heading, intro }: Props) {
         {rest.length > 0 && (
           <div>
             {rest.map((project, index) => (
-              <ScrollReveal key={project._id} delay={index * 60}>
+              <ScrollReveal key={project._id} delay={index * 30}>
                 <div className="py-4 border-b border-border flex items-baseline justify-between gap-4 hover:bg-surface-hover rounded-lg px-3 -mx-3 transition-colors">
                   <div className="min-w-0">
                     <span className="font-semibold text-foreground">{project.title}</span>

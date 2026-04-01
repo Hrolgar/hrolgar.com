@@ -39,7 +39,7 @@ export default function Experience({ experience, heading, resumeUrl }: Props) {
 
         <div>
           {display.map((exp, index) => (
-            <ScrollReveal key={exp._id} delay={index * 60}>
+            <ScrollReveal key={exp._id} delay={index * 30}>
               <div className="py-4 border-b border-border last:border-b-0 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4">
                 <div className="flex items-center gap-3 min-w-0">
                   {exp.companyLogo && (
