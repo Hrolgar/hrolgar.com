@@ -4,7 +4,9 @@ import { useState, useEffect, useCallback } from "react";
 
 const defaultPages = [
   { label: "Home", href: "/" },
+  { label: "Projects", href: "/projects" },
   { label: "Services", href: "/services" },
+  { label: "Homelab", href: "/homelab" },
   { label: "Blog", href: "/blog" },
   { label: "Contact", href: "/contact" },
 ];
@@ -18,10 +20,12 @@ interface NavItem {
 interface Props {
   navItems?: NavItem[] | null;
   siteName?: string | null;
+  showBlog?: boolean;
 }
 
-export default function Navbar({ navItems, siteName }: Props) {
+export default function Navbar({ navItems, siteName, showBlog }: Props) {
   const pages = navItems && navItems.length > 0 ? navItems : defaultPages;
+  const filteredPages = pages.filter(p => showBlog !== false || p.href !== "/blog");
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -70,7 +74,7 @@ export default function Navbar({ navItems, siteName }: Props) {
 
           <div className="hidden md:flex items-center gap-8">
             <ul className="flex gap-8">
-              {pages.map((link) => (
+              {filteredPages.map((link) => (
                 <li key={link.href}>
                   <a
                     href={link.href}
@@ -121,7 +125,7 @@ export default function Navbar({ navItems, siteName }: Props) {
           }`}
         >
           <ul className="px-6 py-4 space-y-4 bg-bg/95 backdrop-blur-md">
-            {pages.map((link) => (
+            {filteredPages.map((link) => (
               <li key={link.href}>
                 <a
                   href={link.href}

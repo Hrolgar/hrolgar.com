@@ -5,6 +5,7 @@ import type { Post } from "@/sanity/types";
 interface Props {
   posts: Post[];
   heading?: string | null;
+  showBlog?: boolean;
 }
 
 function formatDate(dateStr: string): string {
@@ -15,7 +16,8 @@ function formatDate(dateStr: string): string {
   });
 }
 
-export default function BlogPreview({ posts, heading }: Props) {
+export default function BlogPreview({ posts, heading, showBlog }: Props) {
+  if (showBlog === false) return null;
   if (!posts?.length) return null;
 
   const [featured, ...rest] = posts;
