@@ -2,28 +2,33 @@
 
 import { useEffect, useState } from "react";
 
-const allSections = [
-  { id: "about", label: "About" },
-  { id: "experience", label: "Experience" },
-  { id: "skills", label: "Technologies" },
-  { id: "projects", label: "Projects" },
-  { id: "homelab", label: "Homelab" },
-  { id: "certifications", label: "Certifications" },
-  { id: "blog", label: "Blog" },
-  { id: "contact", label: "Contact" },
-];
+interface Section {
+  id: string;
+  label: string;
+}
 
 export default function SectionDots() {
+  const [sections, setSections] = useState<Section[]>([]);
   const [active, setActive] = useState("");
-  const [sections, setSections] = useState(allSections);
 
-  // Only show dots for sections that exist in the DOM
+  // Discover sections from the DOM — any <section> with an id gets a dot
   useEffect(() => {
-    const visible = allSections.filter(s => document.getElementById(s.id));
-    setSections(visible);
+    const els = document.querySelectorAll<HTMLElement>("main section[id]");
+    const found: Section[] = [];
+    els.forEach((el) => {
+      if (el.id) {
+        found.push({
+          id: el.id,
+          label: el.dataset.label || el.id.charAt(0).toUpperCase() + el.id.slice(1),
+        });
+      }
+    });
+    setSections(found);
   }, []);
 
   useEffect(() => {
+    if (sections.length === 0) return;
+
     const onScroll = () => {
       const viewportMiddle = window.innerHeight * 0.35;
       let closest = "";
@@ -33,7 +38,6 @@ export default function SectionDots() {
         const el = document.getElementById(section.id);
         if (!el) continue;
         const rect = el.getBoundingClientRect();
-        // Find the section whose top is closest to (but above) the viewport trigger point
         const dist = Math.abs(rect.top - viewportMiddle);
         if (rect.top <= viewportMiddle + rect.height * 0.5 && dist < closestDist) {
           closestDist = dist;
@@ -42,7 +46,7 @@ export default function SectionDots() {
       }
 
       const nearBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 100;
-      if (nearBottom) closest = "contact";
+      if (nearBottom && sections.length > 0) closest = sections[sections.length - 1].id;
 
       setActive(closest);
     };
@@ -51,7 +55,9 @@ export default function SectionDots() {
     onScroll();
 
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [sections]);
+
+  if (sections.length === 0) return null;
 
   return (
     <nav

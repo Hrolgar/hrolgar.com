@@ -23,7 +23,7 @@ export default function BlogPreview({ posts, heading, showBlog }: Props) {
   const [featured, ...rest] = posts;
 
   return (
-    <section id="blog" className="py-20 md:py-28 px-6">
+    <section id="blog" data-label="Blog" className="py-20 md:py-28 px-6">
       <div className="max-w-5xl mx-auto">
         <div className="flex items-end justify-between mb-12">
           <h2 className="font-[family-name:var(--font-serif)] text-4xl md:text-5xl font-bold text-foreground">{heading || 'Blog'}</h2>

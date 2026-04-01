@@ -17,7 +17,7 @@ export default function Skills({ skills, heading }: Props) {
   }, {});
 
   return (
-    <section id="skills" className="py-20 md:py-28 px-6">
+    <section id="skills" data-label="Technologies" className="py-20 md:py-28 px-6">
       <div className="max-w-5xl mx-auto">
         <h2 className="font-[family-name:var(--font-serif)] text-4xl md:text-5xl font-bold text-foreground mb-12">
           {heading || 'Technologies'}
