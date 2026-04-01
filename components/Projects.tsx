@@ -11,7 +11,9 @@ interface Props {
 export default function Projects({ projects, heading }: Props) {
   if (!projects?.length) return null;
 
-  const [featured, ...rest] = projects;
+  const teaser = projects.filter((p) => p.featured).slice(0, 4);
+  const display = teaser.length > 0 ? teaser : projects.slice(0, 4);
+  const [featured, ...rest] = display;
 
   return (
     <section id="projects" className="section-surface bg-surface py-20 md:py-28 px-6">
@@ -124,6 +126,17 @@ export default function Projects({ projects, heading }: Props) {
             ))}
           </div>
         )}
+
+        <ScrollReveal delay={200}>
+          <div className="mt-10 text-right">
+            <a
+              href="/projects"
+              className="text-sm text-primary hover:text-secondary transition-colors font-medium"
+            >
+              View all projects →
+            </a>
+          </div>
+        </ScrollReveal>
       </div>
     </section>
   );
