@@ -1,10 +1,6 @@
 import type { About } from "@/sanity/types";
-import dynamic from "next/dynamic";
 import RotatingText from "./RotatingText";
-
-const ShaderBackground = dynamic(() => import("./ShaderBackground"), {
-  ssr: false,
-});
+import ShaderBackground from "./ShaderBackground";
 
 interface Props {
   about: About | null;
