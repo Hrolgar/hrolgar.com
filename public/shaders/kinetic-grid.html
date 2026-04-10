@@ -34,6 +34,7 @@
     var restX = new Float32Array(nodeCount);
     var restY = new Float32Array(nodeCount);
     var springs = [];
+    var springCount = 0;
     var flashes = [];
     var lastTime = 0, timeSinceImpulse = 0;
     var impulseInterval = 1.0 / IMPULSE_RATE;
@@ -61,6 +62,7 @@
                 if (r < ROWS - 1) { var j = idx(c, r + 1); springs.push(i, j, spacingY); }
             }
         }
+        springCount = springs.length / 3;
     }
     function resize() {
         dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -117,7 +119,6 @@
     function simulate(dt) {
         if (prefersReduced) return;
         var springK = SPRING_K_BASE * SPRING_TENSION;
-        var springCount = springs.length / 3;
         for (var s = 0; s < springCount; s++) {
             var s3 = s * 3; var a = springs[s3]; var b = springs[s3 + 1]; var restLen = springs[s3 + 2];
             var dx = posX[b] - posX[a]; var dy = posY[b] - posY[a];
@@ -183,9 +184,9 @@
         var breathe = 0.85 + 0.15 * Math.sin(time * 0.8);
         ctx.globalCompositeOperation = 'lighter';
         ctx.lineCap = 'round';
-        var springCount = springs.length / 3;
         for (var s = 0; s < springCount; s++) {
             var s3 = s * 3; var a = springs[s3]; var b = springs[s3 + 1]; var restLen = springs[s3 + 2];
+            if (velX[a]*velX[a]+velY[a]*velY[a] < 0.01 && velX[b]*velX[b]+velY[b]*velY[b] < 0.01) continue;
             var ax = posX[a], ay = posY[a], bx = posX[b], by = posY[b];
             var dist = Math.sqrt((bx-ax)*(bx-ax)+(by-ay)*(by-ay));
             var tension = Math.abs(dist - restLen) * tensionScale;
@@ -199,6 +200,7 @@
         }
         for (var s = 0; s < springCount; s++) {
             var s3 = s * 3; var a = springs[s3]; var b = springs[s3 + 1]; var restLen = springs[s3 + 2];
+            if (velX[a]*velX[a]+velY[a]*velY[a] < 0.01 && velX[b]*velX[b]+velY[b]*velY[b] < 0.01) continue;
             var ax = posX[a], ay = posY[a], bx = posX[b], by = posY[b];
             var dist = Math.sqrt((bx-ax)*(bx-ax)+(by-ay)*(by-ay));
             var tension = Math.abs(dist - restLen) * tensionScale;

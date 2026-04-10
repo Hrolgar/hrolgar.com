@@ -1,6 +1,10 @@
+import dynamic from "next/dynamic";
 import ScrollReveal from "./ScrollReveal";
-import ShaderBackground from "./ShaderBackground";
 import type { HomelabStat } from "@/sanity/types";
+
+const ShaderBackground = dynamic(() => import("./ShaderBackground"), {
+  ssr: false,
+});
 
 interface Props {
   heading?: string | null;

@@ -47,8 +47,14 @@
   }
 
   function resize() {
-    W = canvas.width = window.innerWidth;
-    H = canvas.height = window.innerHeight;
+    var dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+    W = window.innerWidth;
+    H = window.innerHeight;
+    canvas.width = Math.round(W * dpr);
+    canvas.height = Math.round(H * dpr);
+    canvas.style.width = W + 'px';
+    canvas.style.height = H + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     initParticleSprite();
   }
   window.addEventListener('resize', resize);
@@ -334,7 +340,7 @@
                     : b.depth <= 5 ? lerp(0.92, 0.7, depthT)
                     : lerp(0.7, 0.35, (depthT - 0.5) * 2);
 
-    const strokeCount = b.depth < 3 ? 5 : (b.depth < 6 ? 3 : 2);
+    const strokeCount = b.depth < 3 ? 3 : (b.depth < 6 ? 2 : 1);
     const thickBase = b.thickness;
     const thickTaper = lerp(thickBase, thickBase * 0.3, progress);
 
@@ -371,11 +377,15 @@
     if (b.depth >= 4 && b.depth < MAX_DEPTH - 1 && b.growthProgress > 0.8) {
       const glowAlpha = smoothstep(0.8, 1.0, b.growthProgress) * 0.06 * (b.depth / MAX_DEPTH);
       const glowR = Math.max(4, thickBase * 2);
-      const grd = drawCtx.createRadialGradient(x2, y2, 0, x2, y2, glowR);
-      grd.addColorStop(0, `rgba(${Math.min(255,col.r+30)|0}, ${Math.min(255,col.g+20)|0}, ${Math.min(255,col.b+15)|0}, ${glowAlpha})`);
-      grd.addColorStop(0.5, `rgba(${col.r|0}, ${col.g|0}, ${col.b|0}, ${glowAlpha * 0.25})`);
-      grd.addColorStop(1, `rgba(${col.r|0}, ${col.g|0}, ${col.b|0}, 0)`);
-      drawCtx.fillStyle = grd;
+      if (b._cachedGlowProgress !== b.growthProgress) {
+        const grd = drawCtx.createRadialGradient(x2, y2, 0, x2, y2, glowR);
+        grd.addColorStop(0, `rgba(${Math.min(255,col.r+30)|0}, ${Math.min(255,col.g+20)|0}, ${Math.min(255,col.b+15)|0}, ${glowAlpha})`);
+        grd.addColorStop(0.5, `rgba(${col.r|0}, ${col.g|0}, ${col.b|0}, ${glowAlpha * 0.25})`);
+        grd.addColorStop(1, `rgba(${col.r|0}, ${col.g|0}, ${col.b|0}, 0)`);
+        b._cachedGlow = grd;
+        b._cachedGlowProgress = b.growthProgress;
+      }
+      drawCtx.fillStyle = b._cachedGlow;
       drawCtx.beginPath();
       drawCtx.arc(x2, y2, glowR, 0, Math.PI * 2);
       drawCtx.fill();
@@ -392,11 +402,15 @@
         const da = tipFade * dot.alpha;
         const ds = dot.size;
 
-        const tg = drawCtx.createRadialGradient(dx, dy, 0, dx, dy, ds * 2);
-        tg.addColorStop(0, `rgba(${tr|0}, ${tg2|0}, ${tb|0}, ${da * 0.6})`);
-        tg.addColorStop(0.5, `rgba(${col.r|0}, ${col.g|0}, ${col.b|0}, ${da * 0.15})`);
-        tg.addColorStop(1, `rgba(${col.r|0}, ${col.g|0}, ${col.b|0}, 0)`);
-        drawCtx.fillStyle = tg;
+        if (dot._cachedGrowthProgress !== b.growthProgress) {
+          const tg = drawCtx.createRadialGradient(dx, dy, 0, dx, dy, ds * 2);
+          tg.addColorStop(0, `rgba(${tr|0}, ${tg2|0}, ${tb|0}, ${da * 0.6})`);
+          tg.addColorStop(0.5, `rgba(${col.r|0}, ${col.g|0}, ${col.b|0}, ${da * 0.15})`);
+          tg.addColorStop(1, `rgba(${col.r|0}, ${col.g|0}, ${col.b|0}, 0)`);
+          dot._cachedGrad = tg;
+          dot._cachedGrowthProgress = b.growthProgress;
+        }
+        drawCtx.fillStyle = dot._cachedGrad;
         drawCtx.beginPath();
         drawCtx.arc(dx, dy, ds * 2, 0, Math.PI * 2);
         drawCtx.fill();
@@ -465,31 +479,6 @@
       }
       case 'holding': {
         drawScene(time);
-        holdTimer++;
-        if (holdTimer >= HOLD_DURATION) {
-          treeState = 'fading';
-          fadeTimer = 0;
-        }
-        break;
-      }
-      case 'fading': {
-        fadeTimer++;
-        treeAlpha = Math.max(0, 1 - fadeTimer / FADE_DURATION);
-        drawScene(time);
-        if (fadeTimer >= FADE_DURATION) {
-          treeState = 'waiting';
-          waitTimer = 0;
-        }
-        break;
-      }
-      case 'waiting': {
-        ctx.clearRect(0, 0, W, H);
-        ctx.fillStyle = '#111116';
-        ctx.fillRect(0, 0, W, H);
-        waitTimer++;
-        if (waitTimer >= WAIT_DURATION) {
-          createTree();
-        }
         break;
       }
     }
