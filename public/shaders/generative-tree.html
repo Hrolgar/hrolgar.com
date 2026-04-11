@@ -489,7 +489,12 @@
         drawScene(time);
         if (done) {
           treeState = 'holding';
-          holdTimer = 0;
+          // Draw one final frame and stop permanently — the tree is a static
+          // background, sway costs 10,000+ draw calls/frame and tanks the page.
+          drawScene(time);
+          running = false;
+          frozen = true;
+          return; // Don't schedule another frame
         }
         break;
       }
@@ -502,8 +507,9 @@
   }
 
   let running = true;
+  let frozen = false; // Set when growth completes — permanently stops animation
   function startLoop() {
-    if (!running) { running = true; requestAnimationFrame(frame); }
+    if (!running && !frozen) { running = true; requestAnimationFrame(frame); }
   }
 
   document.addEventListener('visibilitychange', function() {
@@ -541,8 +547,8 @@
     if (e.data.type === 'pause') {
       running = false;
     } else if (e.data.type === 'resume') {
-      lastHoldDraw = 0;  // Force immediate draw on resume
-      startLoop();
+      // Only resume if still growing — frozen trees stay frozen
+      if (treeState === 'growing') startLoop();
     } else if (e.data.type === 'param') {
       switch (e.data.name) {
         case 'GROWTH_SPEED_BASE': GROWTH_SPEED_BASE = e.data.value; break;
