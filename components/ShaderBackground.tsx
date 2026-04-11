@@ -36,7 +36,7 @@ export default function ShaderBackground({ src, className = "" }: Props) {
           }
         }
       },
-      { rootMargin: "200px" }
+      { rootMargin: "100%" }
     );
     if (wrapperRef.current) observer.observe(wrapperRef.current);
     return () => observer.disconnect();

@@ -545,6 +545,7 @@
     if (e.data.type === 'pause') {
       running = false;
     } else if (e.data.type === 'resume') {
+      lastHoldDraw = 0;  // Force immediate draw on resume
       startLoop();
     } else if (e.data.type === 'param') {
       switch (e.data.name) {
