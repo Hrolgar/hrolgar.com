@@ -10,13 +10,21 @@ interface Props {
 export default function ShaderBackground({ src, className = "" }: Props) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const [isMounted, setIsMounted] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
 
-  // Only load iframe when section is within 200px of the viewport (Fix I)
+  // Bidirectional visibility: load iframe on first enter, pause/resume rAF on each change
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) setIsVisible(true);
+        if (entry.isIntersecting) {
+          setIsMounted(true);
+          setIsVisible(true);
+          iframeRef.current?.contentWindow?.postMessage({ type: "resume" }, "*");
+        } else {
+          setIsVisible(false);
+          iframeRef.current?.contentWindow?.postMessage({ type: "pause" }, "*");
+        }
       },
       { rootMargin: "200px" }
     );
@@ -24,8 +32,10 @@ export default function ShaderBackground({ src, className = "" }: Props) {
     return () => observer.disconnect();
   }, []);
 
-  // Throttle mousemove to one postMessage per animation frame (Fix H)
+  // Throttle mousemove to one postMessage per animation frame — only when visible (Fix H)
   useEffect(() => {
+    if (!isVisible) return;
+
     const prefersReduced = window.matchMedia(
       "(prefers-reduced-motion: reduce)"
     ).matches;
@@ -52,7 +62,7 @@ export default function ShaderBackground({ src, className = "" }: Props) {
 
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, []);
+  }, [isVisible]);
 
   return (
     <div
@@ -62,7 +72,7 @@ export default function ShaderBackground({ src, className = "" }: Props) {
       {/* loading="lazy" is Fix G */}
       <iframe
         ref={iframeRef}
-        src={isVisible ? src : undefined}
+        src={isMounted ? src : undefined}
         aria-hidden="true"
         tabIndex={-1}
         loading="lazy"
