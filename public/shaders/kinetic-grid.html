@@ -17,7 +17,7 @@
     var canvas = document.getElementById('canvas');
     var ctx = canvas.getContext('2d');
     var prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var dpr = Math.min(window.devicePixelRatio || 1, 1.5);
     var W = 0, H = 0, running = true;
     var IMPULSE_RATE = 0.25;
     var SPRING_TENSION = 0.7;
@@ -64,8 +64,9 @@
         }
         springCount = springs.length / 3;
     }
+    var vignetteGrad;
     function resize() {
-        dpr = Math.min(window.devicePixelRatio || 1, 2);
+        dpr = Math.min(window.devicePixelRatio || 1, 1.5);
         W = window.innerWidth; H = window.innerHeight;
         canvas.width = Math.round(W * dpr);
         canvas.height = Math.round(H * dpr);
@@ -73,6 +74,11 @@
         canvas.style.height = H + 'px';
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         buildGrid();
+        // Cache static vignette gradient
+        var vcx = W * 0.5, vcy = H * 0.5, maxDim = Math.max(W, H);
+        vignetteGrad = ctx.createRadialGradient(vcx, vcy, maxDim * 0.25, vcx, vcy, maxDim * 0.72);
+        vignetteGrad.addColorStop(0, 'rgba(17, 17, 22, 0)');
+        vignetteGrad.addColorStop(1, 'rgba(17, 17, 22, 0.65)');
     }
     window.addEventListener('resize', resize);
     resize();
@@ -251,11 +257,7 @@
             }
         }
         ctx.globalCompositeOperation = 'source-over';
-        var vcx = W * 0.5, vcy = H * 0.5, maxDim = Math.max(W, H);
-        var vignette = ctx.createRadialGradient(vcx, vcy, maxDim * 0.25, vcx, vcy, maxDim * 0.72);
-        vignette.addColorStop(0, 'rgba(17, 17, 22, 0)');
-        vignette.addColorStop(1, 'rgba(17, 17, 22, 0.65)');
-        ctx.fillStyle = vignette; ctx.fillRect(0, 0, W, H);
+        ctx.fillStyle = vignetteGrad; ctx.fillRect(0, 0, W, H);
         requestAnimationFrame(render);
     }
     ctx.fillStyle = '#111116'; ctx.fillRect(0, 0, W, H);
@@ -263,6 +265,14 @@
     requestAnimationFrame(render);
     document.addEventListener('visibilitychange', function() {
         if (document.hidden) { running = false; } else { running = true; lastTime = 0; requestAnimationFrame(render); }
+    });
+    window.addEventListener('message', function(e) {
+        if (!e.data) return;
+        if (e.data.type === 'pause') {
+            running = false;
+        } else if (e.data.type === 'resume') {
+            if (!running) { running = true; lastTime = 0; requestAnimationFrame(render); }
+        }
     });
 })();
 </script>
