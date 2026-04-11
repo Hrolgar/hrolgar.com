@@ -84,7 +84,6 @@ export default function ShaderBackground({ src, className = "" }: Props) {
         src={isMounted ? src : undefined}
         aria-hidden="true"
         tabIndex={-1}
-        loading="lazy"
         onLoad={() => {
           iframeLoadedRef.current = true;
           // Shader auto-starts on load. If section already scrolled away, pause it.
