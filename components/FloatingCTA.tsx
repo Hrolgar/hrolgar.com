@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useScrollY } from "@/lib/hooks/useScrollY";
 
 interface Props {
   floatingCtaText?: string | null;
@@ -8,26 +9,24 @@ interface Props {
 
 export default function FloatingCTA({ floatingCtaText }: Props) {
   const [visible, setVisible] = useState(false);
+  const contactRef = useRef<HTMLElement | null>(null);
+  const scrollY = useScrollY();
 
   useEffect(() => {
-    const onScroll = () => {
-      const scrollY = window.scrollY;
-      const pastHero = scrollY > window.innerHeight * 0.6;
-
-      const contactEl = document.getElementById("contact");
-      let nearContact = false;
-      if (contactEl) {
-        const rect = contactEl.getBoundingClientRect();
-        nearContact = rect.top < window.innerHeight;
-      }
-
-      setVisible(pastHero && !nearContact);
-    };
-
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-    return () => window.removeEventListener("scroll", onScroll);
+    contactRef.current = document.getElementById("contact");
   }, []);
+
+  useEffect(() => {
+    const pastHero = scrollY > window.innerHeight * 0.6;
+
+    let nearContact = false;
+    if (contactRef.current) {
+      const rect = contactRef.current.getBoundingClientRect();
+      nearContact = rect.top < window.innerHeight;
+    }
+
+    setVisible(pastHero && !nearContact);
+  }, [scrollY]);
 
   return (
     <a

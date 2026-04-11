@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useScrollY } from "@/lib/hooks/useScrollY";
 
 interface Section {
   id: string;
@@ -10,52 +11,50 @@ interface Section {
 export default function SectionDots() {
   const [sections, setSections] = useState<Section[]>([]);
   const [active, setActive] = useState("");
+  const elCacheRef = useRef<Map<string, HTMLElement>>(new Map());
+  const scrollY = useScrollY();
 
   // Discover sections from the DOM — any <section> with an id gets a dot
   useEffect(() => {
     const els = document.querySelectorAll<HTMLElement>("main section[id]");
     const found: Section[] = [];
+    const cache = new Map<string, HTMLElement>();
     els.forEach((el) => {
       if (el.id) {
         found.push({
           id: el.id,
           label: el.dataset.label || el.id.charAt(0).toUpperCase() + el.id.slice(1),
         });
+        cache.set(el.id, el);
       }
     });
+    elCacheRef.current = cache;
     setSections(found);
   }, []);
 
   useEffect(() => {
     if (sections.length === 0) return;
 
-    const onScroll = () => {
-      const viewportMiddle = window.innerHeight * 0.35;
-      let closest = "";
-      let closestDist = Infinity;
+    const viewportMiddle = window.innerHeight * 0.35;
+    let closest = "";
+    let closestDist = Infinity;
 
-      for (const section of sections) {
-        const el = document.getElementById(section.id);
-        if (!el) continue;
-        const rect = el.getBoundingClientRect();
-        const dist = Math.abs(rect.top - viewportMiddle);
-        if (rect.top <= viewportMiddle + rect.height * 0.5 && dist < closestDist) {
-          closestDist = dist;
-          closest = section.id;
-        }
+    for (const section of sections) {
+      const el = elCacheRef.current.get(section.id);
+      if (!el) continue;
+      const rect = el.getBoundingClientRect();
+      const dist = Math.abs(rect.top - viewportMiddle);
+      if (rect.top <= viewportMiddle + rect.height * 0.5 && dist < closestDist) {
+        closestDist = dist;
+        closest = section.id;
       }
+    }
 
-      const nearBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 100;
-      if (nearBottom && sections.length > 0) closest = sections[sections.length - 1].id;
+    const nearBottom = window.innerHeight + scrollY >= document.body.offsetHeight - 100;
+    if (nearBottom && sections.length > 0) closest = sections[sections.length - 1].id;
 
-      setActive(closest);
-    };
-
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [sections]);
+    setActive(closest);
+  }, [scrollY, sections]);
 
   if (sections.length === 0) return null;
 
