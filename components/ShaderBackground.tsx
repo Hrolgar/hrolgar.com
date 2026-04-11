@@ -11,24 +11,27 @@ export default function ShaderBackground({ src, className = "" }: Props) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [isMounted, setIsMounted] = useState(false);
-  const [isVisible, setIsVisible] = useState(false);
-  const iframeLoaded = useRef(false);
+  // Refs for synchronous reads in callbacks (state closures go stale)
+  const isVisibleRef = useRef(false);
+  const iframeLoadedRef = useRef(false);
+  const [visibleForEffect, setVisibleForEffect] = useState(false);
 
-  // Bidirectional visibility: load iframe on first enter, pause/resume rAF on each change
+  // Bidirectional visibility: load iframe on first enter, pause/resume on visibility change
   useEffect(() => {
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) {
+        const visible = entry.isIntersecting;
+        isVisibleRef.current = visible;
+
+        if (visible) {
           setIsMounted(true);
-          setIsVisible(true);
-          // Only send resume if iframe has loaded — shaders auto-start on load
-          if (iframeLoaded.current) {
+          setVisibleForEffect(true);
+          if (iframeLoadedRef.current) {
             iframeRef.current?.contentWindow?.postMessage({ type: "resume" }, "*");
           }
         } else {
-          setIsVisible(false);
-          // Only send pause if iframe has loaded — no point pausing an empty iframe
-          if (iframeLoaded.current) {
+          setVisibleForEffect(false);
+          if (iframeLoadedRef.current) {
             iframeRef.current?.contentWindow?.postMessage({ type: "pause" }, "*");
           }
         }
@@ -39,9 +42,9 @@ export default function ShaderBackground({ src, className = "" }: Props) {
     return () => observer.disconnect();
   }, []);
 
-  // Throttle mousemove to one postMessage per animation frame — only when visible (Fix H)
+  // Throttle mousemove to one postMessage per animation frame — only when visible
   useEffect(() => {
-    if (!isVisible) return;
+    if (!visibleForEffect) return;
 
     const prefersReduced = window.matchMedia(
       "(prefers-reduced-motion: reduce)"
@@ -69,14 +72,13 @@ export default function ShaderBackground({ src, className = "" }: Props) {
 
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, [isVisible]);
+  }, [visibleForEffect]);
 
   return (
     <div
       ref={wrapperRef}
       className={`absolute inset-0 w-full h-full pointer-events-none z-0 ${className}`}
     >
-      {/* loading="lazy" is Fix G */}
       <iframe
         ref={iframeRef}
         src={isMounted ? src : undefined}
@@ -84,9 +86,9 @@ export default function ShaderBackground({ src, className = "" }: Props) {
         tabIndex={-1}
         loading="lazy"
         onLoad={() => {
-          iframeLoaded.current = true;
-          // If we scrolled away before iframe finished loading, pause immediately
-          if (!isVisible) {
+          iframeLoadedRef.current = true;
+          // Shader auto-starts on load. If section already scrolled away, pause it.
+          if (!isVisibleRef.current) {
             iframeRef.current?.contentWindow?.postMessage({ type: "pause" }, "*");
           }
         }}
