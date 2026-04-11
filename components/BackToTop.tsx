@@ -1,15 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useScrollY } from "@/lib/hooks/useScrollY";
 
 export default function BackToTop() {
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const onScroll = () => setVisible(window.scrollY > 500);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  const scrollY = useScrollY();
+  const visible = scrollY > 500;
 
   return (
     <button

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useScrollY } from "@/lib/hooks/useScrollY";
 
 const defaultPages = [
   { label: "Home", href: "/" },
@@ -28,16 +29,8 @@ export default function Navbar({ navItems, siteName, showBlog }: Props) {
   const pages = navItems && navItems.length > 0 ? navItems : defaultPages;
   const filteredPages = pages.filter(p => showBlog !== false || p.href !== "/blog");
   const [isOpen, setIsOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const onScroll = () => {
-      setScrolled(window.scrollY > 20);
-    };
-    window.addEventListener("scroll", onScroll, { passive: true });
-    onScroll();
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  const scrollY = useScrollY();
+  const scrolled = scrollY > 20;
 
   const closeMenu = useCallback(() => setIsOpen(false), []);
 

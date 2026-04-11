@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 interface Props {
   texts: string[];
@@ -11,9 +11,23 @@ export default function RotatingText({ texts, className }: Props) {
   const [index, setIndex] = useState(0);
   const [displayed, setDisplayed] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const wrapperRef = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    const el = wrapperRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setIsVisible(entry.isIntersecting),
+      { threshold: 0 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     if (texts.length === 0) return;
+    if (!isVisible) return;
 
     const current = texts[index];
 
@@ -38,10 +52,10 @@ export default function RotatingText({ texts, className }: Props) {
     }, speed);
 
     return () => clearTimeout(timeout);
-  }, [displayed, isDeleting, index, texts]);
+  }, [displayed, isDeleting, index, texts, isVisible]);
 
   return (
-    <span className={className}>
+    <span ref={wrapperRef} className={className}>
       {displayed}
       <span className="animate-pulse">|</span>
     </span>
