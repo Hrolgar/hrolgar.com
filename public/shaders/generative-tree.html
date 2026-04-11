@@ -494,11 +494,7 @@
         break;
       }
       case 'holding': {
-        // Throttle to ~15fps to save GPU during hold
-        if (time - lastHoldDraw >= 66) {
-          drawScene(time);
-          lastHoldDraw = time;
-        }
+        drawScene(time);
         break;
       }
     }
