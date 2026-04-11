@@ -46,6 +46,8 @@
     pctx.fillRect(0, 0, 32, 32);
   }
 
+  var vignetteGrad, canopyGlowGrad, groundGlowGrad;
+
   function resize() {
     var dpr = Math.min(window.devicePixelRatio || 1, 1.5);
     W = window.innerWidth;
@@ -156,7 +158,8 @@
     return { r, g, b };
   }
 
-  let vignetteGrad, canopyGlowGrad, groundGlowGrad;
+  // Moved to top of IIFE — var hoists, avoiding temporal dead zone in resize()
+  // (vignetteGrad, canopyGlowGrad, groundGlowGrad declared above resize)
 
   let allBranches = [];
   let treeAlpha = 1;
