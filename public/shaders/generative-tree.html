@@ -56,6 +56,21 @@
     canvas.style.height = H + 'px';
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     initParticleSprite();
+
+    // Cache static gradients — recreated on resize so coords stay correct
+    vignetteGrad = ctx.createRadialGradient(W / 2, H / 2, W * 0.3, W / 2, H / 2, W * 0.78);
+    vignetteGrad.addColorStop(0, 'rgba(17, 17, 22, 0)');
+    vignetteGrad.addColorStop(1, 'rgba(14, 14, 18, 0.3)');
+
+    const cgx = W / 2, cgy = H * 0.38;
+    canopyGlowGrad = ctx.createRadialGradient(cgx, cgy, 0, cgx, cgy, H * 0.42);
+    canopyGlowGrad.addColorStop(0, 'rgba(20, 60, 58, 0.2)');
+    canopyGlowGrad.addColorStop(0.5, 'rgba(12, 35, 34, 0.08)');
+    canopyGlowGrad.addColorStop(1, 'rgba(17, 17, 22, 0)');
+
+    groundGlowGrad = ctx.createRadialGradient(W / 2, H, 0, W / 2, H, H * 0.3);
+    groundGlowGrad.addColorStop(0, 'rgba(20, 55, 54, 0.1)');
+    groundGlowGrad.addColorStop(1, 'rgba(17, 17, 22, 0)');
   }
   window.addEventListener('resize', resize);
   resize();
@@ -141,10 +156,13 @@
     return { r, g, b };
   }
 
+  let vignetteGrad, canopyGlowGrad, groundGlowGrad;
+
   let allBranches = [];
   let treeAlpha = 1;
   let treeState = 'growing';
   let holdTimer = 0, fadeTimer = 0, waitTimer = 0;
+  let lastHoldDraw = 0;
   const _pad = parseFloat(new URLSearchParams(location.search).get('p')) || 1;
 
   function createTree() {
@@ -425,21 +443,19 @@
     ctx.fillRect(0, 0, W, H);
 
     if (treeAlpha > 0.05) {
-      const cx = W / 2, cy = H * 0.38;
-      const canopyGlow = ctx.createRadialGradient(cx, cy, 0, cx, cy, H * 0.42);
-      canopyGlow.addColorStop(0, `rgba(20, 60, 58, ${0.2 * treeAlpha})`);
-      canopyGlow.addColorStop(0.5, `rgba(12, 35, 34, ${0.08 * treeAlpha})`);
-      canopyGlow.addColorStop(1, 'rgba(17, 17, 22, 0)');
-      ctx.fillStyle = canopyGlow;
+      ctx.save();
+      ctx.globalAlpha = treeAlpha;
+      ctx.fillStyle = canopyGlowGrad;
       ctx.fillRect(0, 0, W, H);
+      ctx.restore();
     }
 
     if (treeAlpha > 0.05) {
-      const groundGrad = ctx.createRadialGradient(W / 2, H, 0, W / 2, H, H * 0.3);
-      groundGrad.addColorStop(0, `rgba(20, 55, 54, ${0.1 * treeAlpha})`);
-      groundGrad.addColorStop(1, 'rgba(17, 17, 22, 0)');
-      ctx.fillStyle = groundGrad;
+      ctx.save();
+      ctx.globalAlpha = treeAlpha;
+      ctx.fillStyle = groundGlowGrad;
       ctx.fillRect(0, H * 0.55, W, H * 0.45);
+      ctx.restore();
     }
 
     recalcPositions(time);
@@ -456,10 +472,7 @@
     drawParticles(ctx, treeAlpha);
     ctx.restore();
 
-    const vigGrad = ctx.createRadialGradient(W / 2, H / 2, W * 0.3, W / 2, H / 2, W * 0.78);
-    vigGrad.addColorStop(0, 'rgba(17, 17, 22, 0)');
-    vigGrad.addColorStop(1, 'rgba(14, 14, 18, 0.3)');
-    ctx.fillStyle = vigGrad;
+    ctx.fillStyle = vignetteGrad;
     ctx.fillRect(0, 0, W, H);
   }
 
@@ -478,7 +491,11 @@
         break;
       }
       case 'holding': {
-        drawScene(time);
+        // Throttle to ~15fps to save GPU during hold
+        if (time - lastHoldDraw >= 66) {
+          drawScene(time);
+          lastHoldDraw = time;
+        }
         break;
       }
     }
@@ -521,7 +538,12 @@
   requestAnimationFrame(frame);
 
   window.addEventListener('message', function(e) {
-    if (e.data && e.data.type === 'param') {
+    if (!e.data) return;
+    if (e.data.type === 'pause') {
+      running = false;
+    } else if (e.data.type === 'resume') {
+      startLoop();
+    } else if (e.data.type === 'param') {
       switch (e.data.name) {
         case 'GROWTH_SPEED_BASE': GROWTH_SPEED_BASE = e.data.value; break;
         case 'MAX_DEPTH': MAX_DEPTH = Math.round(e.data.value); break;
