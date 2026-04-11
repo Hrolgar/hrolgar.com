@@ -12,6 +12,7 @@ export default function ShaderBackground({ src, className = "" }: Props) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [isMounted, setIsMounted] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const iframeLoaded = useRef(false);
 
   // Bidirectional visibility: load iframe on first enter, pause/resume rAF on each change
   useEffect(() => {
@@ -20,10 +21,16 @@ export default function ShaderBackground({ src, className = "" }: Props) {
         if (entry.isIntersecting) {
           setIsMounted(true);
           setIsVisible(true);
-          iframeRef.current?.contentWindow?.postMessage({ type: "resume" }, "*");
+          // Only send resume if iframe has loaded — shaders auto-start on load
+          if (iframeLoaded.current) {
+            iframeRef.current?.contentWindow?.postMessage({ type: "resume" }, "*");
+          }
         } else {
           setIsVisible(false);
-          iframeRef.current?.contentWindow?.postMessage({ type: "pause" }, "*");
+          // Only send pause if iframe has loaded — no point pausing an empty iframe
+          if (iframeLoaded.current) {
+            iframeRef.current?.contentWindow?.postMessage({ type: "pause" }, "*");
+          }
         }
       },
       { rootMargin: "200px" }
@@ -76,6 +83,13 @@ export default function ShaderBackground({ src, className = "" }: Props) {
         aria-hidden="true"
         tabIndex={-1}
         loading="lazy"
+        onLoad={() => {
+          iframeLoaded.current = true;
+          // If we scrolled away before iframe finished loading, pause immediately
+          if (!isVisible) {
+            iframeRef.current?.contentWindow?.postMessage({ type: "pause" }, "*");
+          }
+        }}
         className="absolute inset-0 w-full h-full border-none"
       />
     </div>
