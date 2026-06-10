@@ -11,6 +11,12 @@ export default defineType({
       type: 'string',
     }),
     defineField({
+      name: 'formNotificationEmail',
+      title: 'Form Notification Email',
+      type: 'string',
+      description: 'Where contact-form submissions are emailed. Separate from the public display email.',
+    }),
+    defineField({
       name: 'github',
       title: 'GitHub',
       type: 'url',
