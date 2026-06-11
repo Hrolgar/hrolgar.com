@@ -80,6 +80,24 @@ describe('POST /api/contact', () => {
     expect(mocks.append).toHaveBeenCalled()
   })
 
+  it('still appends email when Discord delivery fails', async () => {
+    process.env.DISCORD_CONTACT_WEBHOOK = 'https://discord.example/webhook'
+    process.env.IMAP_USER = 'imap-user@gmail.com'
+    process.env.IMAP_PASS = 'imap-pass'
+    mockFetch.mockResolvedValue({ ok: false })
+
+    const res = await callRoute({
+      formName: 'Contact',
+      fields: { name: 'Alice', email: 'alice@example.com', message: 'Hi' },
+    })
+
+    expect(res.status).toBe(200)
+    const json = await res.json()
+    expect(json.success).toBe(true)
+    expect(mockFetch).toHaveBeenCalled()
+    expect(mocks.append).toHaveBeenCalled()
+  })
+
   it('returns 400 when fields is missing', async () => {
     const res = await callRoute({ formName: 'Contact' })
     expect(res.status).toBe(400)

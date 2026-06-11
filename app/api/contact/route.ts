@@ -33,15 +33,18 @@ export async function POST(request: Request) {
       timestamp: new Date().toISOString(),
     };
 
+    let discordOk = false;
     if (DISCORD_WEBHOOK) {
-      const response = await fetch(DISCORD_WEBHOOK, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ embeds: [embed] }),
-      });
+      try {
+        const response = await fetch(DISCORD_WEBHOOK, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ embeds: [embed] }),
+        });
 
-      if (!response.ok) {
-        return NextResponse.json({ error: "Failed to deliver message" }, { status: 502 });
+        discordOk = response.ok;
+      } catch (discordErr) {
+        console.error("Discord notification failed:", discordErr);
       }
     } else {
       console.log("Contact form submission:", { formName, fields });
@@ -50,6 +53,7 @@ export async function POST(request: Request) {
     // Email notification via IMAP append — best-effort; failure does not affect the response
     const imapUser = process.env.IMAP_USER;
     const imapPass = process.env.IMAP_PASS;
+    let imapOk = false;
     if (imapUser && imapPass) {
       try {
         const imapHost = process.env.IMAP_HOST ?? "imap.gmail.com";
@@ -193,12 +197,21 @@ ${htmlRows || `
         } finally {
           await client.logout();
         }
+        imapOk = true;
       } catch (imapErr) {
         console.error("IMAP notification failed:", imapErr);
       }
     }
 
-    return NextResponse.json({ success: true });
+    const hasDiscordChannel = Boolean(DISCORD_WEBHOOK);
+    const hasImapChannel = Boolean(imapUser && imapPass);
+    const hasConfiguredChannel = hasDiscordChannel || hasImapChannel;
+
+    if (!hasConfiguredChannel || discordOk || imapOk) {
+      return NextResponse.json({ success: true });
+    }
+
+    return NextResponse.json({ error: "Failed to deliver message" }, { status: 502 });
   } catch {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
