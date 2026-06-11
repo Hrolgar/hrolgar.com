@@ -107,6 +107,7 @@ export interface ContactInfo {
   _id: string;
   _type: "contactInfo";
   email?: string;
+  formNotificationEmail?: string;
   github?: string;
   linkedin?: string;
   upworkUrl?: string;

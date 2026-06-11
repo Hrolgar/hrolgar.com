@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import nodemailer from "nodemailer";
+import { getContact } from "@/sanity/lib/queries";
 
 const DISCORD_WEBHOOK = process.env.DISCORD_CONTACT_WEBHOOK;
 
@@ -42,6 +44,48 @@ export async function POST(request: Request) {
       }
     } else {
       console.log("Contact form submission:", { formName, fields });
+    }
+
+    // Email notification — best-effort; failure does not affect the response
+    const smtpUser = process.env.SMTP_USER;
+    const smtpPass = process.env.SMTP_PASS;
+    if (smtpUser && smtpPass) {
+      try {
+        const contact = await getContact();
+        const notificationEmail = contact?.formNotificationEmail;
+        if (notificationEmail) {
+          const smtpHost = process.env.SMTP_HOST ?? "smtp.gmail.com";
+          const smtpPort = parseInt(process.env.SMTP_PORT ?? "465", 10);
+          const smtpFrom = process.env.SMTP_FROM ?? "Hrolgar.com Contact <helgi@skjortnes.dev>";
+
+          const transport = nodemailer.createTransport({
+            host: smtpHost,
+            port: smtpPort,
+            secure: smtpPort === 465,
+            auth: { user: smtpUser, pass: smtpPass },
+          });
+
+          const submitterEmail =
+            typeof fields.email === "string" && emailRegex.test(fields.email.trim())
+              ? fields.email.trim()
+              : undefined;
+
+          const htmlBody = fieldLines
+            .replace(/\*\*([^*]+)\*\*:/g, "<strong>$1</strong>:")
+            .replace(/\n/g, "<br/>");
+
+          await transport.sendMail({
+            from: smtpFrom,
+            to: notificationEmail,
+            ...(submitterEmail ? { replyTo: submitterEmail } : {}),
+            subject: `New ${formName || "Contact"} submission`,
+            text: fieldLines || "No fields submitted",
+            html: htmlBody || "No fields submitted",
+          });
+        }
+      } catch (emailErr) {
+        console.error("Email notification failed:", emailErr);
+      }
     }
 
     return NextResponse.json({ success: true });
