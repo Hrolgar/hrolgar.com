@@ -5,6 +5,7 @@ import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import type { Metadata } from "next";
+import { breadcrumbJsonLd, buildSeoMetadata, jsonLdScript } from "@/lib/seo";
 
 export const revalidate = 3600;
 
@@ -21,12 +22,13 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug } = await params;
   const categories = await getCategories();
   const category = categories.find((c) => c.slug.current === slug);
-  if (!category) return { title: "Category Not Found" };
+  if (!category) return { title: "Category Not Found", alternates: { canonical: `/blog/category/${slug}` } };
 
-  return {
+  return buildSeoMetadata({
     title: `${category.title} — Blog`,
     description: `Posts in ${category.title}`,
-  };
+    path: `/blog/category/${slug}`,
+  });
 }
 
 function formatDate(dateStr: string): string {
@@ -51,6 +53,11 @@ export default async function CategoryPage({ params }: PageProps) {
 
   return (
     <>
+      {jsonLdScript(breadcrumbJsonLd([
+        { name: "Home", path: "/" },
+        { name: "Blog", path: "/blog" },
+        { name: category.title, path: `/blog/category/${slug}` },
+      ]))}
       <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} showBlog={settings?.showBlog} />
       <main id="main-content" className="pt-24 pb-16 px-6">
         <div className="max-w-5xl mx-auto">

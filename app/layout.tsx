@@ -21,6 +21,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSettings();
   const siteName = settings?.siteName || "Hrolgar";
   const description = settings?.siteDescription || "Personal portfolio and blog";
+  const defaultOgImage = settings?.ogImage ? urlFor(settings.ogImage).width(1200).height(630).url() : undefined;
 
   return {
     title: {
@@ -40,9 +41,13 @@ export async function generateMetadata(): Promise<Metadata> {
       siteName,
       title: siteName,
       description,
-      ...(settings?.ogImage && {
-        images: [{ url: urlFor(settings.ogImage).width(1200).height(630).url() }],
-      }),
+      ...(defaultOgImage && { images: [{ url: defaultOgImage }] }),
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: siteName,
+      description,
+      ...(defaultOgImage && { images: [defaultOgImage] }),
     },
   };
 }

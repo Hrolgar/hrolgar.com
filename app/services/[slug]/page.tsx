@@ -5,6 +5,7 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import { portableTextComponents } from "@/lib/portableText";
 import { getContact, getPageContent, getServiceBySlug, getServiceSlugs, getSettings } from "@/sanity/lib/queries";
+import { absoluteUrl, breadcrumbJsonLd, buildSeoMetadata, jsonLdScript, personJsonLd } from "@/lib/seo";
 
 export const revalidate = 3600;
 
@@ -35,13 +36,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const service = await getServiceBySlug(slug);
 
   if (!service) {
-    return { title: "Service Not Found" };
+    return { title: "Service Not Found", alternates: { canonical: `/services/${slug}` } };
   }
 
-  return {
+  return buildSeoMetadata({
     title: `${service.title} — Hrolgar`,
     description: service.summary || `${service.title} — professional service by Hrolgar`,
-  };
+    path: `/services/${slug}`,
+  });
 }
 
 export default async function ServicePage({ params }: PageProps) {
@@ -52,8 +54,25 @@ export default async function ServicePage({ params }: PageProps) {
     notFound();
   }
 
+  const description = service.summary || `${service.title} — professional service by Hrolgar`;
+  const serviceJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name: service.title,
+    description,
+    provider: personJsonLd,
+    areaServed: "Worldwide",
+    url: absoluteUrl(`/services/${slug}`),
+  };
+
   return (
     <>
+      {jsonLdScript(serviceJsonLd)}
+      {jsonLdScript(breadcrumbJsonLd([
+        { name: "Home", path: "/" },
+        { name: "Services", path: "/services" },
+        { name: service.title, path: `/services/${slug}` },
+      ]))}
       <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} showBlog={settings?.showBlog} />
       <main id="main-content" className="px-6 pb-16 pt-24">
         <article className="mx-auto max-w-3xl">

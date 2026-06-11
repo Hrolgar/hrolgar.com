@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { buildSeoMetadata } from "@/lib/seo";
 import {
   getAbout,
   getSkills,
@@ -17,14 +18,14 @@ const HOMEPAGE_TITLE = "Helgi Skjortnes — Senior .NET & Integrations Engineer 
 const HOMEPAGE_DESCRIPTION =
   "Senior .NET and systems-integration engineer available for freelance backend, API, and infrastructure-automation work. C#, ASP.NET Core, Postgres, Docker, Proxmox.";
 
-export const metadata: Metadata = {
-  title: { absolute: HOMEPAGE_TITLE },
-  description: HOMEPAGE_DESCRIPTION,
-  openGraph: {
-    title: HOMEPAGE_TITLE,
+export async function generateMetadata(): Promise<Metadata> {
+  return buildSeoMetadata({
+    title: { absolute: HOMEPAGE_TITLE },
+    ogTitle: HOMEPAGE_TITLE,
     description: HOMEPAGE_DESCRIPTION,
-  },
-};
+    path: "/",
+  });
+}
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
 import About from "@/components/About";
