@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import nodemailer from "nodemailer";
+import { ImapFlow } from "imapflow";
+import MailComposer from "nodemailer/lib/mail-composer";
 import { getContact } from "@/sanity/lib/queries";
 
 const DISCORD_WEBHOOK = process.env.DISCORD_CONTACT_WEBHOOK;
@@ -46,72 +47,67 @@ export async function POST(request: Request) {
       console.log("Contact form submission:", { formName, fields });
     }
 
-    // Email notification — best-effort; failure does not affect the response
-    const smtpUser = process.env.SMTP_USER;
-    const smtpPass = process.env.SMTP_PASS;
-    if (smtpUser && smtpPass) {
+    // Email notification via IMAP append — best-effort; failure does not affect the response
+    const imapUser = process.env.IMAP_USER;
+    const imapPass = process.env.IMAP_PASS;
+    if (imapUser && imapPass) {
       try {
+        const imapHost = process.env.IMAP_HOST ?? "imap.gmail.com";
+        const imapPort = parseInt(process.env.IMAP_PORT ?? "993", 10);
+        const imapFolder = process.env.IMAP_FOLDER ?? "INBOX";
+        const imapLabel = process.env.IMAP_LABEL ?? "Contact Form";
+        const imapFrom = process.env.IMAP_FROM ?? '"Hrolgar.com Contact" <contact@skjortnes.dev>';
+
         const contact = await getContact();
-        const notificationEmail = contact?.formNotificationEmail;
-        if (notificationEmail) {
-          const smtpHost = process.env.SMTP_HOST ?? "smtp.gmail.com";
-          const smtpPort = parseInt(process.env.SMTP_PORT ?? "465", 10);
-          const smtpFrom = process.env.SMTP_FROM ?? "Hrolgar.com Contact <helgi@skjortnes.dev>";
+        const toEmail = contact?.formNotificationEmail ?? imapUser;
 
-          const transport = nodemailer.createTransport({
-            host: smtpHost,
-            port: smtpPort,
-            secure: smtpPort === 465,
-            auth: { user: smtpUser, pass: smtpPass },
-          });
+        const submitterEmail =
+          typeof fields.email === "string" && emailRegex.test(fields.email.trim())
+            ? fields.email.trim()
+            : undefined;
 
-          const submitterEmail =
-            typeof fields.email === "string" && emailRegex.test(fields.email.trim())
-              ? fields.email.trim()
-              : undefined;
+        const escapeHtml = (value: string) =>
+          value
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;");
 
-          const escapeHtml = (value: string) =>
-            value
-              .replace(/&/g, "&amp;")
-              .replace(/</g, "&lt;")
-              .replace(/>/g, "&gt;")
-              .replace(/"/g, "&quot;");
+        const formatLabel = (key: string) =>
+          key
+            .replace(/[_-]+/g, " ")
+            .replace(/\s+/g, " ")
+            .trim()
+            .toUpperCase();
 
-          const formatLabel = (key: string) =>
-            key
-              .replace(/[_-]+/g, " ")
-              .replace(/\s+/g, " ")
-              .trim()
-              .toUpperCase();
+        const emailFields = Object.entries(fields)
+          .filter(([, value]) => typeof value === "string" && value.trim())
+          .map(([key, value]) => ({
+            label: formatLabel(key),
+            value: (value as string).trim(),
+            isMessage: key.toLowerCase() === "message",
+          }));
 
-          const emailFields = Object.entries(fields)
-            .filter(([, value]) => typeof value === "string" && value.trim())
-            .map(([key, value]) => ({
-              label: formatLabel(key),
-              value: (value as string).trim(),
-              isMessage: key.toLowerCase() === "message",
-            }));
+        const htmlRows = emailFields
+          .map(({ label, value, isMessage }) => {
+            const escapedLabel = escapeHtml(label);
+            const escapedValue = escapeHtml(value);
+            const renderedValue = isMessage ? escapedValue.replace(/\n/g, "<br/>") : escapedValue;
+            const valueStyle = isMessage
+              ? "margin:0;padding:16px;background:#fafafa;border:1px solid #e4e4e7;border-radius:6px;color:#18181b;font:16px/1.6 Georgia,'Times New Roman',serif;"
+              : "margin:0;color:#18181b;font:17px/1.55 Georgia,'Times New Roman',serif;";
 
-          const htmlRows = emailFields
-            .map(({ label, value, isMessage }) => {
-              const escapedLabel = escapeHtml(label);
-              const escapedValue = escapeHtml(value);
-              const renderedValue = isMessage ? escapedValue.replace(/\n/g, "<br/>") : escapedValue;
-              const valueStyle = isMessage
-                ? "margin:0;padding:16px;background:#fafafa;border:1px solid #e4e4e7;border-radius:6px;color:#18181b;font:16px/1.6 Georgia,'Times New Roman',serif;"
-                : "margin:0;color:#18181b;font:17px/1.55 Georgia,'Times New Roman',serif;";
-
-              return `
+            return `
                     <tr>
                       <td style="padding:0 24px 22px 24px;">
                         <div style="margin:0 0 7px 0;color:#71717a;font:700 11px/1.3 Arial,Helvetica,sans-serif;letter-spacing:0.08em;text-transform:uppercase;">${escapedLabel}</div>
                         <div style="${valueStyle}">${renderedValue}</div>
                       </td>
                     </tr>`;
-            })
-            .join("");
+          })
+          .join("");
 
-          const htmlBody = `<!doctype html>
+        const htmlBody = `<!doctype html>
 <html>
   <head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1" /></head>
   <body style="margin:0;padding:0;background:#f4f4f5;">
@@ -143,21 +139,61 @@ ${htmlRows || `
   </body>
 </html>`;
 
-          const text = emailFields.length
-            ? emailFields.map(({ label, value }) => `${label}: ${value}`).join("\n")
-            : "No fields submitted";
+        const text = emailFields.length
+          ? emailFields.map(({ label, value }) => `${label}: ${value}`).join("\n")
+          : "No fields submitted";
 
-          await transport.sendMail({
-            from: smtpFrom,
-            to: notificationEmail,
-            ...(submitterEmail ? { replyTo: submitterEmail } : {}),
-            subject: `New ${formName || "Contact"} submission`,
-            text,
-            html: htmlBody || "No fields submitted",
-          });
+        const name = typeof fields.name === "string" ? fields.name.trim() : "";
+        const email = typeof fields.email === "string" ? fields.email.trim() : "";
+        const subject = `New contact from ${name || email || "website"}`;
+
+        const rawMessage = await new MailComposer({
+          from: imapFrom,
+          to: toEmail,
+          ...(submitterEmail ? { replyTo: submitterEmail } : {}),
+          subject,
+          text,
+          html: htmlBody,
+        })
+          .compile()
+          .build();
+
+        const client = new ImapFlow({
+          host: imapHost,
+          port: imapPort,
+          secure: true,
+          auth: { user: imapUser, pass: imapPass },
+          logger: false,
+        });
+
+        await client.connect();
+        try {
+          const lock = await client.getMailboxLock(imapFolder);
+          try {
+            const appendResult = await client.append(imapFolder, rawMessage, []);
+            const labelRange =
+              appendResult !== false
+                ? appendResult.uid
+                  ? { range: String(appendResult.uid), uid: true }
+                  : appendResult.seq
+                    ? { range: String(appendResult.seq), uid: false }
+                    : undefined
+                : undefined;
+
+            if (labelRange && imapLabel) {
+              await client.messageFlagsAdd(labelRange.range, [imapLabel], {
+                useLabels: true,
+                uid: labelRange.uid,
+              });
+            }
+          } finally {
+            lock.release();
+          }
+        } finally {
+          await client.logout();
         }
-      } catch (emailErr) {
-        console.error("Email notification failed:", emailErr);
+      } catch (imapErr) {
+        console.error("IMAP notification failed:", imapErr);
       }
     }
 
