@@ -4,6 +4,7 @@ const mocks = vi.hoisted(() => ({
   append: vi.fn().mockResolvedValue({ uid: 123 }),
   messageFlagsAdd: vi.fn().mockResolvedValue(true),
   getMailboxLock: vi.fn().mockResolvedValue({ release: vi.fn() }),
+  build: vi.fn().mockResolvedValue(Buffer.from('raw message')),
   connect: vi.fn().mockResolvedValue(undefined),
   logout: vi.fn().mockResolvedValue(undefined),
   getContact: vi.fn().mockResolvedValue(null),
@@ -18,6 +19,12 @@ vi.mock('imapflow', () => ({
     this.getMailboxLock = mocks.getMailboxLock
     this.messageFlagsAdd = mocks.messageFlagsAdd
   }),
+}))
+
+vi.mock('nodemailer/lib/mail-composer', () => ({
+  default: vi.fn(() => ({
+    compile: vi.fn(() => ({ build: mocks.build })),
+  })),
 }))
 
 vi.mock('@/sanity/lib/queries', () => ({
@@ -44,6 +51,8 @@ describe('POST /api/contact', () => {
     mocks.append.mockResolvedValue({ uid: 123 })
     mocks.messageFlagsAdd.mockClear()
     mocks.getMailboxLock.mockClear()
+    mocks.build.mockClear()
+    mocks.build.mockResolvedValue(Buffer.from('raw message'))
     mocks.connect.mockClear()
     mocks.logout.mockClear()
     mocks.getContact.mockReset()
