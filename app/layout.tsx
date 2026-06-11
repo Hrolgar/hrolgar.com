@@ -32,6 +32,9 @@ export async function generateMetadata(): Promise<Metadata> {
     icons: {
       icon: "/icon.svg",
     },
+    verification: {
+      google: "TRC0IuDgcZvuu18ms2Mn-_SZ5tSgpBXxCFFoiP_K8Uw",
+    },
     openGraph: {
       type: "website",
       siteName,
@@ -44,6 +47,29 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Person",
+      name: "Helgi Skjortnes",
+      url: "https://hrolgar.com",
+      jobTitle: "Senior .NET & Integrations Engineer",
+      sameAs: [
+        "https://github.com/Hrolgar",
+        "https://www.linkedin.com/in/helgi-skaftason-skjortnes-65aba499",
+      ],
+      knowsAbout: ["C#", ".NET", "ASP.NET Core", "System Integration", "API Development", "PostgreSQL", "Docker", "Infrastructure Automation"],
+    },
+    {
+      "@type": "ProfessionalService",
+      name: "Helgi Skjortnes — Senior .NET & Integrations Engineer",
+      url: "https://hrolgar.com",
+      provider: { "@type": "Person", name: "Helgi Skjortnes" },
+    },
+  ],
+};
+
 export default async function RootLayout({
   children,
 }: {
@@ -54,7 +80,12 @@ export default async function RootLayout({
 
   return (
     <html lang="en" style={cssVars} className={`${dmSans.variable} ${fraunces.variable} ${jetbrainsMono.variable} antialiased`}>
-      <head />
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      </head>
       <body className="font-[family-name:var(--font-sans)] bg-bg text-foreground min-h-screen">
         <Script
           src="https://umami.hrolgar.com/script.js"
