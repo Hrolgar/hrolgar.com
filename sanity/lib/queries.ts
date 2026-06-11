@@ -62,9 +62,9 @@ export async function getProjectBySlug(slug: string): Promise<Project | null> {
   );
 }
 
-export async function getProjectSlugs(): Promise<{ slug: { current: string } }[]> {
+export async function getProjectSlugs(): Promise<{ slug: { current: string }; _updatedAt?: string }[]> {
   return (await client.fetch(
-    `*[_type == "project" && defined(slug.current)]{ slug }`
+    `*[_type == "project" && defined(slug.current)]{ slug, _updatedAt }`
   )) || [];
 }
 
@@ -93,15 +93,19 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
   return client.fetch(
     `*[_type == "post" && slug.current == $slug && status == "published"][0] {
       ...,
+      _updatedAt,
+      title,
+      publishedAt,
+      coverImage,
       categories[]->,
     }`,
     { slug }
   );
 }
 
-export async function getPostSlugs(): Promise<{ slug: { current: string } }[]> {
+export async function getPostSlugs(): Promise<{ slug: { current: string }; _updatedAt?: string; publishedAt?: string }[]> {
   return (await client.fetch(
-    `*[_type == "post" && defined(slug.current) && status == "published"]{ slug }`
+    `*[_type == "post" && defined(slug.current) && status == "published"]{ slug, _updatedAt, publishedAt }`
   )) || [];
 }
 
@@ -175,7 +179,11 @@ export async function getServices(): Promise<Service[]> {
 
 export async function getServiceBySlug(slug: string): Promise<Service | null> {
   return client.fetch(
-    `*[_type == "service" && slug.current == $slug][0]`,
+    `*[_type == "service" && slug.current == $slug][0]{
+      ...,
+      _updatedAt,
+      title
+    }`,
     { slug }
   );
 }

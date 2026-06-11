@@ -84,6 +84,7 @@ export interface ProjectCategory {
 export interface Project {
   _id: string;
   _type: "project";
+  _updatedAt?: string;
   title: string;
   slug: { current: string };
   projectType?: "personal" | "freelance";
@@ -190,6 +191,7 @@ export interface PageContent {
 export interface Service {
   _id: string;
   _type: "service";
+  _updatedAt?: string;
   title: string;
   slug: { current: string };
   summary?: string;
@@ -209,6 +211,7 @@ export interface Category {
 export interface Post {
   _id: string;
   _type: "post";
+  _updatedAt?: string;
   title: string;
   slug: { current: string };
   excerpt?: string;
