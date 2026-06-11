@@ -53,17 +53,24 @@ export async function buildSeoMetadata({
   path,
   image,
   imageUrl,
+  ogTitle,
   openGraphType = "website",
+  publishedTime,
+  modifiedTime,
 }: {
   title: string | Metadata["title"];
   description: string;
   path: string;
   image?: SanityImage;
   imageUrl?: string;
+  ogTitle?: string;
   openGraphType?: "website" | "article";
+  publishedTime?: string;
+  modifiedTime?: string;
 }): Promise<Metadata> {
   const resolvedImage = imageUrl || await getOgImage(image);
   const images = resolvedImage ? [{ url: resolvedImage }] : undefined;
+  const resolvedTitle = ogTitle || (typeof title === "string" ? title : undefined);
 
   return {
     title,
@@ -71,14 +78,18 @@ export async function buildSeoMetadata({
     alternates: { canonical: path },
     openGraph: {
       type: openGraphType,
-      title: typeof title === "string" ? title : undefined,
+      title: resolvedTitle,
       description,
       url: path,
       images,
+      ...(openGraphType === "article" && {
+        publishedTime,
+        modifiedTime,
+      }),
     },
     twitter: {
       card: "summary_large_image",
-      title: typeof title === "string" ? title : undefined,
+      title: resolvedTitle,
       description,
       images: resolvedImage ? [resolvedImage] : undefined,
     },
