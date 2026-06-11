@@ -5,6 +5,7 @@ import "./globals.css";
 import { getSettings } from "@/sanity/lib/queries";
 import { urlFor } from "@/sanity/lib/image";
 import { settingsToCssVars } from "@/lib/theme";
+import { jsonLdHtml } from "@/lib/seo";
 import WebVitals from "@/components/WebVitals";
 
 const dmSans = DM_Sans({ subsets: ["latin"], display: "swap", variable: "--font-sans" });
@@ -57,6 +58,7 @@ const jsonLd = {
   "@graph": [
     {
       "@type": "Person",
+      "@id": "https://hrolgar.com/#person",
       name: "Helgi Skjortnes",
       url: "https://hrolgar.com",
       jobTitle: "Senior .NET & Integrations Engineer",
@@ -70,7 +72,7 @@ const jsonLd = {
       "@type": "ProfessionalService",
       name: "Helgi Skjortnes — Senior .NET & Integrations Engineer",
       url: "https://hrolgar.com",
-      provider: { "@type": "Person", name: "Helgi Skjortnes" },
+      provider: { "@id": "https://hrolgar.com/#person" },
     },
   ],
 };
@@ -88,7 +90,7 @@ export default async function RootLayout({
       <head>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: jsonLdHtml(jsonLd) }}
         />
       </head>
       <body className="font-[family-name:var(--font-sans)] bg-bg text-foreground min-h-screen">

@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { getProjectSlugs, getPostSlugs, getCategories } from "@/sanity/lib/queries";
+import { getProjectSlugs, getPostSlugs, getCategories, getServiceSlugs } from "@/sanity/lib/queries";
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://hrolgar.com";
 
@@ -8,10 +8,11 @@ function lastModifiedFrom(value?: string): Date {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [projectSlugs, postSlugs, categories] = await Promise.all([
+  const [projectSlugs, postSlugs, categories, serviceSlugs] = await Promise.all([
     getProjectSlugs(),
     getPostSlugs(),
     getCategories(),
+    getServiceSlugs(),
   ]);
 
   const staticPages: MetadataRoute.Sitemap = [
@@ -45,5 +46,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.5,
   }));
 
-  return [...staticPages, ...projectPages, ...postPages, ...categoryPages];
+  const servicePages: MetadataRoute.Sitemap = serviceSlugs.map((s) => ({
+    url: `${baseUrl}/services/${s.slug.current}`,
+    lastModified: lastModifiedFrom(s._updatedAt),
+    changeFrequency: "monthly" as const,
+    priority: 0.8,
+  }));
+
+  return [...staticPages, ...projectPages, ...postPages, ...categoryPages, ...servicePages];
 }
