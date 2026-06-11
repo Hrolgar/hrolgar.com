@@ -8,6 +8,7 @@ import { urlFor } from "@/sanity/lib/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import type { Metadata } from "next";
+import { absoluteUrl, breadcrumbJsonLd, buildSeoMetadata, jsonLdScript, personJsonLd } from "@/lib/seo";
 
 export const revalidate = 3600;
 
@@ -23,20 +24,20 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const post = await getPostBySlug(slug);
-  if (!post) return { title: "Post Not Found" };
-  return {
+  if (!post) return { title: "Post Not Found", alternates: { canonical: `/blog/${slug}` } };
+  const metadata = await buildSeoMetadata({
     title: post.title,
     description: post.excerpt || post.title,
+    path: `/blog/${slug}`,
+    image: post.coverImage,
+    openGraphType: "article",
+    publishedTime: post.publishedAt,
+    modifiedTime: post._updatedAt || post.publishedAt,
+  });
+
+  return {
+    ...metadata,
     keywords: post.tags,
-    openGraph: {
-      title: post.title,
-      description: post.excerpt || post.title,
-      type: "article",
-      publishedTime: post.publishedAt,
-      ...(post.coverImage && {
-        images: [{ url: urlFor(post.coverImage).width(1200).height(630).url() }],
-      }),
-    },
   };
 }
 
@@ -62,9 +63,29 @@ export default async function BlogPostPage({ params }: PageProps) {
   if (!post) notFound();
 
   const readTime = post.body ? estimateReadTime(post.body) : null;
+  const canonicalPath = `/blog/${slug}`;
+  const blogPostingJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.title,
+    ...(post.coverImage && {
+      image: urlFor(post.coverImage).width(1200).height(630).url(),
+    }),
+    datePublished: post.publishedAt,
+    dateModified: post._updatedAt || post.publishedAt,
+    author: personJsonLd,
+    publisher: personJsonLd,
+    mainEntityOfPage: absoluteUrl(canonicalPath),
+  };
 
   return (
     <>
+      {jsonLdScript(blogPostingJsonLd)}
+      {jsonLdScript(breadcrumbJsonLd([
+        { name: "Home", path: "/" },
+        { name: "Blog", path: "/blog" },
+        { name: post.title, path: canonicalPath },
+      ]))}
       <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} showBlog={settings?.showBlog} />
       <main id="main-content" className="pt-24 pb-16 px-6">
         <article className="max-w-3xl mx-auto">

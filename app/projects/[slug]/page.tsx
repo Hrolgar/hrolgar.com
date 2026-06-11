@@ -7,6 +7,7 @@ import { urlFor } from "@/sanity/lib/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import type { Metadata } from "next";
+import { breadcrumbJsonLd, buildSeoMetadata, jsonLdScript } from "@/lib/seo";
 
 export const revalidate = 3600;
 
@@ -22,20 +23,14 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const project = await getProjectBySlug(slug);
-  if (!project) return { title: "Project Not Found" };
+  if (!project) return { title: "Project Not Found", alternates: { canonical: `/projects/${slug}` } };
   const description = project.summary || `${project.title} — project by Hrolgar`;
-  return {
+  return buildSeoMetadata({
     title: project.title,
     description,
-    openGraph: {
-      type: "website",
-      title: project.title,
-      description,
-      ...(project.image && {
-        images: [{ url: urlFor(project.image).width(1200).height(630).url() }],
-      }),
-    },
-  };
+    path: `/projects/${slug}`,
+    image: project.image,
+  });
 }
 
 export default async function ProjectPage({ params }: PageProps) {
@@ -45,6 +40,11 @@ export default async function ProjectPage({ params }: PageProps) {
 
   return (
     <>
+      {jsonLdScript(breadcrumbJsonLd([
+        { name: "Home", path: "/" },
+        { name: "Projects", path: "/projects" },
+        { name: project.title, path: `/projects/${slug}` },
+      ]))}
       <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} showBlog={settings?.showBlog} />
       <main id="main-content" className="pt-24 pb-16 px-6">
         <article className="max-w-5xl mx-auto">
