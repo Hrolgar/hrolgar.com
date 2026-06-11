@@ -5,8 +5,31 @@ import { getContact } from "@/sanity/lib/queries";
 
 const DISCORD_WEBHOOK = process.env.DISCORD_CONTACT_WEBHOOK;
 
+const RATE_LIMIT_MAX = 5;
+const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
+const ipTimestamps = new Map<string, number[]>();
+
 export async function POST(request: Request) {
   try {
+    const ip =
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      request.headers.get("x-real-ip") ||
+      "unknown";
+    const now = Date.now();
+    const windowStart = now - RATE_LIMIT_WINDOW_MS;
+    const recent = (ipTimestamps.get(ip) ?? []).filter((t) => t > windowStart);
+    if (recent.length >= RATE_LIMIT_MAX) {
+      return NextResponse.json(
+        { error: "Too many requests. Please try again in a few minutes." },
+        { status: 429 }
+      );
+    }
+    recent.push(now);
+    ipTimestamps.set(ip, recent);
+    for (const [k, ts] of ipTimestamps) {
+      if (ts.every((t) => t <= windowStart)) ipTimestamps.delete(k);
+    }
+
     const body = await request.json();
     const { formName, fields } = body;
 
