@@ -1,3 +1,5 @@
+import { readFileSync } from "fs";
+import { join } from "path";
 import { ImageResponse } from "next/og";
 import { client } from "@/sanity/lib/client";
 
@@ -5,25 +7,10 @@ export const revalidate = 3600;
 export const contentType = "image/png";
 export const size = { width: 1200, height: 630 };
 
+const frauncesFont = readFileSync(join(process.cwd(), "public/fonts/Fraunces-700.ttf"));
+
 interface ImageProps {
   params: Promise<{ slug: string }>;
-}
-
-async function loadFraunces() {
-  try {
-    const response = await fetch(new URL("../../../public/fonts/Fraunces-700.ttf", import.meta.url));
-    if (!response.ok) return [];
-    return [
-      {
-        name: "Fraunces",
-        data: await response.arrayBuffer(),
-        style: "normal" as const,
-        weight: 700 as const,
-      },
-    ];
-  } catch {
-    return [];
-  }
 }
 
 export default async function OpenGraphImage({ params }: ImageProps) {
@@ -38,7 +25,7 @@ export default async function OpenGraphImage({ params }: ImageProps) {
   );
   const title = project?.title || "Hrolgar Project";
   const label = project?.category || project?.projectType || "Project";
-  const fonts = await loadFraunces();
+  const fonts = [{ name: "Fraunces", data: frauncesFont, style: "normal" as const, weight: 700 as const }];
 
   return new ImageResponse(
     (
@@ -83,7 +70,7 @@ export default async function OpenGraphImage({ params }: ImageProps) {
           <div
             style={{
               maxWidth: "980px",
-              fontFamily: fonts.length > 0 ? "Fraunces" : "serif",
+              fontFamily: "Fraunces",
               fontSize: title.length > 72 ? 68 : 82,
               fontWeight: 700,
               lineHeight: 1.04,
