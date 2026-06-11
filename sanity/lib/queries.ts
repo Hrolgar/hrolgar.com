@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { client } from "./client";
 import type {
   SiteSettings,
@@ -20,9 +21,9 @@ import type {
 
 // --- Singletons ---
 
-export async function getSettings(): Promise<SiteSettings | null> {
+export const getSettings = cache(async function getSettings(): Promise<SiteSettings | null> {
   return client.fetch(`*[_type == "siteSettings"][0]`);
-}
+});
 
 export async function getAbout(): Promise<About | null> {
   return client.fetch(`*[_type == "about"][0]{
@@ -31,9 +32,9 @@ export async function getAbout(): Promise<About | null> {
   }`);
 }
 
-export async function getContact(): Promise<ContactInfo | null> {
+export const getContact = cache(async function getContact(): Promise<ContactInfo | null> {
   return client.fetch(`*[_type == "contactInfo"][0]`);
-}
+});
 
 // --- Collections ---
 
@@ -188,9 +189,9 @@ export async function getServiceBySlug(slug: string): Promise<Service | null> {
   );
 }
 
-export async function getServiceSlugs(): Promise<{ slug: { current: string } }[]> {
+export async function getServiceSlugs(): Promise<{ slug: { current: string }; _updatedAt?: string }[]> {
   return (await client.fetch(
-    `*[_type == "service" && defined(slug.current)]{ slug }`
+    `*[_type == "service" && defined(slug.current)]{ slug, _updatedAt }`
   )) || [];
 }
 
@@ -204,9 +205,9 @@ export async function getFAQs(): Promise<FAQ[]> {
 
 // --- Page Content ---
 
-export async function getPageContent(): Promise<PageContent | null> {
+export const getPageContent = cache(async function getPageContent(): Promise<PageContent | null> {
   return client.fetch(`*[_type == "pageContent"][0]`);
-}
+});
 
 // --- Contact Forms ---
 
