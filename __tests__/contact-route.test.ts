@@ -22,9 +22,11 @@ vi.mock('imapflow', () => ({
 }))
 
 vi.mock('nodemailer/lib/mail-composer', () => ({
-  default: vi.fn(() => ({
+  default: vi.fn(function() {
+    return {
     compile: vi.fn(() => ({ build: mocks.build })),
-  })),
+    }
+  }),
 }))
 
 vi.mock('@/sanity/lib/queries', () => ({
