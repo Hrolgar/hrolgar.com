@@ -4,13 +4,17 @@ import Navbar from "@/components/Navbar";
 import ContactPageClient from "@/components/ContactPageClient";
 import { getContact, getFAQs, getPageContent, getServices, getContactForms, getSettings } from "@/sanity/lib/queries";
 import type { FAQ } from "@/sanity/types";
+import { breadcrumbJsonLd, buildSeoMetadata, jsonLdScript } from "@/lib/seo";
 
 export const revalidate = 3600;
 
-export const metadata: Metadata = {
-  title: "Let's Talk",
-  description: "Start a project inquiry or get in touch with Hrolgar.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  return buildSeoMetadata({
+    title: "Let's Talk",
+    description: "Start a project inquiry or get in touch with Hrolgar.",
+    path: "/contact",
+  });
+}
 
 const defaultFAQs: FAQ[] = [
   {
@@ -51,6 +55,10 @@ export default async function ContactPage() {
 
   return (
     <>
+      {jsonLdScript(breadcrumbJsonLd([
+        { name: "Home", path: "/" },
+        { name: "Contact", path: "/contact" },
+      ]))}
       <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} showBlog={settings?.showBlog} />
       <ContactPageClient
         contact={contact}

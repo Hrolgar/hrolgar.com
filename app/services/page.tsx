@@ -2,8 +2,24 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import { getContact, getPageContent, getServices, getSettings } from "@/sanity/lib/queries";
 import type { Service } from "@/sanity/types";
+import type { Metadata } from "next";
+import { breadcrumbJsonLd, buildSeoMetadata, jsonLdScript } from "@/lib/seo";
 
 export const revalidate = 3600;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const pageContent = await getPageContent();
+  const title = pageContent?.servicesHeading || "What I Do";
+  const description =
+    pageContent?.servicesIntro ||
+    "Backend engineering, API delivery, systems integration, and infrastructure automation services.";
+
+  return buildSeoMetadata({
+    title,
+    description,
+    path: "/services",
+  });
+}
 
 const iconMap: Record<string, string> = {
   api: "⟷",
@@ -35,6 +51,10 @@ export default async function ServicesPage() {
 
   return (
     <>
+      {jsonLdScript(breadcrumbJsonLd([
+        { name: "Home", path: "/" },
+        { name: "Services", path: "/services" },
+      ]))}
       <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} showBlog={settings?.showBlog} />
       <main id="main-content" className="px-6 pb-16 pt-24 md:pb-24">
         <div className="mx-auto max-w-5xl">

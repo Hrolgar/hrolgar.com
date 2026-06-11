@@ -13,15 +13,17 @@ import ScrollReveal from "@/components/ScrollReveal";
 import Image from "next/image";
 import { urlFor } from "@/sanity/lib/image";
 import type { HomelabService } from "@/sanity/types";
+import { breadcrumbJsonLd, buildSeoMetadata, jsonLdScript } from "@/lib/seo";
 
 export const revalidate = 3600;
 
 export async function generateMetadata() {
-  return {
+  return buildSeoMetadata({
     title: "Homelab | Hrolgar",
     description:
       "A look inside my self-hosted infrastructure — Proxmox virtualization, Docker, ZFS storage, and 30+ services managed with Infrastructure as Code.",
-  };
+    path: "/homelab",
+  });
 }
 
 const categoryLabels: Record<string, string> = {
@@ -63,6 +65,10 @@ export default async function HomelabDetailPage() {
 
   return (
     <>
+      {jsonLdScript(breadcrumbJsonLd([
+        { name: "Home", path: "/" },
+        { name: "Homelab", path: "/homelab" },
+      ]))}
       <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} showBlog={settings?.showBlog} />
       <main id="main-content" className="px-6 pb-16 pt-24 md:pb-24">
         <div className="mx-auto max-w-5xl">

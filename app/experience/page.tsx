@@ -13,14 +13,16 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ScrollReveal from "@/components/ScrollReveal";
 import type { Metadata } from "next";
+import { breadcrumbJsonLd, buildSeoMetadata, jsonLdScript } from "@/lib/seo";
 
 export const revalidate = 3600;
 
 export async function generateMetadata(): Promise<Metadata> {
-  return {
+  return buildSeoMetadata({
     title: "Experience | Hrolgar",
     description: "Professional background — roles, responsibilities, and technologies across my career.",
-  };
+    path: "/experience",
+  });
 }
 
 function formatDate(dateStr: string): string {
@@ -54,6 +56,10 @@ export default async function ExperiencePage() {
 
   return (
     <>
+      {jsonLdScript(breadcrumbJsonLd([
+        { name: "Home", path: "/" },
+        { name: "Experience", path: "/experience" },
+      ]))}
       <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} showBlog={settings?.showBlog} />
       <main id="main-content" className="pt-24 pb-16 px-6 md:pb-24">
         <div className="max-w-5xl mx-auto">

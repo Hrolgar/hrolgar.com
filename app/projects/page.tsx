@@ -4,6 +4,7 @@ import Footer from "@/components/Footer";
 import ScrollReveal from "@/components/ScrollReveal";
 import ProjectsFilter from "@/components/ProjectsFilter";
 import type { Metadata } from "next";
+import { breadcrumbJsonLd, buildSeoMetadata, jsonLdScript } from "@/lib/seo";
 
 export const revalidate = 3600;
 
@@ -11,11 +12,11 @@ export async function generateMetadata(): Promise<Metadata> {
   const pageContent = await getPageContent();
   const heading = pageContent?.projectsPageHeading || "Projects";
   const subtitle = pageContent?.projectsPageSubtitle || "A collection of personal and freelance work";
-  return {
+  return buildSeoMetadata({
     title: heading,
     description: subtitle,
-    openGraph: { title: heading, description: subtitle },
-  };
+    path: "/projects",
+  });
 }
 
 export default async function ProjectsPage() {
@@ -29,6 +30,10 @@ export default async function ProjectsPage() {
 
   return (
     <>
+      {jsonLdScript(breadcrumbJsonLd([
+        { name: "Home", path: "/" },
+        { name: "Projects", path: "/projects" },
+      ]))}
       <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} showBlog={settings?.showBlog} />
       <main id="main-content" className="pt-24 pb-16 px-6">
         <div className="max-w-5xl mx-auto">
