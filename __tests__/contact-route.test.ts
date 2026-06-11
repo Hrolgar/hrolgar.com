@@ -1,15 +1,20 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
+const mocks = vi.hoisted(() => ({
+  sendMail: vi.fn().mockResolvedValue({}),
+  getContact: vi.fn().mockResolvedValue(null),
+}))
+
 // Mock nodemailer before importing the route
 vi.mock('nodemailer', () => ({
   default: {
-    createTransport: vi.fn(() => ({ sendMail: vi.fn().mockResolvedValue({}) })),
+    createTransport: vi.fn(() => ({ sendMail: mocks.sendMail })),
   },
 }))
 
 // Mock Sanity queries
 vi.mock('@/sanity/lib/queries', () => ({
-  getContact: vi.fn().mockResolvedValue(null),
+  getContact: mocks.getContact,
 }))
 
 // Mock global fetch for Discord
@@ -30,6 +35,9 @@ async function callRoute(body: unknown) {
 describe('POST /api/contact', () => {
   beforeEach(() => {
     vi.resetModules()
+    mocks.sendMail.mockClear()
+    mocks.getContact.mockReset()
+    mocks.getContact.mockResolvedValue(null)
     mockFetch.mockResolvedValue({ ok: true })
     delete process.env.DISCORD_CONTACT_WEBHOOK
     delete process.env.SMTP_USER
@@ -37,10 +45,15 @@ describe('POST /api/contact', () => {
   })
 
   it('returns 200 with valid fields', async () => {
-    const res = await callRoute({ formName: 'Contact', fields: { name: 'Alice', email: 'alice@example.com', message: 'Hi' } })
+    process.env.SMTP_USER = 'smtp-user'
+    process.env.SMTP_PASS = 'smtp-pass'
+    mocks.getContact.mockResolvedValue({ formNotificationEmail: 'owner@example.com' })
+
+    const res = await callRoute({ formName: 'Contact', fields: { name: 'Alice', email: 'alice@example.com', message: 'Hi <script>alert("x")</script>' } })
     expect(res.status).toBe(200)
     const json = await res.json()
     expect(json.success).toBe(true)
+    expect(mocks.sendMail.mock.calls[0][0].html).toContain('Hi &lt;script&gt;alert(&quot;x&quot;)&lt;/script&gt;')
   })
 
   it('returns 400 when fields is missing', async () => {

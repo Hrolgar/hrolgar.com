@@ -70,16 +70,89 @@ export async function POST(request: Request) {
               ? fields.email.trim()
               : undefined;
 
-          const htmlBody = fieldLines
-            .replace(/\*\*([^*]+)\*\*:/g, "<strong>$1</strong>:")
-            .replace(/\n/g, "<br/>");
+          const escapeHtml = (value: string) =>
+            value
+              .replace(/&/g, "&amp;")
+              .replace(/</g, "&lt;")
+              .replace(/>/g, "&gt;")
+              .replace(/"/g, "&quot;");
+
+          const formatLabel = (key: string) =>
+            key
+              .replace(/[_-]+/g, " ")
+              .replace(/\s+/g, " ")
+              .trim()
+              .toUpperCase();
+
+          const emailFields = Object.entries(fields)
+            .filter(([, value]) => typeof value === "string" && value.trim())
+            .map(([key, value]) => ({
+              label: formatLabel(key),
+              value: (value as string).trim(),
+              isMessage: key.toLowerCase() === "message",
+            }));
+
+          const htmlRows = emailFields
+            .map(({ label, value, isMessage }) => {
+              const escapedLabel = escapeHtml(label);
+              const escapedValue = escapeHtml(value);
+              const renderedValue = isMessage ? escapedValue.replace(/\n/g, "<br/>") : escapedValue;
+              const valueStyle = isMessage
+                ? "margin:0;padding:16px;background:#fafafa;border:1px solid #e4e4e7;border-radius:6px;color:#18181b;font:16px/1.6 Georgia,'Times New Roman',serif;"
+                : "margin:0;color:#18181b;font:17px/1.55 Georgia,'Times New Roman',serif;";
+
+              return `
+                    <tr>
+                      <td style="padding:0 24px 22px 24px;">
+                        <div style="margin:0 0 7px 0;color:#71717a;font:700 11px/1.3 Arial,Helvetica,sans-serif;letter-spacing:0.08em;text-transform:uppercase;">${escapedLabel}</div>
+                        <div style="${valueStyle}">${renderedValue}</div>
+                      </td>
+                    </tr>`;
+            })
+            .join("");
+
+          const htmlBody = `<!doctype html>
+<html>
+  <head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1" /></head>
+  <body style="margin:0;padding:0;background:#f4f4f5;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;background:#f4f4f5;margin:0;">
+      <tr>
+        <td align="center" style="padding:32px 16px;">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:600px;background:#ffffff;border-collapse:separate;border-spacing:0;border:1px solid #e4e4e7;">
+            <tr>
+              <td style="background:#e07a5f;padding:22px 24px;">
+                <h1 style="margin:0;color:#ffffff;font:700 22px/1.3 Georgia,'Times New Roman',serif;">New contact form submission</h1>
+              </td>
+            </tr>
+            <tr>
+              <td style="height:24px;line-height:24px;font-size:24px;">&nbsp;</td>
+            </tr>
+${htmlRows || `
+                    <tr>
+                      <td style="padding:0 24px 22px 24px;">
+                        <div style="margin:0;color:#18181b;font:17px/1.55 Georgia,'Times New Roman',serif;">No fields submitted</div>
+                      </td>
+                    </tr>`}
+            <tr>
+              <td style="padding:18px 24px 22px 24px;border-top:1px solid #e4e4e7;color:#71717a;font:13px/1.5 Arial,Helvetica,sans-serif;">Sent from the hrolgar.com contact form</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`;
+
+          const text = emailFields.length
+            ? emailFields.map(({ label, value }) => `${label}: ${value}`).join("\n")
+            : "No fields submitted";
 
           await transport.sendMail({
             from: smtpFrom,
             to: notificationEmail,
             ...(submitterEmail ? { replyTo: submitterEmail } : {}),
             subject: `New ${formName || "Contact"} submission`,
-            text: fieldLines || "No fields submitted",
+            text,
             html: htmlBody || "No fields submitted",
           });
         }
