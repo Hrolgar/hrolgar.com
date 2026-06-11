@@ -1,12 +1,14 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import sitemap from "@/app/sitemap";
 import { generateMetadata as generateBlogMetadata } from "@/app/blog/page";
+import { jsonLdHtml } from "@/lib/seo";
 
 const mocks = vi.hoisted(() => ({
   getSettings: vi.fn(),
   getProjectSlugs: vi.fn(),
   getPostSlugs: vi.fn(),
   getCategories: vi.fn(),
+  getServiceSlugs: vi.fn(),
   getPageContent: vi.fn(),
   getPosts: vi.fn(),
 }));
@@ -16,6 +18,7 @@ vi.mock("@/sanity/lib/queries", () => ({
   getProjectSlugs: mocks.getProjectSlugs,
   getPostSlugs: mocks.getPostSlugs,
   getCategories: mocks.getCategories,
+  getServiceSlugs: mocks.getServiceSlugs,
   getPageContent: mocks.getPageContent,
   getPosts: mocks.getPosts,
 }));
@@ -33,6 +36,17 @@ vi.mock("@/sanity/lib/image", () => ({
     },
   }),
 }));
+
+describe("jsonLdHtml", () => {
+  it("escapes script-breaking characters", () => {
+    const result = jsonLdHtml({ name: "<script>alert('xss')</script>", ref: "a&b" });
+    expect(result).not.toContain("<");
+    expect(result).not.toContain(">");
+    expect(result).not.toContain("&");
+    expect(result).toContain("\\u003cscript\\u003e");
+    expect(result).toContain("\\u0026");
+  });
+});
 
 describe("SEO metadata", () => {
   beforeEach(() => {
@@ -66,6 +80,9 @@ describe("sitemap", () => {
       { slug: { current: "post-one" }, _updatedAt: "2026-02-03T04:05:06.000Z" },
     ]);
     mocks.getCategories.mockResolvedValue([]);
+    mocks.getServiceSlugs.mockResolvedValue([
+      { slug: { current: "net-development" }, _updatedAt: "2026-03-01T00:00:00.000Z" },
+    ]);
   });
 
   it("includes missing static routes and uses document timestamps for dynamic entries", async () => {
@@ -83,6 +100,10 @@ describe("sitemap", () => {
     );
     expect(entries.find((entry) => entry.url.endsWith("/blog/post-one"))?.lastModified).toEqual(
       new Date("2026-02-03T04:05:06.000Z")
+    );
+    expect(urls).toContain("https://hrolgar.com/services/net-development");
+    expect(entries.find((entry) => entry.url.endsWith("/services/net-development"))?.lastModified).toEqual(
+      new Date("2026-03-01T00:00:00.000Z")
     );
   });
 });
