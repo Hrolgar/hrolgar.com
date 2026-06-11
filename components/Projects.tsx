@@ -12,10 +12,10 @@ interface Props {
 export default function Projects({ projects, heading, intro }: Props) {
   if (!projects?.length) return null;
 
-  // Show all projects: featured first, then the rest by order
+  // Show up to 3: featured first, fill with non-featured if needed
   const featuredProjects = projects.filter((p) => p.featured);
   const nonFeatured = projects.filter((p) => !p.featured);
-  const display = [...featuredProjects, ...nonFeatured];
+  const display = [...featuredProjects, ...nonFeatured].slice(0, 3);
   const [featured, ...rest] = display;
 
   return (
