@@ -21,6 +21,7 @@ const HOMEPAGE_DESCRIPTION =
 export async function generateMetadata(): Promise<Metadata> {
   return buildSeoMetadata({
     title: { absolute: HOMEPAGE_TITLE },
+    ogTitle: HOMEPAGE_TITLE,
     description: HOMEPAGE_DESCRIPTION,
     path: "/",
   });
