@@ -113,10 +113,11 @@ export async function POST(request: Request) {
 
           const htmlBody = `<!doctype html>
 <html>
+  <head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width,initial-scale=1" /></head>
   <body style="margin:0;padding:0;background:#f4f4f5;">
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;background:#f4f4f5;margin:0;padding:32px 16px;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;background:#f4f4f5;margin:0;">
       <tr>
-        <td align="center" style="padding:0;">
+        <td align="center" style="padding:32px 16px;">
           <table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="width:100%;max-width:600px;background:#ffffff;border-collapse:separate;border-spacing:0;border:1px solid #e4e4e7;">
             <tr>
               <td style="background:#e07a5f;padding:22px 24px;">
