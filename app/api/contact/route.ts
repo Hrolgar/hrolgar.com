@@ -87,14 +87,13 @@ export async function POST(request: Request) {
           const emailFields = Object.entries(fields)
             .filter(([, value]) => typeof value === "string" && value.trim())
             .map(([key, value]) => ({
-              key,
               label: formatLabel(key),
               value: (value as string).trim(),
               isMessage: key.toLowerCase() === "message",
             }));
 
           const htmlRows = emailFields
-            .map(({ key, label, value, isMessage }) => {
+            .map(({ label, value, isMessage }) => {
               const escapedLabel = escapeHtml(label);
               const escapedValue = escapeHtml(value);
               const renderedValue = isMessage ? escapedValue.replace(/\n/g, "<br/>") : escapedValue;
