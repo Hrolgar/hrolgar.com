@@ -202,6 +202,7 @@ export default function ContactFormModal({
         throw new Error("Failed to submit contact form");
       }
 
+      window.umami?.track('contact-form-submit');
       setStatus("success");
     } catch {
       setStatus("error");
