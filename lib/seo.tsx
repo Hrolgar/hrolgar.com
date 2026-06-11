@@ -7,6 +7,7 @@ export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://hrolgar.com
 
 export const personJsonLd = {
   "@type": "Person",
+  "@id": "https://hrolgar.com/#person",
   name: "Helgi Skjortnes",
   url: SITE_URL,
 };
@@ -15,11 +16,18 @@ export function absoluteUrl(path: string): string {
   return new URL(path, SITE_URL).toString();
 }
 
+export function jsonLdHtml(data: unknown): string {
+  return JSON.stringify(data)
+    .replace(/</g, "\\u003c")
+    .replace(/>/g, "\\u003e")
+    .replace(/&/g, "\\u0026");
+}
+
 export function jsonLdScript(data: unknown) {
   return (
     <script
       type="application/ld+json"
-      dangerouslySetInnerHTML={{ __html: JSON.stringify(data) }}
+      dangerouslySetInnerHTML={{ __html: jsonLdHtml(data) }}
     />
   );
 }
