@@ -26,6 +26,7 @@ export default function Contact({ contact, heading, tagline }: Props) {
         </p>
         <a
           href="/contact"
+          data-umami-event="contact-cta-click"
           className="mt-8 inline-flex min-h-11 items-center justify-center rounded-[var(--radius)] bg-accent px-8 py-3 text-sm font-semibold text-bg transition-colors hover:bg-[color:color-mix(in_srgb,var(--color-accent)_88%,white)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
         >
           Get in touch

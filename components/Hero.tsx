@@ -44,6 +44,7 @@ export default function Hero({ about }: Props) {
           </a>
           <a
             href={cta2Link}
+            data-umami-event="contact-cta-click"
             className="inline-flex min-h-11 items-center justify-center rounded-[var(--radius)] border border-border px-6 py-3 text-sm font-semibold text-foreground transition-colors hover:border-primary hover:text-primary"
           >
             {cta2Text}

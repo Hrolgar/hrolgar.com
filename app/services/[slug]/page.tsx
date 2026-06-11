@@ -118,6 +118,7 @@ export default async function ServicePage({ params }: PageProps) {
             </p>
             <a
               href="/contact"
+              data-umami-event="contact-cta-click"
               className="mt-6 inline-flex min-h-11 items-center justify-center rounded-[var(--radius)] bg-accent px-6 py-3 text-sm font-semibold text-bg transition-colors hover:bg-[color:color-mix(in_srgb,var(--color-accent)_88%,white)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
               {pageContent?.serviceDetailCtaButtonText || 'Start a conversation'}

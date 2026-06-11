@@ -31,6 +31,7 @@ export default function FloatingCTA({ floatingCtaText }: Props) {
   return (
     <a
       href="/contact"
+      data-umami-event="contact-cta-click"
       aria-hidden={!visible}
       tabIndex={visible ? 0 : -1}
       className={`fixed bottom-6 left-6 z-40 inline-flex items-center gap-2 rounded-full bg-accent px-5 py-3 text-sm font-semibold text-bg shadow-lg transition-all duration-300 hover:bg-[color:color-mix(in_srgb,var(--color-accent)_88%,white)] ${
