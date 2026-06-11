@@ -1,54 +1,9 @@
 import { NextResponse } from "next/server";
 import { ImapFlow } from "imapflow";
+import MailComposer from "nodemailer/lib/mail-composer";
 import { getContact } from "@/sanity/lib/queries";
 
 const DISCORD_WEBHOOK = process.env.DISCORD_CONTACT_WEBHOOK;
-
-function buildRawMime(opts: {
-  from: string;
-  to: string;
-  replyTo?: string;
-  subject: string;
-  text: string;
-  html: string;
-}): Buffer {
-  const boundary = `alt_${Math.random().toString(36).slice(2)}`;
-  const b64 = (s: string) =>
-    Buffer.from(s, "utf8")
-      .toString("base64")
-      .match(/.{1,76}/g)!
-      .join("\r\n");
-  const encodeSubject = (s: string) =>
-    /[^\x00-\x7F]/.test(s)
-      ? `=?UTF-8?B?${Buffer.from(s, "utf8").toString("base64")}?=`
-      : s;
-
-  return Buffer.from(
-    [
-      "MIME-Version: 1.0",
-      `From: ${opts.from}`,
-      `To: ${opts.to}`,
-      ...(opts.replyTo ? [`Reply-To: ${opts.replyTo}`] : []),
-      `Subject: ${encodeSubject(opts.subject)}`,
-      `Content-Type: multipart/alternative; boundary="${boundary}"`,
-      "",
-      `--${boundary}`,
-      "Content-Type: text/plain; charset=UTF-8",
-      "Content-Transfer-Encoding: base64",
-      "",
-      b64(opts.text),
-      "",
-      `--${boundary}`,
-      "Content-Type: text/html; charset=UTF-8",
-      "Content-Transfer-Encoding: base64",
-      "",
-      b64(opts.html),
-      "",
-      `--${boundary}--`,
-    ].join("\r\n"),
-    "utf8"
-  );
-}
 
 export async function POST(request: Request) {
   try {
@@ -192,14 +147,16 @@ ${htmlRows || `
         const email = typeof fields.email === "string" ? fields.email.trim() : "";
         const subject = `New contact from ${name || email || "website"}`;
 
-        const rawMessage = buildRawMime({
+        const rawMessage = await new MailComposer({
           from: imapFrom,
           to: toEmail,
           ...(submitterEmail ? { replyTo: submitterEmail } : {}),
           subject,
           text,
           html: htmlBody,
-        });
+        })
+          .compile()
+          .build();
 
         const client = new ImapFlow({
           host: imapHost,
@@ -211,21 +168,26 @@ ${htmlRows || `
 
         await client.connect();
         try {
-          const appendResult = await client.append(imapFolder, rawMessage, []);
-          if (appendResult.uid) {
-            const lock = await client.getMailboxLock(imapFolder);
-            try {
-              // X-GM-LABELS IMAP extension: labels the appended message in Gmail.
-              // imapflow supports useLabels at runtime; cast needed for strict TS types.
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              await (client.messageFlagsAdd as any)(
-                String(appendResult.uid),
-                [imapLabel],
-                { useLabels: true, uid: true }
-              );
-            } finally {
-              lock.release();
+          const lock = await client.getMailboxLock(imapFolder);
+          try {
+            const appendResult = await client.append(imapFolder, rawMessage, []);
+            const labelRange =
+              appendResult !== false
+                ? appendResult.uid
+                  ? { range: String(appendResult.uid), uid: true }
+                  : appendResult.seq
+                    ? { range: String(appendResult.seq), uid: false }
+                    : undefined
+                : undefined;
+
+            if (labelRange && imapLabel) {
+              await client.messageFlagsAdd(labelRange.range, [imapLabel], {
+                useLabels: true,
+                uid: labelRange.uid,
+              });
             }
+          } finally {
+            lock.release();
           }
         } finally {
           await client.logout();
