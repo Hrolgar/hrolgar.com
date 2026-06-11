@@ -7,6 +7,7 @@ const expectedSchemas = [
   'skill',
   'experience',
   'project',
+  'projectCategory',
   'contactInfo',
   'post',
   'category',
@@ -20,8 +21,14 @@ const expectedSchemas = [
 ]
 
 describe('Sanity schemas', () => {
-  it('exports the expected number of schemas', () => {
-    expect(schemaTypes).toHaveLength(expectedSchemas.length)
+  const schemaNames = schemaTypes.map((s) => s.name)
+
+  it('contains all expected schema names', () => {
+    expect(schemaNames).toEqual(expect.arrayContaining(expectedSchemas))
+  })
+
+  it('has no duplicate schema names', () => {
+    expect(schemaNames).toHaveLength(new Set(schemaNames).size)
   })
 
   it.each(expectedSchemas)('schema "%s" has name and type properties', (name) => {
