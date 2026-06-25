@@ -10,8 +10,8 @@ export const revalidate = 3600;
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildSeoMetadata({
-    title: "Let's Talk",
-    description: "Start a project inquiry or get in touch with Hrolgar.",
+    title: "Contact Helgi About Backend & Integration Work",
+    description: "Get in touch about backend development, .NET APIs, integrations, infrastructure automation, or a messy system that needs a practical fix.",
     path: "/contact",
   });
 }
