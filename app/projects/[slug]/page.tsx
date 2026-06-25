@@ -8,11 +8,58 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import type { Metadata } from "next";
 import { breadcrumbJsonLd, buildSeoMetadata, jsonLdScript } from "@/lib/seo";
+import type { Project } from "@/sanity/types";
 
 export const revalidate = 3600;
+const titleSuffix = " | hrolgar.com";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+}
+
+function cleanText(value?: string): string | undefined {
+  const cleaned = value?.replace(/\s+/g, " ").trim();
+  return cleaned || undefined;
+}
+
+function shortenDescription(value: string): string {
+  if (value.length <= 160) return value;
+  const trimmed = value.slice(0, 157);
+  const lastSpace = trimmed.lastIndexOf(" ");
+  return `${trimmed.slice(0, lastSpace > 110 ? lastSpace : 157).trim()}...`;
+}
+
+function firstPortableTextParagraph(blocks?: Project["description"]): string | undefined {
+  const block = blocks?.find((item) => item._type === "block");
+  const text = block?.children
+    ?.map((child) => "text" in child ? child.text : "")
+    .join(" ");
+  return cleanText(text);
+}
+
+function projectDescriptor(project: Project): string {
+  return (
+    project.categories?.[0]?.title ||
+    project.technologies?.[0]?.name ||
+    (project.projectType ? `${project.projectType[0].toUpperCase()}${project.projectType.slice(1)} Project` : "Project")
+  );
+}
+
+function projectMetadataTitle(project: Project): string {
+  if (`${project.title}${titleSuffix}`.length >= 30) return project.title;
+  return `${project.title} - ${projectDescriptor(project)}`;
+}
+
+function projectMetadataDescription(project: Project): string {
+  const description = cleanText(project.summary) ||
+    firstPortableTextParagraph(project.description) ||
+    cleanText(project.problem) ||
+    cleanText(project.approach) ||
+    cleanText(project.outcome);
+
+  if (description) return shortenDescription(description);
+
+  return `Read about ${project.title}, a ${projectDescriptor(project).toLowerCase()} from Helgi Skjortnes covering the problem, approach, and what shipped.`;
 }
 
 export async function generateStaticParams() {
@@ -24,9 +71,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug } = await params;
   const project = await getProjectBySlug(slug);
   if (!project) return { title: "Project Not Found", alternates: { canonical: `/projects/${slug}` } };
-  const description = project.summary || `${project.title} — project by Hrolgar`;
+  const title = projectMetadataTitle(project);
+  const description = projectMetadataDescription(project);
   return buildSeoMetadata({
-    title: project.title,
+    title,
     description,
     path: `/projects/${slug}`,
     image: project.image,
