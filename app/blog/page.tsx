@@ -10,8 +10,8 @@ export const revalidate = 3600;
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildSeoMetadata({
-    title: "Blog",
-    description: "Thoughts on development, homelab, and technology",
+    title: "Blog - Development, Homelab & Backend Notes",
+    description: "Notes from real backend builds, homelab work, self-hosting fixes, and the bits of infrastructure that were useful enough to write down.",
     path: "/blog",
   });
 }
