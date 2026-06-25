@@ -204,6 +204,7 @@ export interface Service {
 export interface Category {
   _id: string;
   _type: "category";
+  _updatedAt?: string;
   title: string;
   slug: { current: string };
 }

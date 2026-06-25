@@ -2,9 +2,10 @@ import type { MetadataRoute } from "next";
 import { getProjectSlugs, getPostSlugs, getCategories, getServiceSlugs } from "@/sanity/lib/queries";
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://hrolgar.com";
+const staticLastModified = new Date("2026-06-20T00:00:00.000Z");
 
 function lastModifiedFrom(value?: string): Date {
-  return value ? new Date(value) : new Date();
+  return value ? new Date(value) : staticLastModified;
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -16,13 +17,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]);
 
   const staticPages: MetadataRoute.Sitemap = [
-    { url: baseUrl, lastModified: new Date(), changeFrequency: "weekly", priority: 1 },
-    { url: `${baseUrl}/projects`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.9 },
-    { url: `${baseUrl}/services`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.9 },
-    { url: `${baseUrl}/blog`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.8 },
-    { url: `${baseUrl}/contact`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.7 },
-    { url: `${baseUrl}/experience`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.7 },
-    { url: `${baseUrl}/homelab`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.6 },
+    { url: baseUrl, lastModified: staticLastModified, changeFrequency: "weekly", priority: 1 },
+    { url: `${baseUrl}/projects`, lastModified: staticLastModified, changeFrequency: "weekly", priority: 0.9 },
+    { url: `${baseUrl}/services`, lastModified: staticLastModified, changeFrequency: "monthly", priority: 0.9 },
+    { url: `${baseUrl}/blog`, lastModified: staticLastModified, changeFrequency: "weekly", priority: 0.8 },
+    { url: `${baseUrl}/contact`, lastModified: staticLastModified, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${baseUrl}/experience`, lastModified: staticLastModified, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${baseUrl}/homelab`, lastModified: staticLastModified, changeFrequency: "monthly", priority: 0.6 },
   ];
 
   const projectPages: MetadataRoute.Sitemap = projectSlugs.map((s) => ({
@@ -41,7 +42,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const categoryPages: MetadataRoute.Sitemap = categories.map((c) => ({
     url: `${baseUrl}/blog/category/${c.slug.current}`,
-    lastModified: new Date(),
+    lastModified: lastModifiedFrom(c._updatedAt),
     changeFrequency: "weekly" as const,
     priority: 0.5,
   }));

@@ -112,7 +112,7 @@ export async function getPostSlugs(): Promise<{ slug: { current: string }; _upda
 
 export async function getCategories(): Promise<Category[]> {
   return (await client.fetch(
-    `*[_type == "category"] | order(title asc)`
+    `*[_type == "category"] | order(title asc){ ..., _updatedAt }`
   )) || [];
 }
 
