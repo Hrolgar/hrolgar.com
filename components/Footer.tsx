@@ -51,7 +51,7 @@ export default function Footer({ contact, footerTagline, siteName, navItems, sho
 
   return (
     <footer className="border-t border-border px-6 py-12">
-      <div className="max-w-5xl mx-auto grid gap-8 md:grid-cols-[minmax(0,1.2fr)_minmax(160px,0.75fr)_minmax(200px,1fr)_minmax(160px,0.75fr)]">
+      <div className="max-w-5xl mx-auto grid gap-8 md:grid-cols-2 lg:grid-cols-4">
         <div>
           <a
             href="/"
