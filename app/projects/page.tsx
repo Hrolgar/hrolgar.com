@@ -9,12 +9,9 @@ import { breadcrumbJsonLd, buildSeoMetadata, jsonLdScript } from "@/lib/seo";
 export const revalidate = 3600;
 
 export async function generateMetadata(): Promise<Metadata> {
-  const pageContent = await getPageContent();
-  const heading = pageContent?.projectsPageHeading || "Projects";
-  const subtitle = pageContent?.projectsPageSubtitle || "A collection of personal and freelance work";
   return buildSeoMetadata({
-    title: heading,
-    description: subtitle,
+    title: "Projects - Backend, Automation & Homelab Work",
+    description: "A practical look at the backend systems, automation tools, and self-hosted infrastructure projects I have built for clients and myself.",
     path: "/projects",
   });
 }
