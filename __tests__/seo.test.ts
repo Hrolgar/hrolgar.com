@@ -79,7 +79,9 @@ describe("sitemap", () => {
     mocks.getPostSlugs.mockResolvedValue([
       { slug: { current: "post-one" }, _updatedAt: "2026-02-03T04:05:06.000Z" },
     ]);
-    mocks.getCategories.mockResolvedValue([]);
+    mocks.getCategories.mockResolvedValue([
+      { slug: { current: "engineering" }, _updatedAt: "2026-04-05T06:07:08.000Z" },
+    ]);
     mocks.getServiceSlugs.mockResolvedValue([
       { slug: { current: "net-development" }, _updatedAt: "2026-03-01T00:00:00.000Z" },
     ]);
@@ -100,6 +102,9 @@ describe("sitemap", () => {
     );
     expect(entries.find((entry) => entry.url.endsWith("/blog/post-one"))?.lastModified).toEqual(
       new Date("2026-02-03T04:05:06.000Z")
+    );
+    expect(entries.find((entry) => entry.url.endsWith("/blog/category/engineering"))?.lastModified).toEqual(
+      new Date("2026-04-05T06:07:08.000Z")
     );
     expect(urls).toContain("https://hrolgar.com/services/net-development");
     expect(entries.find((entry) => entry.url.endsWith("/services/net-development"))?.lastModified).toEqual(
