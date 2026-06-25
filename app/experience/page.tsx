@@ -19,8 +19,8 @@ export const revalidate = 3600;
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildSeoMetadata({
-    title: "Experience | Hrolgar",
-    description: "Professional background — roles, responsibilities, and technologies across my career.",
+    title: "Experience - Backend, .NET & Infrastructure",
+    description: "A quick view of my backend development, .NET, integration, and infrastructure experience across product teams and freelance projects.",
     path: "/experience",
   });
 }
