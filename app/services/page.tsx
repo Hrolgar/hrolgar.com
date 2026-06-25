@@ -9,7 +9,7 @@ export const revalidate = 3600;
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildSeoMetadata({
-    title: "What I Do - Backend, .NET & Infrastructure Services",
+    title: "What I Do - Backend & Infrastructure Services",
     description: "Backend engineering, API delivery, systems integration, and infrastructure automation for teams that need practical software shipped cleanly.",
     path: "/services",
   });
