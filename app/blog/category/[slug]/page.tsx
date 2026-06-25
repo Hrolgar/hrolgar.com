@@ -13,6 +13,13 @@ interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
+function categoryMetadataDescription(category: { title: string; description?: string }): string {
+  const description = category.description?.replace(/\s+/g, " ").trim();
+  if (description && description.length >= 110) return description;
+
+  return `${category.title} articles from Hrolgar on the real work behind backend systems, homelab infrastructure, self-hosting, and development fixes.`;
+}
+
 export async function generateStaticParams() {
   const categories = await getCategories();
   return categories.map((c) => ({ slug: c.slug.current }));
@@ -25,8 +32,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!category) return { title: "Category Not Found", alternates: { canonical: `/blog/category/${slug}` } };
 
   return buildSeoMetadata({
-    title: `${category.title} — Blog`,
-    description: `Posts in ${category.title}`,
+    title: `${category.title} Articles & Guides`,
+    description: categoryMetadataDescription(category),
     path: `/blog/category/${slug}`,
   });
 }
