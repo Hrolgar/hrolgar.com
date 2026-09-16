@@ -1,12 +1,16 @@
 import type { ContactInfo } from "@/sanity/types";
+import type { Locale } from "@/sanity/locale";
+import { DEFAULT_LOCALE, localeHref } from "@/sanity/locale";
+import { t } from "@/lib/ui";
 
 interface Props {
   contact: ContactInfo | null;
   heading?: string | null;
   tagline?: string | null;
+  locale?: Locale;
 }
 
-export default function Contact({ contact, heading, tagline }: Props) {
+export default function Contact({ contact, heading, tagline, locale = DEFAULT_LOCALE }: Props) {
   if (!contact) return null;
 
   return (
@@ -15,7 +19,7 @@ export default function Contact({ contact, heading, tagline }: Props) {
         {contact.availableForWork && (
           <span className="mb-8 inline-flex items-center gap-3 rounded-full border border-accent/30 bg-accent/10 px-4 py-2 text-sm font-semibold text-accent">
             <span className="h-2.5 w-2.5 rounded-full bg-accent shadow-[0_0_0_6px_rgba(224,122,95,0.12)]" />
-            Available for freelance work
+            {t("availableForWork", locale)}
           </span>
         )}
         <h2 className="font-[family-name:var(--font-serif)] text-4xl font-bold text-foreground md:text-5xl">
@@ -25,12 +29,12 @@ export default function Contact({ contact, heading, tagline }: Props) {
           {tagline || "Have a project in mind? I\u2019d love to hear about it."}
         </p>
         <a
-          href="/contact"
+          href={localeHref("/contact", locale)}
           data-umami-event="contact-cta-click"
             data-umami-event-source="contact-section"
           className="mt-8 inline-flex min-h-11 items-center justify-center rounded-[var(--radius)] bg-accent px-8 py-3 text-sm font-semibold text-bg transition-colors hover:bg-[color:color-mix(in_srgb,var(--color-accent)_88%,white)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
         >
-          Get in touch
+          {t("getInTouch", locale)}
         </a>
       </div>
     </section>

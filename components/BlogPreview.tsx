@@ -1,22 +1,19 @@
 import { urlFor } from "@/sanity/lib/image";
+import { t } from "@/lib/ui";
+import type { Locale } from "@/sanity/locale";
+import { DEFAULT_LOCALE, localeHref } from "@/sanity/locale";
 import Image from "next/image";
 import type { Post } from "@/sanity/types";
+import { formatDate } from "@/lib/dates";
 
 interface Props {
   posts: Post[];
   heading?: string | null;
   showBlog?: boolean;
+  locale?: Locale;
 }
 
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-}
-
-export default function BlogPreview({ posts, heading, showBlog }: Props) {
+export default function BlogPreview({ posts, heading, showBlog, locale = DEFAULT_LOCALE }: Props) {
   if (showBlog === false) return null;
   if (!posts?.length) return null;
 
@@ -28,10 +25,10 @@ export default function BlogPreview({ posts, heading, showBlog }: Props) {
         <div className="flex items-end justify-between mb-12">
           <h2 className="font-[family-name:var(--font-serif)] text-4xl md:text-5xl font-bold text-foreground">{heading || 'Blog'}</h2>
           <a
-            href="/blog"
+            href={localeHref("/blog", locale)}
             className="text-sm text-primary hover:text-secondary transition-colors font-medium"
           >
-            View all posts →
+            {t("viewAllPosts", locale)} →
           </a>
         </div>
 
@@ -55,7 +52,7 @@ export default function BlogPreview({ posts, heading, showBlog }: Props) {
             )}
             <div className={featured.coverImage ? "md:w-1/2 flex flex-col justify-center" : "w-full"}>
               <time className="text-xs text-muted" dateTime={featured.publishedAt}>
-                {formatDate(featured.publishedAt)}
+                {formatDate(featured.publishedAt, locale)}
               </time>
               <h3 className="font-[family-name:var(--font-serif)] text-2xl font-semibold mt-2 group-hover:text-primary transition-colors">
                 {featured.title}
@@ -78,7 +75,7 @@ export default function BlogPreview({ posts, heading, showBlog }: Props) {
                 aria-label={`Read: ${post.title}`}
               >
                 <time className="text-xs text-muted" dateTime={post.publishedAt}>
-                  {formatDate(post.publishedAt)}
+                  {formatDate(post.publishedAt, locale)}
                 </time>
                 <h3 className="font-[family-name:var(--font-serif)] text-lg font-semibold mt-1 group-hover:text-primary transition-colors">
                   {post.title}

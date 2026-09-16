@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getProjectSlugs, getPostSlugs, getCategories, getServiceSlugs } from "@/sanity/lib/queries";
+import { withLocale } from "@/sanity/locale";
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://hrolgar.com";
 
@@ -42,15 +43,37 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     Math.max(projectsUpdated.getTime(), postsUpdated.getTime(), servicesUpdated.getTime()),
   );
 
-  const staticPages: MetadataRoute.Sitemap = [
-    { url: baseUrl, lastModified: siteUpdated, changeFrequency: "weekly", priority: 1 },
-    { url: `${baseUrl}/projects`, lastModified: projectsUpdated, changeFrequency: "weekly", priority: 0.9 },
-    { url: `${baseUrl}/services`, lastModified: servicesUpdated, changeFrequency: "monthly", priority: 0.9 },
-    { url: `${baseUrl}/blog`, lastModified: postsUpdated, changeFrequency: "weekly", priority: 0.8 },
-    { url: `${baseUrl}/contact`, lastModified: FALLBACK_LAST_MODIFIED, changeFrequency: "monthly", priority: 0.7 },
-    { url: `${baseUrl}/experience`, lastModified: FALLBACK_LAST_MODIFIED, changeFrequency: "monthly", priority: 0.7 },
-    { url: `${baseUrl}/homelab`, lastModified: FALLBACK_LAST_MODIFIED, changeFrequency: "monthly", priority: 0.6 },
+  // Every page that exists in both languages is listed TWICE, once per language, each
+  // carrying the hreflang pair. Listing only the English URL is what kept /no out of the
+  // index entirely: the Norwegian pages are linked from nothing Google crawls, so the
+  // sitemap is their only way in, and an hreflang annotation on one side only is ignored.
+  const bilingual: { path: string; lastModified: Date; changeFrequency: "weekly" | "monthly"; priority: number }[] = [
+    { path: "", lastModified: siteUpdated, changeFrequency: "weekly", priority: 1 },
+    { path: "/projects", lastModified: projectsUpdated, changeFrequency: "weekly", priority: 0.9 },
+    { path: "/services", lastModified: servicesUpdated, changeFrequency: "monthly", priority: 0.9 },
+    { path: "/blog", lastModified: postsUpdated, changeFrequency: "weekly", priority: 0.8 },
+    { path: "/contact", lastModified: FALLBACK_LAST_MODIFIED, changeFrequency: "monthly", priority: 0.7 },
+    { path: "/experience", lastModified: FALLBACK_LAST_MODIFIED, changeFrequency: "monthly", priority: 0.7 },
+    { path: "/homelab", lastModified: FALLBACK_LAST_MODIFIED, changeFrequency: "monthly", priority: 0.6 },
   ];
+
+  const staticPages: MetadataRoute.Sitemap = bilingual.flatMap((page) => {
+    const en = `${baseUrl}${page.path}`;
+    const nb = `${baseUrl}${withLocale(page.path, "nb")}`;
+    const languages = { en, "nb-NO": nb, "x-default": en };
+    const shared = {
+      lastModified: page.lastModified,
+      changeFrequency: page.changeFrequency,
+      alternates: { languages },
+    };
+    return [
+      { url: en, ...shared, priority: page.priority },
+      // The Norwegian pages rank for a smaller market and are a translation of the
+      // English ones, so they sit a notch below their English twin rather than
+      // competing with it.
+      { url: nb, ...shared, priority: Math.round((page.priority - 0.1) * 10) / 10 },
+    ];
+  });
 
   const projectPages: MetadataRoute.Sitemap = projectSlugs.map((s) => ({
     url: `${baseUrl}/projects/${s.slug.current}`,

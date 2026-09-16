@@ -10,6 +10,7 @@ import ReadDepth from "@/components/ReadDepth";
 import Footer from "@/components/Footer";
 import type { Metadata } from "next";
 import { absoluteUrl, breadcrumbJsonLd, buildSeoMetadata, jsonLdScript, personJsonLd } from "@/lib/seo";
+import { formatDate } from "@/lib/dates";
 
 export const revalidate = 3600;
 
@@ -40,14 +41,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     ...metadata,
     keywords: post.tags,
   };
-}
-
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
 }
 
 function estimateReadTime(body: PortableTextBlock[]): number {

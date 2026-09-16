@@ -6,6 +6,7 @@ import type { Metadata } from "next";
 import { breadcrumbJsonLd, buildSeoMetadata, jsonLdScript, withAlternates } from "@/lib/seo";
 import type { Locale } from "@/sanity/locale";
 import { DEFAULT_LOCALE, localePrefix } from "@/sanity/locale";
+import { t } from "@/lib/ui";
 
 export const revalidate = 3600;
 
@@ -53,12 +54,12 @@ export async function ServicesPageBody({ locale = DEFAULT_LOCALE }: { locale?: L
         { name: "Home", path: "/" },
         { name: "Services", path: `${p}/services` },
       ]))}
-      <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} showBlog={settings?.showBlog} />
+      <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} showBlog={settings?.showBlog} locale={locale} />
       <main id="main-content" className="px-6 pb-16 pt-24 md:pb-24">
         <div className="mx-auto max-w-5xl">
           <section className="border-b border-border pb-12 md:pb-16">
             <p className="mb-5 text-sm uppercase tracking-[0.24em] text-primary">
-              Services
+              {t("servicesLabel", locale)}
             </p>
             <h1 className="max-w-[10ch] font-[family-name:var(--font-serif)] text-5xl font-bold tracking-tight text-foreground sm:text-6xl md:text-7xl">
               {servicesHeading}
@@ -83,14 +84,14 @@ export async function ServicesPageBody({ locale = DEFAULT_LOCALE }: { locale?: L
                       {service.title}
                     </h2>
                     <p className="mt-4 flex-1 text-sm leading-relaxed text-muted md:text-base">
-                      {service.summary || "Details coming soon."}
+                      {service.summary || t("detailsComingSoon", locale)}
                     </p>
                     {service.slug?.current && (
                       <a
                         href={`/services/${service.slug.current}`}
                         className="mt-6 inline-flex min-h-11 items-center text-sm font-semibold text-primary transition-colors hover:text-secondary"
                       >
-                        Learn more
+                        {t("learnMore", locale)}
                       </a>
                     )}
                   </article>
@@ -99,10 +100,10 @@ export async function ServicesPageBody({ locale = DEFAULT_LOCALE }: { locale?: L
             ) : (
               <div className="rounded-[calc(var(--radius)*2)] border border-dashed border-border bg-surface/70 p-8 text-center">
                 <h2 className="font-[family-name:var(--font-serif)] text-2xl font-semibold text-foreground">
-                  Services are being updated
+                  {t("servicesUpdating", locale)}
                 </h2>
                 <p className="mt-3 text-base leading-relaxed text-muted">
-                  The service catalog is in progress. Reach out directly if you want to discuss integrations, APIs, or automation work.
+                  {t("servicesUpdatingBody", locale)}
                 </p>
               </div>
             )}
@@ -110,7 +111,7 @@ export async function ServicesPageBody({ locale = DEFAULT_LOCALE }: { locale?: L
 
           <section className="rounded-[calc(var(--radius)*2)] border border-border bg-[color:color-mix(in_srgb,var(--color-surface)_80%,black)] px-8 py-10 md:px-10 md:py-12">
             <p className="text-sm uppercase tracking-[0.24em] text-accent">
-              Start a project
+              {t("startAProject", locale)}
             </p>
             <h2 className="mt-4 font-[family-name:var(--font-serif)] text-3xl font-bold text-foreground md:text-4xl">
               {servicesCta}
@@ -119,15 +120,15 @@ export async function ServicesPageBody({ locale = DEFAULT_LOCALE }: { locale?: L
               {servicesCtaDescription}
             </p>
             <a
-              href="/contact"
+              href={`${p}/contact`}
               className="mt-8 inline-flex min-h-11 items-center justify-center rounded-[var(--radius)] bg-accent px-6 py-3 text-sm font-semibold text-bg transition-colors hover:bg-[color:color-mix(in_srgb,var(--color-accent)_88%,white)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
-              Get in touch
+              {t("getInTouch", locale)}
             </a>
           </section>
         </div>
       </main>
-      <Footer contact={contact} footerTagline={pageContent?.footerTagline} siteName={settings?.siteName} navItems={pageContent?.navItems} showBlog={settings?.showBlog} />
+      <Footer contact={contact} footerTagline={pageContent?.footerTagline} siteName={settings?.siteName} navItems={pageContent?.navItems} showBlog={settings?.showBlog} locale={locale} />
     </>
   );
 }

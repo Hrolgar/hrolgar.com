@@ -66,25 +66,25 @@ export async function HomeBody({ locale = DEFAULT_LOCALE }: { locale?: Locale })
   return (
     <>
       <ScrollProgress />
-      <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} showBlog={settings?.showBlog} />
+      <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} showBlog={settings?.showBlog} locale={locale} />
       <main id="main-content">
         <Hero about={about} />
         {/* Work comes before the bio on purpose. Measured in Umami: of 57 people who
             landed on the home page, 11 reached /projects and 5 reached /contact. With
             About, Experience and Skills stacked above it, the work was the fifth thing
             a visitor scrolled to, which is backwards for someone deciding who to hire. */}
-        <Projects projects={projects} heading={pageContent?.projectsHeading} intro={pageContent?.projectsIntro} />
+        <Projects projects={projects} heading={pageContent?.projectsHeading} intro={pageContent?.projectsIntro} locale={locale} />
         <About about={about} heading={pageContent?.aboutHeading} />
-        <Experience experience={experience} heading={pageContent?.experienceHeading} resumeUrl={about?.resumeFile?.asset?.url} />
-        <Skills skills={skills} heading={pageContent?.skillsHeading} />
-        <Homelab heading={pageContent?.homelabHeading} subtitle={pageContent?.homelabSubtitle} stats={homelabPage?.stats} />
+        <Experience experience={experience} heading={pageContent?.experienceHeading} resumeUrl={about?.resumeFile?.asset?.url} locale={locale} />
+        <Skills skills={skills} heading={pageContent?.skillsHeading} locale={locale} />
+        <Homelab heading={pageContent?.homelabHeading} subtitle={pageContent?.homelabSubtitle} stats={homelabPage?.stats} locale={locale} />
         <Certifications certifications={certifications} heading={pageContent?.certificationsHeading} />
-        {settings?.showBlog !== false && <BlogPreview posts={featuredPosts.length > 0 ? featuredPosts : recentPosts} heading={pageContent?.blogPreviewHeading} showBlog={settings?.showBlog} />}
-        <Contact contact={contact} heading={pageContent?.contactSectionHeading} tagline={pageContent?.contactSectionTagline} />
+        {settings?.showBlog !== false && <BlogPreview posts={featuredPosts.length > 0 ? featuredPosts : recentPosts} heading={pageContent?.blogPreviewHeading} showBlog={settings?.showBlog} locale={locale} />}
+        <Contact contact={contact} heading={pageContent?.contactSectionHeading} tagline={pageContent?.contactSectionTagline} locale={locale} />
       </main>
-      <Footer contact={contact} footerTagline={pageContent?.footerTagline} siteName={settings?.siteName} navItems={pageContent?.navItems} showBlog={settings?.showBlog} />
+      <Footer contact={contact} footerTagline={pageContent?.footerTagline} siteName={settings?.siteName} navItems={pageContent?.navItems} showBlog={settings?.showBlog} locale={locale} />
       <BackToTop />
-      <FloatingCTA floatingCtaText={pageContent?.floatingCtaText} />
+      <FloatingCTA floatingCtaText={pageContent?.floatingCtaText} locale={locale} />
       <SectionDots />
     </>
   );

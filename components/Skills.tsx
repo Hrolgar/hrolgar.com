@@ -1,12 +1,16 @@
 import ScrollReveal from "./ScrollReveal";
 import type { Skill } from "@/sanity/types";
+import type { Locale } from "@/sanity/locale";
+import { DEFAULT_LOCALE } from "@/sanity/locale";
+import { skillCategory } from "@/lib/ui";
 
 interface Props {
   skills: Skill[];
   heading?: string | null;
+  locale?: Locale;
 }
 
-export default function Skills({ skills, heading }: Props) {
+export default function Skills({ skills, heading, locale = DEFAULT_LOCALE }: Props) {
   if (!skills?.length) return null;
 
   const groupedSkills = skills.reduce<Record<string, Skill[]>>((acc, skill) => {
@@ -28,7 +32,7 @@ export default function Skills({ skills, heading }: Props) {
             <ScrollReveal key={category} delay={index * 40}>
               <div>
                 <h3 className="mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-muted">
-                  {category}
+                  {skillCategory(category, locale)}
                 </h3>
                 <div className="flex flex-wrap gap-3">
                   {items.map((skill) => (

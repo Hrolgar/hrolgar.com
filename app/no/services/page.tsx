@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { ServicesPageBody } from "@/app/services/page";
 import { buildSeoMetadata, withAlternates } from "@/lib/seo";
+import HtmlLang from "@/components/HtmlLang";
 
 export const revalidate = 3600;
 
@@ -15,5 +16,10 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function ServicesPageNb() {
-  return <ServicesPageBody locale="nb" />;
+  return (
+    <>
+      <HtmlLang locale="nb" />
+      <ServicesPageBody locale="nb" />
+    </>
+  );
 }

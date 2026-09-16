@@ -8,7 +8,17 @@ import { langFilter, listWithFallback } from "@/sanity/lib/localeQuery";
  *  falling back to the English document when no translation exists. */
 function bySlugOrSingleton(type: string, locale: Locale): string {
   if (locale === DEFAULT_LOCALE) return `*[_type == "${type}" && ${langFilter(locale)}][0]`;
-  return `coalesce(*[_type == "${type}" && language == "${locale}"][0], *[_type == "${type}" && ${langFilter(DEFAULT_LOCALE)}][0])`;
+  // Field-level merge, for the same reason as `bySlugWithFallback`: a singleton that is
+  // only half translated must not blank out the fields nobody has got to yet.
+  return `*[_type == "${type}" && ${langFilter(DEFAULT_LOCALE)}][0] {
+    "_localised": *[_type == "${type}" && language == "${locale}"][0],
+    ...
+  } {
+    ...,
+    ..._localised,
+    "_id": _id,
+    "_localised": null
+  }`;
 }
 import type {
   SiteSettings,

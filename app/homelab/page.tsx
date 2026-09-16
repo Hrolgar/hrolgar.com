@@ -15,6 +15,7 @@ import { urlFor } from "@/sanity/lib/image";
 import type { HomelabService } from "@/sanity/types";
 import { breadcrumbJsonLd, buildSeoMetadata, jsonLdScript , withAlternates} from "@/lib/seo";
 import type { Locale } from "@/sanity/locale";
+import { t, tf } from "@/lib/ui";
 import { DEFAULT_LOCALE } from "@/sanity/locale";
 
 export const revalidate = 3600;
@@ -72,22 +73,20 @@ export async function HomelabBody({ locale = DEFAULT_LOCALE }: { locale?: Locale
         { name: "Home", path: "/" },
         { name: "Homelab", path: "/homelab" },
       ]))}
-      <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} showBlog={settings?.showBlog} />
+      <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} showBlog={settings?.showBlog} locale={locale} />
       <main id="main-content" className="px-6 pb-16 pt-24 md:pb-24">
         <div className="mx-auto max-w-5xl">
 
           {/* Page header */}
           <section className="pb-12 md:pb-16">
             <p className="mb-5 text-sm uppercase tracking-[0.24em] text-primary">
-              Infrastructure
+              {t("infrastructure", locale)}
             </p>
             <h1 className="font-[family-name:var(--font-serif)] text-5xl font-bold tracking-tight text-foreground sm:text-6xl">
               {heading}
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted">
-              A self-hosted environment running on enterprise hardware at home. Proxmox
-              virtualization, Docker containers, ZFS storage pools, and everything managed
-              through Infrastructure as Code.
+              {t("homelabIntro", locale)}
             </p>
           </section>
 
@@ -133,9 +132,9 @@ export async function HomelabBody({ locale = DEFAULT_LOCALE }: { locale?: Locale
             <section className="mt-20">
               <ScrollReveal>
                 <h2 className="font-[family-name:var(--font-serif)] text-3xl font-bold text-foreground mb-3">
-                  Hardware
+                  {t("hardware", locale)}
                 </h2>
-                <p className="text-muted text-base mb-8">The physical machines running everything.</p>
+                <p className="text-muted text-base mb-8">{t("hardwareIntro", locale)}</p>
               </ScrollReveal>
               <div className="grid md:grid-cols-2 gap-6">
                 {homelabPage.hardware.map((hw, index) => (
@@ -173,7 +172,7 @@ export async function HomelabBody({ locale = DEFAULT_LOCALE }: { locale?: Locale
             <ScrollReveal>
               <section className="mt-20 max-w-3xl">
                 <h2 className="font-[family-name:var(--font-serif)] text-3xl font-bold text-foreground mb-6">
-                  Architecture
+                  {t("architecture", locale)}
                 </h2>
                 <div className="prose-editorial text-lg leading-relaxed">
                   <PortableText
@@ -190,10 +189,10 @@ export async function HomelabBody({ locale = DEFAULT_LOCALE }: { locale?: Locale
             <section className={hasContent ? "mt-20" : "mt-8"}>
               <ScrollReveal>
                 <h2 className="font-[family-name:var(--font-serif)] text-3xl font-bold text-foreground mb-3">
-                  Services
+                  {t("servicesLabel", locale)}
                 </h2>
                 <p className="text-muted text-base mb-8">
-                  {homelabServices.length} services across {Object.keys(categories).length} categories, all self-hosted and self-managed.
+                  {tf("homelabServicesIntro", locale, { count: homelabServices.length, categories: Object.keys(categories).length })}
                 </p>
               </ScrollReveal>
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-8">
@@ -257,7 +256,7 @@ export async function HomelabBody({ locale = DEFAULT_LOCALE }: { locale?: Locale
         footerTagline={pageContent?.footerTagline}
         siteName={settings?.siteName}
         navItems={pageContent?.navItems}
-        showBlog={settings?.showBlog}
+        showBlog={settings?.showBlog} locale={locale}
       />
     </>
   );

@@ -22,28 +22,38 @@ export function langFilter(locale: Locale): string {
 }
 
 /**
- * Single document by slug with fallback: the localised one if it exists, else English.
- * `coalesce` picks the first non-null, so the fallback costs nothing when a translation
- * is present.
+ * Single document by slug: the English document, with the translation's fields laid over it.
+ *
+ * The merge is per FIELD, not per document. A translator who fills in the title and leaves
+ * the body for later should get a Norwegian title over the English body, not a page with no
+ * body at all. Document-level replacement is what emptied the About section on `/no`:
+ * `about-nb` has no `body`, and swapping the whole document swapped the bio away with it.
+ * Unset fields are absent in Sanity rather than null, so the spread simply does not
+ * override them.
  */
 export function bySlugWithFallback(type: string, locale: Locale): string {
   if (locale === DEFAULT_LOCALE) {
     return `*[_type == "${type}" && slug.current == $slug && ${langFilter(locale)}][0]`;
   }
-  // Norwegian document matched on its own slug, else the English document for that slug.
-  return `coalesce(
-    *[_type == "${type}" && slug.current == $slug && language == "${locale}"][0],
-    *[_type == "${type}" && slug.current == $slug && ${langFilter(DEFAULT_LOCALE)}][0]
-  )`;
+  return `*[_type == "${type}" && slug.current == $slug && ${langFilter(DEFAULT_LOCALE)}][0] {
+    "_localised": *[_type == "${type}" && slug.current == $slug && language == "${locale}"][0],
+    ...
+  } {
+    ...,
+    ..._localised,
+    "_id": _id,
+    "_localised": null
+  }`;
 }
 
 /**
- * List of documents for a locale, falling back per item.
+ * List of documents for a locale, falling back per FIELD.
  *
- * Returns every English document, replaced by its translation where one points at it. Doing
- * it this way rather than "all Norwegian docs, then top up with English" keeps the English
- * ordering and count authoritative, so a half-translated site lists the same things in the
- * same order in both languages.
+ * Returns every English document with its translation's fields laid over it. Doing it this
+ * way rather than "all Norwegian docs, then top up with English" keeps the English ordering
+ * and count authoritative, so a half-translated site lists the same things in the same order
+ * in both languages, and a half-translated DOCUMENT shows English for what is still missing
+ * instead of a gap.
  */
 export function listWithFallback(type: string, locale: Locale, projection = "{...}", order = ""): string {
   const en = `*[_type == "${type}" && ${langFilter(DEFAULT_LOCALE)}]${order}`;
@@ -52,7 +62,9 @@ export function listWithFallback(type: string, locale: Locale, projection = "{..
     "_localised": *[_type == "${type}" && language == "${locale}" && translationOf._ref == ^._id][0],
     ...
   } {
-    ...coalesce(_localised, @),
-    "_id": _id
+    ...,
+    ..._localised,
+    "_id": _id,
+    "_localised": null
   } ${projection}`;
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { HomelabBody } from "@/app/homelab/page";
 import { buildSeoMetadata, withAlternates } from "@/lib/seo";
+import HtmlLang from "@/components/HtmlLang";
 
 export const revalidate = 3600;
 
@@ -15,5 +16,10 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function Page() {
-  return <HomelabBody locale="nb" />;
+  return (
+    <>
+      <HtmlLang locale="nb" />
+      <HomelabBody locale="nb" />
+    </>
+  );
 }
