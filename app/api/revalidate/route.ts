@@ -1,6 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
+import { LOCALES, withLocale } from "@/sanity/locale";
 
 const INDEXNOW_KEY = '89367e5b474265a644c2c41429045b83';
 
@@ -72,13 +73,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: "Invalid secret" }, { status: 401 });
   }
 
-  revalidatePath("/");
-  revalidatePath("/projects");
-  revalidatePath("/experience");
-  revalidatePath("/homelab");
-  revalidatePath("/services");
-  revalidatePath("/blog");
-  revalidatePath("/contact");
+  // Every page that exists in both languages, in both languages. Listing only the English
+  // paths left /no publishing into a void: a Norwegian edit reached the English page and
+  // then sat behind the hour-long ISR window on its own. Driven off LOCALES so a new
+  // language is refreshed without anyone remembering to add it here.
+  for (const locale of LOCALES) {
+    for (const path of ["/", "/projects", "/experience", "/homelab", "/services", "/blog", "/contact"]) {
+      revalidatePath(withLocale(path === "/" ? "" : path, locale) || "/");
+    }
+  }
   revalidatePath("/projects/[slug]", "page");
   revalidatePath("/blog/[slug]", "page");
   revalidatePath("/blog/category/[slug]", "page");

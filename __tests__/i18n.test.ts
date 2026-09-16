@@ -172,3 +172,17 @@ describe("resolveLocale", () => {
     expect(out.summary).toBe("English summary");
   });
 });
+
+describe("revalidation covers every language", () => {
+  // The webhook used to list English paths only, so a Norwegian edit refreshed the English
+  // page and left /no on the hour-long ISR window. Keep this derived from LOCALES.
+  it("builds a path for each locale", () => {
+    const paths = LOCALES.flatMap((locale) =>
+      ["/", "/projects", "/services"].map((p) => withLocale(p === "/" ? "" : p, locale) || "/"),
+    );
+    expect(paths).toContain("/");
+    expect(paths).toContain("/services");
+    expect(paths).toContain("/no");
+    expect(paths).toContain("/no/services");
+  });
+});
