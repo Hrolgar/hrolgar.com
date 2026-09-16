@@ -24,6 +24,13 @@ export const localeHtmlLang: Record<Locale, string> = { en: "en", nb: "nb-NO" };
 export const localeLabel: Record<Locale, string> = { en: "English", nb: "Norsk" };
 
 /**
+ * Two-letter code for the language toggle. Matches the URL segment, so "NO" and not "NB":
+ * the address bar says /no, and a visitor comparing the two should see the same thing.
+ * The full name is still what a screen reader announces.
+ */
+export const localeShort: Record<Locale, string> = { en: "EN", nb: "NO" };
+
+/**
  * The URL segment for a locale: "no" for Norwegian, because the prefix is `/no`.
  *
  * Derived rather than listed, so the segment and the prefix cannot disagree. Note the

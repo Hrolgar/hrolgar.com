@@ -1,6 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import { t } from "@/lib/ui";
 import type { Locale } from "@/sanity/locale";
 import {
   DEFAULT_LOCALE,
@@ -8,23 +9,26 @@ import {
   counterpartPath,
   localeHtmlLang,
   localeLabel,
+  localeShort,
 } from "@/sanity/locale";
 
 /**
- * Links to the same page in the other language(s).
+ * A segmented toggle between the languages, showing both with the current one marked.
  *
- * Without this, nothing on the site links to /no at all: the only ways in were Google and
- * typing the URL. hreflang tells a search engine which version to show, it does nothing for
- * a person already reading the wrong one.
+ * The first version was a single link styled like the nav ("Norsk", same size, weight and
+ * colour as Projects and Services), and it read as a seventh menu item rather than a switch.
+ * Showing both options in a bordered pill is what makes it obviously a control: you can see
+ * the state you are in and the state you would be in.
  *
- * Deliberately plain anchors rather than a dropdown or a client-side locale swap. A crawler
- * has to be able to follow them, and Google's guidance is a visible switcher plus hreflang,
- * never an automatic redirect on browser language — that traps anyone who wants the English
- * page and interferes with crawling.
+ * NOT flags. A flag is a country, not a language, and English has no flag that is not wrong
+ * for most of the people reading this site. They are also poor tap targets and meaningless
+ * to a screen reader.
  *
- * It renders every language except the one being read, so a third language needs no change
- * here. Two languages is one link; more would want a dropdown, and that is the point to
- * build one.
+ * Plain anchors, so a crawler can follow them, and no redirect on browser language: that
+ * traps anyone who wants the English page. Google's guidance is a visible switcher plus
+ * hreflang, which is what this is.
+ *
+ * Renders every language in LOCALES, so a third needs no change here.
  */
 export default function LanguageSwitcher({
   locale = DEFAULT_LOCALE,
@@ -34,24 +38,47 @@ export default function LanguageSwitcher({
   className?: string;
 }) {
   const pathname = usePathname() || "/";
-  const others = LOCALES.filter((candidate) => candidate !== locale);
-  if (others.length === 0) return null;
+  if (LOCALES.length < 2) return null;
 
   return (
-    <div className={`flex items-center gap-2 ${className}`}>
-      {others.map((other) => (
-        <a
-          key={other}
-          href={counterpartPath(pathname, other)}
-          lang={localeHtmlLang[other]}
-          hrefLang={localeHtmlLang[other]}
-          data-umami-event="language-switch"
-          data-umami-event-to={other}
-          className="text-sm font-medium text-muted transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-        >
-          {localeLabel[other]}
-        </a>
-      ))}
+    <div
+      role="group"
+      aria-label={t("language", locale)}
+      className={`inline-flex items-center overflow-hidden rounded-full border border-border bg-surface ${className}`}
+    >
+      {LOCALES.map((candidate) => {
+        const active = candidate === locale;
+        const shared =
+          "px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.1em] transition-colors";
+
+        // The language you are already reading is state, not a destination.
+        if (active) {
+          return (
+            <span
+              key={candidate}
+              aria-current="true"
+              className={`${shared} bg-surface-hover text-foreground`}
+            >
+              {localeShort[candidate]}
+            </span>
+          );
+        }
+
+        return (
+          <a
+            key={candidate}
+            href={counterpartPath(pathname, candidate)}
+            lang={localeHtmlLang[candidate]}
+            hrefLang={localeHtmlLang[candidate]}
+            aria-label={localeLabel[candidate]}
+            data-umami-event="language-switch"
+            data-umami-event-to={candidate}
+            className={`${shared} text-muted hover:bg-surface-hover hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent`}
+          >
+            {localeShort[candidate]}
+          </a>
+        );
+      })}
     </div>
   );
 }
