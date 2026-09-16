@@ -48,7 +48,7 @@ export async function HomelabBody({ locale = DEFAULT_LOCALE }: { locale?: Locale
     await Promise.all([
       getHomelabPage(),
       getHomelabServices(),
-      getContact(),
+      getContact(locale),
       getPageContent(locale),
       getSettings(),
     ]);

@@ -24,7 +24,7 @@ export async function ProjectsBody({ locale = DEFAULT_LOCALE }: { locale?: Local
   const [allProjects, projectCategories, contact, pageContent, settings] = await Promise.all([
     getProjects(locale),
     getProjectCategories(locale),
-    getContact(),
+    getContact(locale),
     getPageContent(locale),
     getSettings(),
   ]);

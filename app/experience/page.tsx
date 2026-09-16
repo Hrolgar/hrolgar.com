@@ -34,7 +34,7 @@ export async function ExperienceBody({ locale = DEFAULT_LOCALE }: { locale?: Loc
   const [about, experience, contact, pageContent, settings] = await Promise.all([
     getAbout(locale),
     getExperience(locale),
-    getContact(),
+    getContact(locale),
     getPageContent(locale),
     getSettings(),
   ]);

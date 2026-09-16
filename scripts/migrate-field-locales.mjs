@@ -45,6 +45,7 @@ const LST = "localeStringList";
 const FIELDS = {
   about: { heading: STR, tagline: TXT, roles: LST, heroCta1Text: STR, heroCta2Text: STR, body: BLK },
   category: { title: STR },
+  contactInfo: { location: STR },
   experience: { company: STR, role: STR, location: STR, description: BLK },
   faq: { question: STR, answer: TXT },
   homelabPage: { intro: BLK, architecture: BLK },
@@ -91,6 +92,11 @@ function isEmpty(value) {
   return Array.isArray(value) && value.length === 0;
 }
 
+/** True when a value has already been through this migration. */
+function alreadyMigrated(value, type) {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value) && value._type === type;
+}
+
 /** `{_type, en, nb}` from an English value and its Norwegian counterpart. */
 function localeValue(type, en, nb) {
   const out = { _type: type };
@@ -106,6 +112,9 @@ function mergeNested(enArray, nbArray, fieldTypes) {
     const twin = byKey.get(item?._key ?? `#${i}`) || {};
     const next = { ...item };
     for (const [field, type] of Object.entries(fieldTypes)) {
+      // Re-running must not wrap an already-wrapped value: {en: {en: "Home", nb: "Hjem"}}
+      // renders as nothing and is invisible until someone looks at the nav.
+      if (alreadyMigrated(item?.[field], type)) continue;
       const value = localeValue(type, item?.[field], twin?.[field]);
       if (value) next[field] = value;
       else delete next[field];
@@ -118,13 +127,15 @@ function buildPatch(doc, twin) {
   const set = {};
   for (const [field, type] of Object.entries(FIELDS[doc._type] || {})) {
     // Already migrated? Leave it alone so the script can be re-run safely.
-    if (doc[field] && typeof doc[field] === "object" && !Array.isArray(doc[field]) && doc[field]._type === type) continue;
+    if (alreadyMigrated(doc[field], type)) continue;
     const value = localeValue(type, doc[field], twin?.[field]);
     if (value) set[field] = value;
   }
   for (const [arrayField, fieldTypes] of Object.entries(NESTED[doc._type] || {})) {
     const merged = mergeNested(doc[arrayField], twin?.[arrayField], fieldTypes);
-    if (merged) set[arrayField] = merged;
+    // Only write it back if it actually differs, so a re-run reports honestly instead of
+    // listing every nested array as "translated" when nothing changed.
+    if (merged && JSON.stringify(merged) !== JSON.stringify(doc[arrayField])) set[arrayField] = merged;
   }
   return set;
 }

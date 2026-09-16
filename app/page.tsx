@@ -54,7 +54,7 @@ export async function HomeBody({ locale = DEFAULT_LOCALE }: { locale?: Locale })
       getSkills(),
       getExperience(locale),
       getProjects(locale),
-      getContact(),
+      getContact(locale),
       getCertifications(),
       getHomelabPage(),
       getFeaturedPosts(),

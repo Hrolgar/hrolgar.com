@@ -39,7 +39,7 @@ export default defineType({
     defineField({
       name: 'location',
       title: 'Location',
-      type: 'string',
+      type: 'localeString',
       description: 'e.g. Ålesund, Norway',
     }),
     defineField({

@@ -50,8 +50,12 @@ export async function getAbout(locale: Locale = DEFAULT_LOCALE): Promise<About |
   }`, locale);
 }
 
-export const getContact = cache(async function getContact(): Promise<ContactInfo | null> {
-  return client.fetch(`*[_type == "contactInfo"][0]`);
+export const getContact = cache(async function getContact(
+  locale: Locale = DEFAULT_LOCALE,
+): Promise<ContactInfo | null> {
+  // Only `location` is prose here; the email and the profile URLs are the same in every
+  // language, which is exactly the split field-level translation is for.
+  return localised(`*[_type == "contactInfo"][0]`, locale);
 });
 
 // --- Collections ---

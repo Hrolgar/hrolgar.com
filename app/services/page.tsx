@@ -33,7 +33,7 @@ function getServiceIcon(service: Service) {
 export async function ServicesPageBody({ locale = DEFAULT_LOCALE }: { locale?: Locale }) {
   const [services, contact, pageContent, settings] = await Promise.all([
     getServices(locale),
-    getContact(),
+    getContact(locale),
     getPageContent(locale),
     getSettings(),
   ]);

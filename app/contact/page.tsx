@@ -48,7 +48,7 @@ const defaultFAQs: FAQ[] = [
 
 export async function ContactBody({ locale = DEFAULT_LOCALE }: { locale?: Locale }) {
   const [contact, services, pageContent, faqs, forms, settings] = await Promise.all([
-    getContact(),
+    getContact(locale),
     getServices(locale),
     getPageContent(locale),
     getFAQs(locale),
