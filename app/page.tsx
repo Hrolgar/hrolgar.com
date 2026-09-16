@@ -52,7 +52,7 @@ export async function HomeBody({ locale = DEFAULT_LOCALE }: { locale?: Locale })
     await Promise.all([
       getAbout(locale),
       getSkills(),
-      getExperience(),
+      getExperience(locale),
       getProjects(locale),
       getContact(),
       getCertifications(),

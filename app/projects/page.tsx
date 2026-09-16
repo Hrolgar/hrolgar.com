@@ -22,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
 export async function ProjectsBody({ locale = DEFAULT_LOCALE }: { locale?: Locale }) {
   const [allProjects, projectCategories, contact, pageContent, settings] = await Promise.all([
     getProjects(locale),
-    getProjectCategories(),
+    getProjectCategories(locale),
     getContact(),
     getPageContent(locale),
     getSettings(),

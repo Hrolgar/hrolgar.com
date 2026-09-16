@@ -54,9 +54,9 @@ export async function getSkills(): Promise<Skill[]> {
   )) || [];
 }
 
-export async function getExperience(): Promise<Experience[]> {
+export async function getExperience(locale: Locale = DEFAULT_LOCALE): Promise<Experience[]> {
   return (await client.fetch(
-    `*[_type == "experience"] | order(startDate desc) { ..., technologies[]-> }`
+    listWithFallback("experience", locale, "{ ..., technologies[]-> }", " | order(startDate desc)")
   )) || [];
 }
 
@@ -127,9 +127,9 @@ export async function getPostSlugs(): Promise<{
   )) || [];
 }
 
-export async function getCategories(): Promise<Category[]> {
+export async function getCategories(locale: Locale = DEFAULT_LOCALE): Promise<Category[]> {
   return (await client.fetch(
-    `*[_type == "category"] | order(title asc){ ..., _updatedAt }`
+    listWithFallback("category", locale, "{ ..., _updatedAt }", " | order(title asc)")
   )) || [];
 }
 
@@ -165,9 +165,9 @@ export async function getHomelabPage(): Promise<HomelabPage | null> {
 
 // --- Project Categories ---
 
-export async function getProjectCategories(): Promise<ProjectCategory[]> {
+export async function getProjectCategories(locale: Locale = DEFAULT_LOCALE): Promise<ProjectCategory[]> {
   return (await client.fetch(
-    `*[_type == "projectCategory"] | order(order asc, title asc)`
+    listWithFallback("projectCategory", locale, "{...}", " | order(order asc, title asc)")
   )) || [];
 }
 

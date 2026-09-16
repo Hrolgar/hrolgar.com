@@ -49,7 +49,7 @@ function duration(start: string, end?: string): string {
 export async function ExperienceBody({ locale = DEFAULT_LOCALE }: { locale?: Locale }) {
   const [about, experience, contact, pageContent, settings] = await Promise.all([
     getAbout(locale),
-    getExperience(),
+    getExperience(locale),
     getContact(),
     getPageContent(locale),
     getSettings(),

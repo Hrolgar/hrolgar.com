@@ -28,7 +28,7 @@ function formatDate(dateStr: string): string {
 }
 
 export async function BlogBody({ locale = DEFAULT_LOCALE }: { locale?: Locale }) {
-  const [posts, categories, pageContent, settings] = await Promise.all([getPosts(), getCategories(), getPageContent(locale), getSettings()]);
+  const [posts, categories, pageContent, settings] = await Promise.all([getPosts(), getCategories(locale), getPageContent(locale), getSettings()]);
 
   return (
     <>
