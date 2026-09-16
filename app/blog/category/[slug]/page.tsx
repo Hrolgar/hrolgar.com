@@ -29,7 +29,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { slug } = await params;
   const categories = await getCategories();
   const category = categories.find((c) => c.slug.current === slug);
-  if (!category) return { title: "Category Not Found", alternates: { canonical: `/blog/category/${slug}` } };
+  if (!category) return { title: "Category Not Found", robots: { index: false, follow: false } };
 
   return buildSeoMetadata({
     title: `${category.title} Articles & Guides`,

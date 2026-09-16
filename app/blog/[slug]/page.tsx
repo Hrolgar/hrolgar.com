@@ -24,7 +24,7 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const post = await getPostBySlug(slug);
-  if (!post) return { title: "Post Not Found", alternates: { canonical: `/blog/${slug}` } };
+  if (!post) return { title: "Post Not Found", robots: { index: false, follow: false } };
   const metadata = await buildSeoMetadata({
     title: post.title,
     description: post.excerpt || post.title,

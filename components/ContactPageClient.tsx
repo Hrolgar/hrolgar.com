@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ContactInfo, Service, PageContent, FAQ, ContactForm } from "@/sanity/types";
 import ContactFormModal from "@/components/ContactFormModal";
 
@@ -55,8 +55,25 @@ export default function ContactPageClient({
   const [openFormSlug, setOpenFormSlug] = useState<string | null>(null);
   const isDesktop = useIsDesktop();
 
-  const projectInquiryForm = forms.find((f) => f.slug?.current === "project-inquiry");
-  const generalContactForm = forms.find((f) => f.slug?.current === "general-contact");
+  // The "Project Type" dropdown used to be a static list stored on the contactForm
+  // document, so adding a service left the form silently offering the old three.
+  // Derive it from the live services instead, and fall back to whatever the document
+  // carries if the service list is empty.
+  const formsWithLiveOptions = useMemo(() => {
+    const serviceTitles = services.map((s) => s.title).filter(Boolean);
+    if (serviceTitles.length === 0) return forms;
+    return forms.map((form) => ({
+      ...form,
+      fields: (form.fields || []).map((field) =>
+        field.name === "projectType"
+          ? { ...field, options: [...serviceTitles, "Other"] }
+          : field,
+      ),
+    }));
+  }, [forms, services]);
+
+  const projectInquiryForm = formsWithLiveOptions.find((f) => f.slug?.current === "project-inquiry");
+  const generalContactForm = formsWithLiveOptions.find((f) => f.slug?.current === "general-contact");
 
   const projectInquiryHref = contact?.email
     ? `mailto:${contact.email}?subject=${encodeURIComponent("Project Inquiry")}&body=${encodeURIComponent("Hi Helgi,\n\nProject:\nTimeline:\nBudget range:\nTechnical details:\n")}`
@@ -84,7 +101,7 @@ export default function ContactPageClient({
   const helloButtonText = pageContent?.helloButtonText || "Send a Message";
 
   const displayFAQs = faqs.length > 0 ? faqs : defaultFAQs;
-  const openForm = forms.find((f) => f.slug?.current === openFormSlug);
+  const openForm = formsWithLiveOptions.find((f) => f.slug?.current === openFormSlug);
   const formVariant = isDesktop ? "desktop" : "inline";
 
   const toggleForm = (slug: string) => {

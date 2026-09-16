@@ -14,9 +14,9 @@ import {
   getSettings,
 } from "@/sanity/lib/queries";
 
-const HOMEPAGE_TITLE = "Helgi Skjortnes — Senior .NET & Integrations Engineer | Backend Freelancer";
+const HOMEPAGE_TITLE = "Helgi Skjortnes: Freelance .NET & Integrations Engineer";
 const HOMEPAGE_DESCRIPTION =
-  "Senior .NET and systems-integration engineer available for freelance backend, API, and infrastructure-automation work. C#, ASP.NET Core, Postgres, Docker, Proxmox.";
+  "Freelance .NET and systems-integration engineer. Backend systems, APIs, data platforms and the infrastructure to run them. C#, ASP.NET Core, Postgres.";
 
 export async function generateMetadata(): Promise<Metadata> {
   return buildSeoMetadata({

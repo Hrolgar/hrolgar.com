@@ -21,7 +21,7 @@ export async function generateMetadata() {
   return buildSeoMetadata({
     title: "Homelab | Hrolgar",
     description:
-      "A look inside my self-hosted infrastructure — Proxmox virtualization, Docker, ZFS storage, and 30+ services managed with Infrastructure as Code.",
+      "A look inside my self-hosted infrastructure: Proxmox virtualization, Docker, ZFS storage, and 50+ services managed with Infrastructure as Code.",
     path: "/homelab",
   });
 }
@@ -82,7 +82,7 @@ export default async function HomelabDetailPage() {
               {heading}
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted">
-              A self-hosted environment running on enterprise hardware at home — Proxmox
+              A self-hosted environment running on enterprise hardware at home. Proxmox
               virtualization, Docker containers, ZFS storage pools, and everything managed
               through Infrastructure as Code.
             </p>

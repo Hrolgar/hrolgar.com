@@ -45,6 +45,45 @@ export function breadcrumbJsonLd(items: Array<{ name: string; path: string }>) {
   };
 }
 
+/** FAQPage node built from the CMS faq documents. Returns null when there is nothing
+ *  to describe, so a page never emits an empty FAQPage. */
+export function faqPageJsonLd(faqs: Array<{ question?: string; answer?: string }>) {
+  const entries = faqs.filter((f) => f.question && f.answer);
+  if (entries.length === 0) return null;
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: entries.map((f) => ({
+      "@type": "Question",
+      name: f.question,
+      acceptedAnswer: { "@type": "Answer", text: f.answer },
+    })),
+  };
+}
+
+/** Review node for a project that carries a client testimonial. No rating is emitted:
+ *  the CMS stores the quote and the client name, not a score, and inventing one would
+ *  be a fabricated rich result. */
+export function projectReviewJsonLd(project: {
+  title?: string;
+  slug?: { current: string };
+  testimonial?: string;
+  clientName?: string;
+}) {
+  if (!project.testimonial || !project.clientName || !project.slug?.current) return null;
+  return {
+    "@context": "https://schema.org",
+    "@type": "Review",
+    reviewBody: project.testimonial,
+    author: { "@type": "Person", name: project.clientName },
+    itemReviewed: {
+      "@type": "CreativeWork",
+      name: project.title,
+      url: absoluteUrl(`/projects/${project.slug.current}`),
+    },
+  };
+}
+
 export async function getDefaultOgImage(): Promise<string | undefined> {
   const settings = await getSettings();
   return settings?.ogImage ? urlFor(settings.ogImage).width(1200).height(630).url() : undefined;

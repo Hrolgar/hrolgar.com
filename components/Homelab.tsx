@@ -32,7 +32,7 @@ export default function Homelab({ heading, subtitle, stats }: Props) {
                 {heading || "Homelab"}
               </h2>
               <p className="text-muted text-base leading-relaxed mb-6">
-                {subtitle || "Proxmox virtualization, Docker containers, ZFS storage, and 30+ self-hosted services — all managed with Infrastructure as Code."}
+                {subtitle || "Proxmox virtualization, Docker containers, ZFS storage, and 50+ self-hosted services, all managed with Infrastructure as Code."}
               </p>
 
               {/* Stats */}
