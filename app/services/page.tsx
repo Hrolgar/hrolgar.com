@@ -4,15 +4,25 @@ import { getContact, getPageContent, getServices, getSettings } from "@/sanity/l
 import type { Service } from "@/sanity/types";
 import type { Metadata } from "next";
 import { breadcrumbJsonLd, buildSeoMetadata, jsonLdScript } from "@/lib/seo";
+import type { Locale } from "@/sanity/locale";
+import { DEFAULT_LOCALE, localePrefix } from "@/sanity/locale";
 
 export const revalidate = 3600;
 
 export async function generateMetadata(): Promise<Metadata> {
-  return buildSeoMetadata({
+  const meta = await buildSeoMetadata({
     title: "What I Do - Backend & Infrastructure Services",
     description: "Backend engineering, API delivery, systems integration, and infrastructure automation for teams that need practical software shipped cleanly.",
     path: "/services",
   });
+  // Declared on BOTH sides. A one-way hreflang is ignored by Google.
+  return {
+    ...meta,
+    alternates: {
+      ...meta.alternates,
+      languages: { en: "/services", "nb-NO": "/no/tjenester", "x-default": "/services" },
+    },
+  };
 }
 
 const iconMap: Record<string, string> = {
@@ -26,13 +36,14 @@ function getServiceIcon(service: Service) {
   return iconMap[service.icon] || service.icon;
 }
 
-export default async function ServicesPage() {
+export async function ServicesPageBody({ locale = DEFAULT_LOCALE }: { locale?: Locale }) {
   const [services, contact, pageContent, settings] = await Promise.all([
-    getServices(),
+    getServices(locale),
     getContact(),
-    getPageContent(),
+    getPageContent(locale),
     getSettings(),
   ]);
+  const p = localePrefix[locale];
 
   const servicesHeading = pageContent?.servicesHeading || "What I Do";
   const servicesIntro =
@@ -47,7 +58,7 @@ export default async function ServicesPage() {
     <>
       {jsonLdScript(breadcrumbJsonLd([
         { name: "Home", path: "/" },
-        { name: "Services", path: "/services" },
+        { name: "Services", path: `${p}/services` },
       ]))}
       <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} showBlog={settings?.showBlog} />
       <main id="main-content" className="px-6 pb-16 pt-24 md:pb-24">
@@ -126,4 +137,8 @@ export default async function ServicesPage() {
       <Footer contact={contact} footerTagline={pageContent?.footerTagline} siteName={settings?.siteName} navItems={pageContent?.navItems} showBlog={settings?.showBlog} />
     </>
   );
+}
+
+export default async function ServicesPage() {
+  return <ServicesPageBody locale="en" />;
 }
