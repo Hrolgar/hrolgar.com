@@ -1,4 +1,6 @@
 import {defineType, defineField} from 'sanity'
+import {DEFAULT_LOCALE} from '../locale'
+import {localeRequired, localeSlugSource} from './localeFields'
 
 export default defineType({
   name: 'post',
@@ -6,39 +8,22 @@ export default defineType({
   type: 'document',
   fields: [
     defineField({
-      name: 'language',
-      title: 'Language',
-      type: 'string',
-      options: {list: [{title: 'English', value: 'en'}, {title: 'Norsk', value: 'nb'}], layout: 'radio'},
-      initialValue: 'en',
-      description: 'Which language this document is written in. Leave as English unless this IS the Norwegian version.',
-    }),
-    defineField({
-      name: 'translationOf',
-      title: 'Translation of',
-      type: 'reference',
-      to: [{type: 'post'}],
-      description: 'On a Norwegian document, point this at the English original. Leave empty on English documents.',
-      hidden: ({document}) => document?.language !== 'nb',
-    }),
-    defineField({
       name: 'title',
       title: 'Title',
-      type: 'string',
-      validation: (rule) => rule.required(),
+      type: 'localeString',
+      validation: localeRequired,
     }),
     defineField({
       name: 'slug',
       title: 'Slug',
       type: 'slug',
-      options: {source: 'title', maxLength: 96},
+      options: {source: (doc) => localeSlugSource(doc), maxLength: 96},
       validation: (rule) => rule.required(),
     }),
     defineField({
       name: 'excerpt',
       title: 'Excerpt',
-      type: 'text',
-      rows: 3,
+      type: 'localeText',
       description: 'Short summary for listings and SEO',
     }),
     defineField({
@@ -50,30 +35,7 @@ export default defineType({
     defineField({
       name: 'body',
       title: 'Body',
-      type: 'array',
-      of: [
-        {type: 'block'},
-        {
-          type: 'image',
-          options: {hotspot: true},
-          fields: [
-            defineField({
-              name: 'alt',
-              title: 'Alt Text',
-              type: 'string',
-            }),
-            defineField({
-              name: 'caption',
-              title: 'Caption',
-              type: 'string',
-            }),
-          ],
-        },
-        {
-          type: 'code',
-          title: 'Code Block',
-        },
-      ],
+      type: 'localeBlock',
     }),
     defineField({
       name: 'categories',
@@ -84,9 +46,7 @@ export default defineType({
     defineField({
       name: 'tags',
       title: 'Tags',
-      type: 'array',
-      of: [{type: 'string'}],
-      options: {layout: 'tags'},
+      type: 'localeStringList',
     }),
     defineField({
       name: 'publishedAt',
@@ -124,7 +84,7 @@ export default defineType({
   ],
   preview: {
     select: {
-      title: 'title',
+      title: `title.${DEFAULT_LOCALE}`,
       media: 'coverImage',
       date: 'publishedAt',
       status: 'status',

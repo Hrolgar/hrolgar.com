@@ -1,4 +1,6 @@
 import {defineField, defineType} from 'sanity'
+import {DEFAULT_LOCALE} from '../locale'
+import {localeRequired} from './localeFields'
 
 export default defineType({
   name: 'homelabPage',
@@ -6,26 +8,9 @@ export default defineType({
   type: 'document',
   fields: [
     defineField({
-      name: 'language',
-      title: 'Language',
-      type: 'string',
-      options: {list: [{title: 'English', value: 'en'}, {title: 'Norsk', value: 'nb'}], layout: 'radio'},
-      initialValue: 'en',
-      description: 'Which language this document is written in. Leave as English unless this IS the Norwegian version.',
-    }),
-    defineField({
-      name: 'translationOf',
-      title: 'Translation of',
-      type: 'reference',
-      to: [{type: 'homelabPage'}],
-      description: 'On a Norwegian document, point this at the English original. Leave empty on English documents.',
-      hidden: ({document}) => document?.language !== 'nb',
-    }),
-    defineField({
       name: 'intro',
       title: 'Intro',
-      type: 'array',
-      of: [{type: 'block'}],
+      type: 'localeBlock',
     }),
     defineField({
       name: 'hardware',
@@ -39,18 +24,18 @@ export default defineType({
             defineField({
               name: 'name',
               title: 'Name',
-              type: 'string',
-              validation: (rule) => rule.required(),
+              type: 'localeString',
+              validation: localeRequired,
             }),
             defineField({
               name: 'description',
               title: 'Description',
-              type: 'text',
+              type: 'localeText',
             }),
             defineField({
               name: 'specs',
               title: 'Specs',
-              type: 'text',
+              type: 'localeText',
             }),
             defineField({
               name: 'image',
@@ -59,28 +44,14 @@ export default defineType({
               options: {hotspot: true},
             }),
           ],
-          preview: {select: {title: 'name', subtitle: 'description'}},
+          preview: {select: {title: `name.${DEFAULT_LOCALE}`, subtitle: `description.${DEFAULT_LOCALE}`}},
         },
       ],
     }),
     defineField({
       name: 'architecture',
       title: 'Architecture',
-      type: 'array',
-      of: [
-        {type: 'block'},
-        {
-          type: 'image',
-          options: {hotspot: true},
-          fields: [
-            defineField({
-              name: 'alt',
-              title: 'Alt Text',
-              type: 'string',
-            }),
-          ],
-        },
-      ],
+      type: 'localeBlock',
     }),
     defineField({
       name: 'stats',
@@ -94,8 +65,8 @@ export default defineType({
             defineField({
               name: 'label',
               title: 'Label',
-              type: 'string',
-              validation: (rule) => rule.required(),
+              type: 'localeString',
+              validation: localeRequired,
             }),
             defineField({
               name: 'value',
@@ -104,7 +75,7 @@ export default defineType({
               validation: (rule) => rule.required(),
             }),
           ],
-          preview: {select: {title: 'label', subtitle: 'value'}},
+          preview: {select: {title: `label.${DEFAULT_LOCALE}`, subtitle: 'value'}},
         },
       ],
     }),

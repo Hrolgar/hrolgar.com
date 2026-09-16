@@ -10,7 +10,10 @@
 export const LOCALES = ["en", "nb"] as const;
 export type Locale = (typeof LOCALES)[number];
 
-export const DEFAULT_LOCALE: Locale = "en";
+// `satisfies` rather than `: Locale`, so the type is the literal "en" and not the whole
+// union. Types like `Exclude<Locale, typeof DEFAULT_LOCALE>` — "every language that needs a
+// translation" — collapse to `never` otherwise, and silently stop checking anything.
+export const DEFAULT_LOCALE = "en" satisfies Locale;
 
 /** URL prefix for a locale. English has none, by design. */
 export const localePrefix: Record<Locale, string> = { en: "", nb: "/no" };
@@ -19,6 +22,25 @@ export const localePrefix: Record<Locale, string> = { en: "", nb: "/no" };
 export const localeHtmlLang: Record<Locale, string> = { en: "en", nb: "nb-NO" };
 
 export const localeLabel: Record<Locale, string> = { en: "English", nb: "Norsk" };
+
+/**
+ * The URL segment for a locale: "no" for Norwegian, because the prefix is `/no`.
+ *
+ * Derived rather than listed, so the segment and the prefix cannot disagree. Note the
+ * segment is NOT the locale code: the language is `nb`, the URL says `no`, and Norwegians
+ * type /no.
+ */
+export const localeSegment: Record<Locale, string> = Object.fromEntries(
+  LOCALES.map((locale) => [locale, localePrefix[locale].replace(/^\//, "")]),
+) as Record<Locale, string>;
+
+/** Locales that live under a URL prefix, i.e. everything except the default. */
+export const PREFIXED_LOCALES = LOCALES.filter((locale) => locale !== DEFAULT_LOCALE);
+
+/** The locale a URL segment belongs to, or null when the segment is not a language. */
+export function localeFromSegment(segment: string): Locale | null {
+  return PREFIXED_LOCALES.find((locale) => localeSegment[locale] === segment) ?? null;
+}
 
 export function isLocale(value: string): value is Locale {
   return (LOCALES as readonly string[]).includes(value);

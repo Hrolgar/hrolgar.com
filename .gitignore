@@ -23,3 +23,6 @@ npm-debug.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Dataset dumps taken before a migration. Content, not code, and stale the moment it is written.
+_backup/

@@ -1,4 +1,6 @@
 import {defineType, defineField} from 'sanity'
+import {DEFAULT_LOCALE} from '../locale'
+import {localeRequired} from './localeFields'
 
 export default defineType({
   name: 'experience',
@@ -6,26 +8,10 @@ export default defineType({
   type: 'document',
   fields: [
     defineField({
-      name: 'language',
-      title: 'Language',
-      type: 'string',
-      options: {list: [{title: 'English', value: 'en'}, {title: 'Norsk', value: 'nb'}], layout: 'radio'},
-      initialValue: 'en',
-      description: 'Which language this document is written in. Leave as English unless this IS the Norwegian version.',
-    }),
-    defineField({
-      name: 'translationOf',
-      title: 'Translation of',
-      type: 'reference',
-      to: [{type: 'experience'}],
-      description: 'On a Norwegian document, point this at the English original. Leave empty on English documents.',
-      hidden: ({document}) => document?.language !== 'nb',
-    }),
-    defineField({
       name: 'company',
       title: 'Company',
-      type: 'string',
-      validation: (rule) => rule.required(),
+      type: 'localeString',
+      validation: localeRequired,
     }),
     defineField({
       name: 'companyLogo',
@@ -35,13 +21,13 @@ export default defineType({
     defineField({
       name: 'role',
       title: 'Role',
-      type: 'string',
-      validation: (rule) => rule.required(),
+      type: 'localeString',
+      validation: localeRequired,
     }),
     defineField({
       name: 'location',
       title: 'Location',
-      type: 'string',
+      type: 'localeString',
     }),
     defineField({
       name: 'startDate',
@@ -58,8 +44,7 @@ export default defineType({
     defineField({
       name: 'description',
       title: 'Description',
-      type: 'array',
-      of: [{type: 'block'}],
+      type: 'localeBlock',
     }),
     defineField({
       name: 'technologies',
@@ -75,8 +60,8 @@ export default defineType({
   ],
   preview: {
     select: {
-      title: 'role',
-      subtitle: 'company',
+      title: `role.${DEFAULT_LOCALE}`,
+      subtitle: `company.${DEFAULT_LOCALE}`,
       media: 'companyLogo',
     },
   },
