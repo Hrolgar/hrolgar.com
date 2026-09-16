@@ -3,6 +3,9 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ContactInfo, Service, PageContent, FAQ, ContactForm } from "@/sanity/types";
 import ContactFormModal from "@/components/ContactFormModal";
+import type { Locale } from "@/sanity/locale";
+import { DEFAULT_LOCALE } from "@/sanity/locale";
+import { t } from "@/lib/ui";
 
 interface Props {
   contact: ContactInfo | null;
@@ -11,6 +14,7 @@ interface Props {
   faqs: FAQ[];
   forms: ContactForm[];
   defaultFAQs: FAQ[];
+  locale?: Locale;
 }
 
 const socialIcons: Record<string, string> = {
@@ -51,6 +55,7 @@ export default function ContactPageClient({
   faqs,
   forms,
   defaultFAQs,
+  locale = DEFAULT_LOCALE,
 }: Props) {
   const [openFormSlug, setOpenFormSlug] = useState<string | null>(null);
   const isDesktop = useIsDesktop();
@@ -117,7 +122,7 @@ export default function ContactPageClient({
         <div className="mx-auto max-w-5xl">
           <section className="border-b border-border pb-12 md:pb-16">
             <p className="mb-5 text-sm uppercase tracking-[0.24em] text-primary">
-              Contact
+              {t("contactTitle", locale)}
             </p>
             <h1 className="max-w-[10ch] font-[family-name:var(--font-serif)] text-5xl font-bold tracking-tight text-foreground sm:text-6xl md:text-7xl">
               {contactHeading}
@@ -130,7 +135,7 @@ export default function ContactPageClient({
           {services.length > 0 && (
             <section className="py-12 md:py-16 border-b border-border">
               <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted mb-6">
-                What I can help with
+                {t("whatICanHelpWith", locale)}
               </p>
               <div className="grid gap-4 sm:grid-cols-3">
                 {services.map((service) => (
@@ -158,7 +163,7 @@ export default function ContactPageClient({
 
           <section className="grid gap-6 py-12 md:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] md:py-16">
             <article className="rounded-[calc(var(--radius)*2)] border border-accent/30 bg-[color:color-mix(in_srgb,var(--color-surface)_78%,black)] p-8 md:p-10">
-              <p className="text-sm uppercase tracking-[0.24em] text-accent">Hire flow</p>
+              <p className="text-sm uppercase tracking-[0.24em] text-accent">{t("hireFlow", locale)}</p>
               <h2 className="mt-4 font-[family-name:var(--font-serif)] text-3xl font-bold text-foreground md:text-4xl">
                 {hireHeading}
               </h2>
@@ -199,13 +204,14 @@ export default function ContactPageClient({
               {contact?.availableForWork && (
                 <span className="mt-4 inline-flex min-h-11 items-center gap-3 rounded-full border border-accent/30 bg-accent/10 px-4 py-2 text-sm font-semibold text-accent">
                   <span className="h-2.5 w-2.5 rounded-full bg-accent shadow-[0_0_0_6px_rgba(224,122,95,0.12)]" />
-                  Available for freelance work
+                  {t("availableForWork", locale)}
                 </span>
               )}
 
               {!isDesktop && projectInquiryForm && openFormSlug === "project-inquiry" ? (
                 <div id="contact-form-project-inquiry">
                   <ContactFormModal
+                    locale={locale}
                     form={projectInquiryForm}
                     isOpen={true}
                     variant={formVariant}
@@ -216,7 +222,7 @@ export default function ContactPageClient({
             </article>
 
             <article className="rounded-[calc(var(--radius)*2)] border border-border bg-surface p-8 md:p-10">
-              <p className="text-sm uppercase tracking-[0.24em] text-primary">General contact</p>
+              <p className="text-sm uppercase tracking-[0.24em] text-primary">{t("generalContact", locale)}</p>
               <h2 className="mt-4 font-[family-name:var(--font-serif)] text-3xl font-bold text-foreground">
                 {helloHeading}
               </h2>
@@ -253,7 +259,7 @@ export default function ContactPageClient({
               {socials.length > 0 && (
                 <div className="mt-10">
                   <p className="text-xs font-semibold uppercase tracking-[0.24em] text-muted">
-                    Find me elsewhere
+                    {t("findMeElsewhere", locale)}
                   </p>
                   <div className="mt-4 space-y-3">
                     {socials.map((social) => (
@@ -272,7 +278,7 @@ export default function ContactPageClient({
                           </svg>
                         ) : (
                           <span className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">
-                            Profile
+                            {t("profile", locale)}
                           </span>
                         )}
                       </a>
@@ -284,6 +290,7 @@ export default function ContactPageClient({
               {!isDesktop && generalContactForm && openFormSlug === "general-contact" ? (
                 <div id="contact-form-general-contact">
                   <ContactFormModal
+                    locale={locale}
                     form={generalContactForm}
                     isOpen={true}
                     variant={formVariant}
@@ -297,7 +304,7 @@ export default function ContactPageClient({
           <section className="rounded-[calc(var(--radius)*2)] border border-border bg-[color:color-mix(in_srgb,var(--color-surface)_84%,black)] p-8 md:p-10">
             <p className="text-sm uppercase tracking-[0.24em] text-primary">FAQ</p>
             <h2 className="mt-4 font-[family-name:var(--font-serif)] text-3xl font-bold text-foreground md:text-4xl">
-              Common Questions
+              {t("commonQuestions", locale)}
             </h2>
 
             <div className="mt-8 divide-y divide-border">
@@ -318,6 +325,7 @@ export default function ContactPageClient({
 
       {isDesktop && openForm && (
         <ContactFormModal
+                    locale={locale}
           form={openForm}
           isOpen={true}
           variant={formVariant}

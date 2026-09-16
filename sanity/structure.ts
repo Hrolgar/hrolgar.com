@@ -1,4 +1,44 @@
-import type { StructureResolver } from "sanity/structure";
+import type { StructureResolver, StructureBuilder } from "sanity/structure";
+
+/**
+ * Split a translatable type into English and Norwegian lists.
+ *
+ * Without this every Norwegian document sits in the same list as its English original and
+ * the list doubles in length, which is how document-level translation normally becomes
+ * unusable to edit. Documents created before translation existed have no `language` at
+ * all, so English deliberately matches "en" OR missing.
+ *
+ * `initialValueTemplates` is emptied on the Norwegian list so "create new" from there
+ * cannot make an untagged document that then shows up as English.
+ */
+function byLanguage(S: StructureBuilder, type: string, title: string) {
+  return S.listItem()
+    .title(title)
+    .child(
+      S.list()
+        .title(title)
+        .items([
+          S.listItem()
+            .title("English")
+            .child(
+              S.documentTypeList(type)
+                .title(`${title} (English)`)
+                .filter('_type == $type && (!defined(language) || language == "en")')
+                .params({ type }),
+            ),
+          S.listItem()
+            .title("Norsk")
+            .child(
+              S.documentTypeList(type)
+                .title(`${title} (Norsk)`)
+                .filter('_type == $type && language == "nb"')
+                .params({ type })
+                .initialValueTemplates([]),
+            ),
+        ]),
+    );
+}
+
 
 export const structure: StructureResolver = (S) =>
   S.list()
@@ -21,14 +61,8 @@ export const structure: StructureResolver = (S) =>
       S.divider(),
 
       // Collections
-      S.listItem()
-        .title("Experience")
-        .schemaType("experience")
-        .child(S.documentTypeList("experience").title("Experience")),
-      S.listItem()
-        .title("Projects")
-        .schemaType("project")
-        .child(S.documentTypeList("project").title("Projects")),
+      byLanguage(S, "experience", "Experience"),
+      byLanguage(S, "project", "Projects"),
       S.listItem()
         .title("Skills")
         .schemaType("skill")
@@ -41,14 +75,8 @@ export const structure: StructureResolver = (S) =>
       S.divider(),
 
       // Blog
-      S.listItem()
-        .title("Blog Posts")
-        .schemaType("post")
-        .child(S.documentTypeList("post").title("Blog Posts")),
-      S.listItem()
-        .title("Categories")
-        .schemaType("category")
-        .child(S.documentTypeList("category").title("Categories")),
+      byLanguage(S, "post", "Blog Posts"),
+      byLanguage(S, "category", "Categories"),
 
       S.divider(),
 
@@ -61,14 +89,8 @@ export const structure: StructureResolver = (S) =>
       S.divider(),
 
       // Services & FAQ
-      S.listItem()
-        .title("Services")
-        .schemaType("service")
-        .child(S.documentTypeList("service").title("Services")),
-      S.listItem()
-        .title("FAQ")
-        .schemaType("faq")
-        .child(S.documentTypeList("faq").title("FAQ")),
+      byLanguage(S, "service", "Services"),
+      byLanguage(S, "faq", "FAQ"),
 
       S.divider(),
 

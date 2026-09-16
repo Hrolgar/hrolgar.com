@@ -1,19 +1,22 @@
 import type { Metadata } from "next";
+import type { Locale } from "@/sanity/locale";
+import { DEFAULT_LOCALE } from "@/sanity/locale";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import ContactPageClient from "@/components/ContactPageClient";
 import { getContact, getFAQs, getPageContent, getServices, getContactForms, getSettings } from "@/sanity/lib/queries";
 import type { FAQ } from "@/sanity/types";
-import { breadcrumbJsonLd, buildSeoMetadata, faqPageJsonLd, jsonLdScript } from "@/lib/seo";
+import { breadcrumbJsonLd, buildSeoMetadata, faqPageJsonLd, jsonLdScript , withAlternates} from "@/lib/seo";
 
 export const revalidate = 3600;
 
 export async function generateMetadata(): Promise<Metadata> {
-  return buildSeoMetadata({
+  const meta = await buildSeoMetadata({
     title: "Contact Helgi About Backend & Integration Work",
     description: "Get in touch about backend development, .NET APIs, integrations, infrastructure automation, or a messy system that needs a practical fix.",
     path: "/contact",
   });
+  return withAlternates(meta, "/contact");
 }
 
 const defaultFAQs: FAQ[] = [
@@ -43,12 +46,12 @@ const defaultFAQs: FAQ[] = [
   },
 ];
 
-export default async function ContactPage() {
+export async function ContactBody({ locale = DEFAULT_LOCALE }: { locale?: Locale }) {
   const [contact, services, pageContent, faqs, forms, settings] = await Promise.all([
     getContact(),
-    getServices(),
-    getPageContent(),
-    getFAQs(),
+    getServices(locale),
+    getPageContent(locale),
+    getFAQs(locale),
     getContactForms(),
     getSettings(),
   ]);
@@ -63,8 +66,9 @@ export default async function ContactPage() {
         const faqLd = faqPageJsonLd(faqs.length > 0 ? faqs : defaultFAQs);
         return faqLd ? jsonLdScript(faqLd) : null;
       })()}
-      <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} showBlog={settings?.showBlog} />
+      <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} showBlog={settings?.showBlog} locale={locale} />
       <ContactPageClient
+        locale={locale}
         contact={contact}
         services={services}
         pageContent={pageContent}
@@ -72,7 +76,11 @@ export default async function ContactPage() {
         forms={forms}
         defaultFAQs={defaultFAQs}
       />
-      <Footer contact={contact} footerTagline={pageContent?.footerTagline} siteName={settings?.siteName} navItems={pageContent?.navItems} showBlog={settings?.showBlog} />
+      <Footer contact={contact} footerTagline={pageContent?.footerTagline} siteName={settings?.siteName} navItems={pageContent?.navItems} showBlog={settings?.showBlog} locale={locale} />
     </>
   );
+}
+
+export default async function ContactPage() {
+  return <ContactBody locale="en" />;
 }

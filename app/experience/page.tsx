@@ -1,4 +1,5 @@
 import { PortableText } from "@portabletext/react";
+import { t } from "@/lib/ui";
 import { portableTextComponents } from "@/lib/portableText";
 import { urlFor } from "@/sanity/lib/image";
 import Image from "next/image";
@@ -13,42 +14,28 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ScrollReveal from "@/components/ScrollReveal";
 import type { Metadata } from "next";
-import { breadcrumbJsonLd, buildSeoMetadata, jsonLdScript } from "@/lib/seo";
+import type { Locale } from "@/sanity/locale";
+import { DEFAULT_LOCALE } from "@/sanity/locale";
+import { breadcrumbJsonLd, buildSeoMetadata, jsonLdScript , withAlternates} from "@/lib/seo";
+import { duration, formatMonthYear } from "@/lib/dates";
 
 export const revalidate = 3600;
 
 export async function generateMetadata(): Promise<Metadata> {
-  return buildSeoMetadata({
+  const meta = await buildSeoMetadata({
     title: "Experience - Backend, .NET & Infrastructure",
     description: "A quick view of my backend development, .NET, integration, and infrastructure experience across product teams and freelance projects.",
     path: "/experience",
   });
+  return withAlternates(meta, "/experience");
 }
 
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-  });
-}
-
-function duration(start: string, end?: string): string {
-  const s = new Date(start);
-  const e = end ? new Date(end) : new Date();
-  const months = (e.getFullYear() - s.getFullYear()) * 12 + (e.getMonth() - s.getMonth());
-  const years = Math.floor(months / 12);
-  const remaining = months % 12;
-  if (years === 0) return `${remaining}mo`;
-  if (remaining === 0) return `${years}yr`;
-  return `${years}yr ${remaining}mo`;
-}
-
-export default async function ExperiencePage() {
+export async function ExperienceBody({ locale = DEFAULT_LOCALE }: { locale?: Locale }) {
   const [about, experience, contact, pageContent, settings] = await Promise.all([
-    getAbout(),
-    getExperience(),
+    getAbout(locale),
+    getExperience(locale),
     getContact(),
-    getPageContent(),
+    getPageContent(locale),
     getSettings(),
   ]);
 
@@ -60,7 +47,7 @@ export default async function ExperiencePage() {
         { name: "Home", path: "/" },
         { name: "Experience", path: "/experience" },
       ]))}
-      <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} showBlog={settings?.showBlog} />
+      <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} showBlog={settings?.showBlog} locale={locale} />
       <main id="main-content" className="pt-24 pb-16 px-6 md:pb-24">
         <div className="max-w-5xl mx-auto">
           <ScrollReveal>
@@ -68,10 +55,10 @@ export default async function ExperiencePage() {
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <h1 className="font-[family-name:var(--font-serif)] text-4xl md:text-5xl font-bold text-foreground mb-4">
-                    Experience
+                    {t("experienceTitle", locale)}
                   </h1>
                   <p className="text-muted text-base max-w-2xl">
-                    Professional background across backend development, infrastructure, and software engineering.
+                    {t("experienceIntro", locale)}
                   </p>
                 </div>
                 {resumeUrl && (
@@ -82,7 +69,7 @@ export default async function ExperiencePage() {
                     data-umami-event="resume-download"
                     className="flex-shrink-0 inline-flex items-center gap-2 bg-surface border border-border rounded px-4 py-2 text-sm text-muted hover:text-foreground hover:border-primary transition-all"
                   >
-                    Download resume ↓
+                    {t("downloadResume", locale)} ↓
                   </a>
                 )}
               </div>
@@ -90,7 +77,7 @@ export default async function ExperiencePage() {
           </ScrollReveal>
 
           {experience.length === 0 ? (
-            <p className="text-muted py-20 text-center">No experience entries yet.</p>
+            <p className="text-muted py-20 text-center">{t("noExperience", locale)}</p>
           ) : (
             <div className="relative">
               {/* Timeline line */}
@@ -125,8 +112,8 @@ export default async function ExperiencePage() {
                         </div>
                       </div>
                       <div className="text-sm text-muted whitespace-nowrap flex-shrink-0">
-                        <span>{formatDate(exp.startDate)} – {exp.endDate ? formatDate(exp.endDate) : "Present"}</span>
-                        <span className="text-muted/50 ml-2">({duration(exp.startDate, exp.endDate)})</span>
+                        <span>{formatMonthYear(exp.startDate, locale)} – {exp.endDate ? formatMonthYear(exp.endDate, locale) : t("present", locale)}</span>
+                        <span className="text-muted/50 ml-2">({duration(exp.startDate, exp.endDate, locale)})</span>
                       </div>
                     </div>
 
@@ -157,7 +144,11 @@ export default async function ExperiencePage() {
           )}
         </div>
       </main>
-      <Footer contact={contact} footerTagline={pageContent?.footerTagline} siteName={settings?.siteName} navItems={pageContent?.navItems} showBlog={settings?.showBlog} />
+      <Footer contact={contact} footerTagline={pageContent?.footerTagline} siteName={settings?.siteName} navItems={pageContent?.navItems} showBlog={settings?.showBlog} locale={locale} />
     </>
   );
+}
+
+export default async function ExperiencePage() {
+  return <ExperienceBody locale="en" />;
 }

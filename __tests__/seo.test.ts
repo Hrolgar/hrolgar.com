@@ -59,7 +59,12 @@ describe("SEO metadata", () => {
   it("adds canonical and social image metadata to the blog page", async () => {
     const metadata = await generateBlogMetadata();
 
-    expect(metadata.alternates).toEqual({ canonical: "/blog" });
+    // The English page also declares its Norwegian counterpart. Both sides must carry the
+    // pair or Google ignores the hreflang and treats the two as duplicates.
+    expect(metadata.alternates).toEqual({
+      canonical: "/blog",
+      languages: { en: "/blog", "nb-NO": "/no/blog", "x-default": "/blog" },
+    });
     expect(metadata.openGraph).toMatchObject({
       images: [{ url: "https://cdn.sanity.io/default-og.png" }],
     });

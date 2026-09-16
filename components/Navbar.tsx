@@ -1,17 +1,11 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { defaultNav, t } from "@/lib/ui";
+import type { Locale } from "@/sanity/locale";
+import { DEFAULT_LOCALE, localeHref } from "@/sanity/locale";
 import { useScrollY } from "@/lib/hooks/useScrollY";
 
-const defaultPages = [
-  { label: "Home", href: "/" },
-  { label: "Projects", href: "/projects" },
-  { label: "Experience", href: "/experience" },
-  { label: "Services", href: "/services" },
-  { label: "Homelab", href: "/homelab" },
-  { label: "Blog", href: "/blog" },
-  { label: "Contact", href: "/contact" },
-];
 
 interface NavItem {
   _key: string;
@@ -23,10 +17,11 @@ interface Props {
   navItems?: NavItem[] | null;
   siteName?: string | null;
   showBlog?: boolean;
+  locale?: Locale;
 }
 
-export default function Navbar({ navItems, siteName, showBlog }: Props) {
-  const pages = navItems && navItems.length > 0 ? navItems : defaultPages;
+export default function Navbar({ navItems, siteName, showBlog, locale = DEFAULT_LOCALE }: Props) {
+  const pages = navItems && navItems.length > 0 ? navItems : defaultNav(locale);
   const filteredPages = pages.filter(p => showBlog !== false || p.href !== "/blog");
   const [isOpen, setIsOpen] = useState(false);
   const scrollY = useScrollY();
@@ -49,7 +44,7 @@ export default function Navbar({ navItems, siteName, showBlog }: Props) {
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-primary focus:text-white focus:px-4 focus:py-2 focus:rounded"
       >
-        Skip to content
+        {t("skipToContent", locale)}
       </a>
 
       <nav
@@ -62,7 +57,7 @@ export default function Navbar({ navItems, siteName, showBlog }: Props) {
         }`}
       >
         <div className="max-w-5xl mx-auto px-6 py-4 flex justify-between items-center">
-          <a href="/" className="font-[family-name:var(--font-serif)] text-xl font-semibold text-foreground">
+          <a href={localeHref("/", locale)} className="font-[family-name:var(--font-serif)] text-xl font-semibold text-foreground">
             {siteName || "Hrolgar"}
           </a>
 
@@ -71,7 +66,7 @@ export default function Navbar({ navItems, siteName, showBlog }: Props) {
               {filteredPages.map((link) => (
                 <li key={link.href}>
                   <a
-                    href={link.href}
+                    href={localeHref(link.href, locale)}
                     className="text-sm font-medium text-muted hover:text-foreground transition-colors"
                   >
                     {link.label}
@@ -80,12 +75,12 @@ export default function Navbar({ navItems, siteName, showBlog }: Props) {
               ))}
             </ul>
             <a
-              href="/contact"
+              href={localeHref("/contact", locale)}
               data-umami-event="nav-contact-click"
               data-umami-event-source="navbar"
               className="inline-flex items-center rounded-[var(--radius)] bg-accent px-4 py-2 text-sm font-semibold text-bg transition-colors hover:bg-[color:color-mix(in_srgb,var(--color-accent)_88%,white)]"
             >
-              Hire Me
+              {t("hireMe", locale)}
             </a>
           </div>
 
@@ -124,7 +119,7 @@ export default function Navbar({ navItems, siteName, showBlog }: Props) {
             {filteredPages.map((link) => (
               <li key={link.href}>
                 <a
-                  href={link.href}
+                  href={localeHref(link.href, locale)}
                   onClick={closeMenu}
                   className="block font-medium text-muted hover:text-foreground transition-colors"
                 >
@@ -134,13 +129,13 @@ export default function Navbar({ navItems, siteName, showBlog }: Props) {
             ))}
             <li>
               <a
-                href="/contact"
+                href={localeHref("/contact", locale)}
                 onClick={closeMenu}
                 data-umami-event="nav-contact-click"
                 data-umami-event-source="mobile-menu"
                 className="inline-flex items-center rounded-[var(--radius)] bg-accent px-4 py-2 text-sm font-semibold text-bg transition-colors hover:bg-[color:color-mix(in_srgb,var(--color-accent)_88%,white)]"
               >
-                Hire Me
+                {t("hireMe", locale)}
               </a>
             </li>
           </ul>

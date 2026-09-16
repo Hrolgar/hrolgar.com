@@ -1,4 +1,7 @@
 import { urlFor } from "@/sanity/lib/image";
+import { t } from "@/lib/ui";
+import type { Locale } from "@/sanity/locale";
+import { DEFAULT_LOCALE, localeHref } from "@/sanity/locale";
 import Image from "next/image";
 import ScrollReveal from "./ScrollReveal";
 import type { Project } from "@/sanity/types";
@@ -7,9 +10,10 @@ interface Props {
   projects: Project[];
   heading?: string | null;
   intro?: string | null;
+  locale?: Locale;
 }
 
-export default function Projects({ projects, heading, intro }: Props) {
+export default function Projects({ projects, heading, intro, locale = DEFAULT_LOCALE }: Props) {
   if (!projects?.length) return null;
 
   // Show up to 3: featured first, fill with non-featured if needed
@@ -69,7 +73,7 @@ export default function Projects({ projects, heading, intro }: Props) {
                     href={`/projects/${featured.slug.current}`}
                     className="text-sm text-primary hover:text-secondary transition-colors font-medium"
                   >
-                    Read More →
+                    {t("readMore", locale)} →
                   </a>
                 )}
                 {featured.githubUrl && (
@@ -115,7 +119,7 @@ export default function Projects({ projects, heading, intro }: Props) {
                         href={`/projects/${project.slug.current}`}
                         className="text-sm text-primary hover:text-secondary transition-colors whitespace-nowrap"
                       >
-                        View →
+                        {t("view", locale)} →
                       </a>
                     )}
                     {project.githubUrl && (
@@ -138,10 +142,10 @@ export default function Projects({ projects, heading, intro }: Props) {
         <ScrollReveal delay={200}>
           <div className="mt-8 text-right">
             <a
-              href="/projects"
+              href={localeHref("/projects", locale)}
               className="text-sm text-primary hover:text-secondary transition-colors font-medium"
             >
-              View all projects →
+              {t("viewAllProjects", locale)} →
             </a>
           </div>
         </ScrollReveal>

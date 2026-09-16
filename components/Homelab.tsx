@@ -1,14 +1,18 @@
 import ScrollReveal from "./ScrollReveal";
 import ShaderBackground from "./ShaderBackground";
 import type { HomelabStat } from "@/sanity/types";
+import type { Locale } from "@/sanity/locale";
+import { DEFAULT_LOCALE, localeHref } from "@/sanity/locale";
+import { t } from "@/lib/ui";
 
 interface Props {
   heading?: string | null;
   subtitle?: string | null;
   stats?: HomelabStat[];
+  locale?: Locale;
 }
 
-export default function Homelab({ heading, subtitle, stats }: Props) {
+export default function Homelab({ heading, subtitle, stats, locale = DEFAULT_LOCALE }: Props) {
   return (
     <section id="homelab" className="relative py-20 md:py-28 px-6 overflow-hidden">
       {/* Shader on the left side */}
@@ -26,7 +30,7 @@ export default function Homelab({ heading, subtitle, stats }: Props) {
             {/* Right side — content */}
             <div className="md:w-1/2">
               <p className="text-xs uppercase tracking-[0.24em] text-primary mb-4">
-                Self-Hosted Infrastructure
+                {t("selfHostedInfrastructure", locale)}
               </p>
               <h2 className="font-[family-name:var(--font-serif)] text-3xl md:text-4xl font-bold text-foreground mb-4">
                 {heading || "Homelab"}
@@ -48,10 +52,10 @@ export default function Homelab({ heading, subtitle, stats }: Props) {
               )}
 
               <a
-                href="/homelab"
+                href={localeHref("/homelab", locale)}
                 className="inline-flex items-center gap-2 text-primary hover:text-secondary text-sm font-medium transition-colors"
               >
-                Explore my homelab
+                {t("exploreHomelab", locale)}
                 <span aria-hidden="true">→</span>
               </a>
             </div>

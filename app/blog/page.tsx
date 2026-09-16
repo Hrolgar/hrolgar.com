@@ -4,28 +4,26 @@ import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import type { Metadata } from "next";
-import { breadcrumbJsonLd, buildSeoMetadata, jsonLdScript } from "@/lib/seo";
+import type { Locale } from "@/sanity/locale";
+import { t } from "@/lib/ui";
+import { DEFAULT_LOCALE, localePrefix } from "@/sanity/locale";
+import { breadcrumbJsonLd, buildSeoMetadata, jsonLdScript , withAlternates} from "@/lib/seo";
+import { formatDate } from "@/lib/dates";
 
 export const revalidate = 3600;
 
 export async function generateMetadata(): Promise<Metadata> {
-  return buildSeoMetadata({
+  const meta = await buildSeoMetadata({
     title: "Blog - Development, Homelab & Backend Notes",
     description: "Notes from real backend builds, homelab work, self-hosting fixes, and the bits of infrastructure that were useful enough to write down.",
     path: "/blog",
   });
+  return withAlternates(meta, "/blog");
 }
 
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-}
-
-export default async function BlogPage() {
-  const [posts, categories, pageContent, settings] = await Promise.all([getPosts(), getCategories(), getPageContent(), getSettings()]);
+export async function BlogBody({ locale = DEFAULT_LOCALE }: { locale?: Locale }) {
+  const p = localePrefix[locale];
+  const [posts, categories, pageContent, settings] = await Promise.all([getPosts(), getCategories(locale), getPageContent(locale), getSettings()]);
 
   return (
     <>
@@ -33,7 +31,7 @@ export default async function BlogPage() {
         { name: "Home", path: "/" },
         { name: "Blog", path: "/blog" },
       ]))}
-      <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} showBlog={settings?.showBlog} />
+      <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} showBlog={settings?.showBlog} locale={locale} />
       <main id="main-content" className="pt-24 pb-16 px-6">
         <div className="max-w-5xl mx-auto">
           <div className="mb-12">
@@ -48,11 +46,11 @@ export default async function BlogPage() {
           {categories.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-10">
               <a
-                href="/blog"
+                href={`${p}/blog`}
                 className="text-xs bg-primary/15 text-primary px-3 py-1.5 rounded font-medium border border-transparent"
                 aria-current="page"
               >
-                All
+                {t("all", locale)}
               </a>
               {categories.map((cat) => (
                 <a
@@ -68,7 +66,7 @@ export default async function BlogPage() {
 
           {posts.length === 0 ? (
             <div className="text-center py-20">
-              <p className="text-muted text-base">No posts yet. Check back soon.</p>
+              <p className="text-muted text-base">{t("noPosts", locale)}</p>
             </div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -93,11 +91,11 @@ export default async function BlogPage() {
                   <div className="p-5">
                     <div className="flex items-center gap-3 mb-3">
                       <time className="text-xs text-muted" dateTime={post.publishedAt}>
-                        {formatDate(post.publishedAt)}
+                        {formatDate(post.publishedAt, locale)}
                       </time>
                       {post.featured && (
                         <span className="text-[10px] bg-accent/15 text-accent px-2 py-0.5 rounded font-medium">
-                          Featured
+                          {t("featured", locale)}
                         </span>
                       )}
                     </div>
@@ -126,7 +124,11 @@ export default async function BlogPage() {
           )}
         </div>
       </main>
-      <Footer footerTagline={pageContent?.footerTagline} siteName={settings?.siteName} navItems={pageContent?.navItems} showBlog={settings?.showBlog} />
+      <Footer footerTagline={pageContent?.footerTagline} siteName={settings?.siteName} navItems={pageContent?.navItems} showBlog={settings?.showBlog} locale={locale} />
     </>
   );
+}
+
+export default async function BlogPage() {
+  return <BlogBody locale="en" />;
 }

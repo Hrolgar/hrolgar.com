@@ -1,12 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import { t } from "@/lib/ui";
+import type { Locale } from "@/sanity/locale";
+import { DEFAULT_LOCALE } from "@/sanity/locale";
 import { urlFor } from "@/sanity/lib/image";
 import Image from "next/image";
 import ScrollReveal from "./ScrollReveal";
 import type { Project, ProjectCategory } from "@/sanity/types";
 
-function ProjectCard({ project }: { project: Project }) {
+function ProjectCard({ project, locale = DEFAULT_LOCALE }: { project: Project; locale?: Locale }) {
   return (
     <a
       href={`/projects/${project.slug.current}`}
@@ -53,7 +56,7 @@ function ProjectCard({ project }: { project: Project }) {
             )}
           </div>
         )}
-        <span className="text-sm text-primary font-medium">View →</span>
+        <span className="text-sm text-primary font-medium">{t("view", locale)} →</span>
       </div>
     </a>
   );
@@ -64,9 +67,10 @@ type FilterKey = "all" | "personal" | "freelance" | string;
 interface Props {
   projects: Project[];
   projectCategories: ProjectCategory[];
+  locale?: Locale;
 }
 
-export default function ProjectsFilter({ projects, projectCategories }: Props) {
+export default function ProjectsFilter({ projects, projectCategories, locale = DEFAULT_LOCALE }: Props) {
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
 
   const personalProjects = projects.filter(
@@ -90,13 +94,13 @@ export default function ProjectsFilter({ projects, projectCategories }: Props) {
 
   if (activeFilter === "all") {
     filteredProjects = projects;
-    sectionTitle = "All Projects";
+    sectionTitle = t("allProjects", locale);
   } else if (activeFilter === "personal") {
     filteredProjects = personalProjects;
-    sectionTitle = "Personal Projects";
+    sectionTitle = t("personalProjects", locale);
   } else if (activeFilter === "freelance") {
     filteredProjects = freelanceProjects;
-    sectionTitle = "Freelance Work";
+    sectionTitle = t("freelanceWork", locale);
   } else {
     // Category filter
     filteredProjects = projects.filter(
@@ -117,15 +121,15 @@ export default function ProjectsFilter({ projects, projectCategories }: Props) {
           <div className="sticky top-28 space-y-6">
             {/* Type filter */}
             <div>
-              <h3 className="text-xs uppercase tracking-wider text-muted mb-3">Type</h3>
+              <h3 className="text-xs uppercase tracking-wider text-muted mb-3">{t("type", locale)}</h3>
               <ul className="space-y-0.5">
                 {[
-                  { key: "all" as FilterKey, label: "All", count: projects.length },
+                  { key: "all" as FilterKey, label: t("all", locale), count: projects.length },
                   ...(personalProjects.length > 0
-                    ? [{ key: "personal" as FilterKey, label: "Personal", count: personalProjects.length }]
+                    ? [{ key: "personal" as FilterKey, label: t("personal", locale), count: personalProjects.length }]
                     : []),
                   ...(freelanceProjects.length > 0
-                    ? [{ key: "freelance" as FilterKey, label: "Freelance", count: freelanceProjects.length }]
+                    ? [{ key: "freelance" as FilterKey, label: t("freelance", locale), count: freelanceProjects.length }]
                     : []),
                 ].map((item) => (
                   <li key={item.key}>
@@ -148,7 +152,7 @@ export default function ProjectsFilter({ projects, projectCategories }: Props) {
             {/* Category filter */}
             {hasCategories && (
               <div>
-                <h3 className="text-xs uppercase tracking-wider text-muted mb-3">Categories</h3>
+                <h3 className="text-xs uppercase tracking-wider text-muted mb-3">{t("categories", locale)}</h3>
                 <ul className="space-y-0.5">
                   {projectCategories.map((cat) => {
                     const count = categoryCounts[cat._id] || 0;
@@ -186,12 +190,12 @@ export default function ProjectsFilter({ projects, projectCategories }: Props) {
         </div>
 
         {filteredProjects.length === 0 ? (
-          <p className="text-muted text-base py-12">No projects in this category yet.</p>
+          <p className="text-muted text-base py-12">{t("noProjectsInCategory", locale)}</p>
         ) : (
           <div className="grid md:grid-cols-2 gap-6">
             {filteredProjects.map((project) => (
               <ScrollReveal key={project._id}>
-                <ProjectCard project={project} />
+                <ProjectCard project={project} locale={locale} />
               </ScrollReveal>
             ))}
           </div>

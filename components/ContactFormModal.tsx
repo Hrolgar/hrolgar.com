@@ -2,12 +2,16 @@
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { ContactForm } from "@/sanity/types";
+import type { Locale } from "@/sanity/locale";
+import { DEFAULT_LOCALE } from "@/sanity/locale";
+import { t } from "@/lib/ui";
 
 interface Props {
   form: ContactForm;
   isOpen: boolean;
   onClose: () => void;
   variant?: "desktop" | "inline";
+  locale?: Locale;
 }
 
 type Status = "idle" | "submitting" | "success" | "error";
@@ -17,6 +21,7 @@ export default function ContactFormModal({
   isOpen,
   onClose,
   variant = "desktop",
+  locale = DEFAULT_LOCALE,
 }: Props) {
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -120,7 +125,7 @@ export default function ContactFormModal({
     const field = fields.find((item) => item.name === name);
     if (field?.required && !value.trim()) return `${field.label} is required.`;
     if (field?.type === "email" && value.trim() && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value.trim())) {
-      return "Please provide a valid email address.";
+      return t("invalidEmail", locale);
     }
     return "";
   };
@@ -180,7 +185,7 @@ export default function ContactFormModal({
     const nextErrors = validateForm();
     if (Object.keys(nextErrors).length > 0) {
       setStatus("error");
-      setErrorMessage("Please correct the highlighted fields and try again.");
+      setErrorMessage(t("fixHighlightedFields", locale));
       focusFirstInvalidField(nextErrors);
       return;
     }
@@ -216,7 +221,7 @@ export default function ContactFormModal({
         result: "error",
       });
       setStatus("error");
-      setErrorMessage("Something went wrong. Please try again or email directly.");
+      setErrorMessage(t("submitFailed", locale));
     }
   };
 
@@ -249,7 +254,7 @@ export default function ContactFormModal({
     if (field.type === "select") {
       return (
         <select {...sharedProps}>
-          <option value="">{field.placeholder || "Select an option"}</option>
+          <option value="">{field.placeholder || t("selectOption", locale)}</option>
           {(field.options || []).map((option) => (
             <option key={option} value={option}>
               {option}
@@ -292,7 +297,7 @@ export default function ContactFormModal({
     <>
       <div className={isDesktopModal ? undefined : "flex items-start justify-between gap-4"}>
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">Contact</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-primary">{t("contactTitle", locale)}</p>
           <h2
             id={titleId}
             className={`mt-3 font-[family-name:var(--font-serif)] text-3xl font-bold text-foreground ${
@@ -313,9 +318,9 @@ export default function ContactFormModal({
             type="button"
             onClick={handleClose}
             className={closeButtonClassName}
-            aria-label="Collapse contact form"
+            aria-label={t("collapseForm", locale)}
           >
-            Close
+            {t("close", locale)}
           </button>
         ) : null}
       </div>
@@ -350,7 +355,7 @@ export default function ContactFormModal({
           disabled={status === "submitting"}
           className="inline-flex min-h-11 w-full items-center justify-center rounded-[var(--radius)] bg-accent px-6 py-3 text-sm font-semibold text-bg transition-colors hover:bg-[color:color-mix(in_srgb,var(--color-accent)_88%,white)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {status === "submitting" ? "Sending..." : form.submitText || "Send Message"}
+          {status === "submitting" ? t("sending", locale) : form.submitText || t("sendMessage", locale)}
         </button>
       </form>
     </>
@@ -364,17 +369,17 @@ export default function ContactFormModal({
         </svg>
       </div>
       <h2 id={titleId} className="mt-5 font-[family-name:var(--font-serif)] text-3xl font-bold text-foreground">
-        Message sent
+        {t("messageSent", locale)}
       </h2>
       <p className="mt-3 text-sm leading-relaxed text-muted">
-        {form.successMessage || "Thanks! I'll get back to you soon."}
+        {form.successMessage || t("thanksReply", locale)}
       </p>
       <button
         type="button"
         onClick={handleClose}
         className="mt-6 inline-flex min-h-11 items-center justify-center rounded-[var(--radius)] border border-border px-6 py-3 text-sm font-semibold text-foreground transition-colors hover:border-primary hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
       >
-        Close
+        {t("close", locale)}
       </button>
     </div>
   );
@@ -404,7 +409,7 @@ export default function ContactFormModal({
       <button
         type="button"
         className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-        aria-label="Close contact form"
+        aria-label={t("closeForm", locale)}
         onClick={onClose}
       />
 
@@ -420,7 +425,7 @@ export default function ContactFormModal({
           type="button"
           onClick={onClose}
           className={closeButtonClassName}
-          aria-label="Close"
+          aria-label={t("close", locale)}
         >
           <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path d="M6 6l12 12M18 6 6 18" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} />

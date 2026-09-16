@@ -1,5 +1,25 @@
 import { cache } from "react";
 import { client } from "./client";
+import type { Locale } from "@/sanity/locale";
+import { DEFAULT_LOCALE } from "@/sanity/locale";
+import { langFilter, listWithFallback } from "@/sanity/lib/localeQuery";
+
+/** Singletons (about, pageContent, homelabPage) have no slug: match on type + language,
+ *  falling back to the English document when no translation exists. */
+function bySlugOrSingleton(type: string, locale: Locale): string {
+  if (locale === DEFAULT_LOCALE) return `*[_type == "${type}" && ${langFilter(locale)}][0]`;
+  // Field-level merge, for the same reason as `bySlugWithFallback`: a singleton that is
+  // only half translated must not blank out the fields nobody has got to yet.
+  return `*[_type == "${type}" && ${langFilter(DEFAULT_LOCALE)}][0] {
+    "_localised": *[_type == "${type}" && language == "${locale}"][0],
+    ...
+  } {
+    ...,
+    ..._localised,
+    "_id": _id,
+    "_localised": null
+  }`;
+}
 import type {
   SiteSettings,
   About,
@@ -25,8 +45,8 @@ export const getSettings = cache(async function getSettings(): Promise<SiteSetti
   return client.fetch(`*[_type == "siteSettings"][0]`);
 });
 
-export async function getAbout(): Promise<About | null> {
-  return client.fetch(`*[_type == "about"][0]{
+export async function getAbout(locale: Locale = DEFAULT_LOCALE): Promise<About | null> {
+  return client.fetch(`${bySlugOrSingleton("about", locale)}{
     ...,
     "resumeFile": resumeFile{asset->{url}}
   }`);
@@ -44,15 +64,15 @@ export async function getSkills(): Promise<Skill[]> {
   )) || [];
 }
 
-export async function getExperience(): Promise<Experience[]> {
+export async function getExperience(locale: Locale = DEFAULT_LOCALE): Promise<Experience[]> {
   return (await client.fetch(
-    `*[_type == "experience"] | order(startDate desc) { ..., technologies[]-> }`
+    listWithFallback("experience", locale, "{ ..., technologies[]-> }", " | order(startDate desc)")
   )) || [];
 }
 
-export async function getProjects(): Promise<Project[]> {
+export async function getProjects(locale: Locale = DEFAULT_LOCALE): Promise<Project[]> {
   return (await client.fetch(
-    `*[_type == "project"] | order(featured desc, order asc) { ..., technologies[]->, categories[]-> }`
+    listWithFallback("project", locale, "{ ..., technologies[]->, categories[]-> }", " | order(featured desc, order asc)")
   )) || [];
 }
 
@@ -117,9 +137,9 @@ export async function getPostSlugs(): Promise<{
   )) || [];
 }
 
-export async function getCategories(): Promise<Category[]> {
+export async function getCategories(locale: Locale = DEFAULT_LOCALE): Promise<Category[]> {
   return (await client.fetch(
-    `*[_type == "category"] | order(title asc){ ..., _updatedAt }`
+    listWithFallback("category", locale, "{ ..., _updatedAt }", " | order(title asc)")
   )) || [];
 }
 
@@ -155,9 +175,9 @@ export async function getHomelabPage(): Promise<HomelabPage | null> {
 
 // --- Project Categories ---
 
-export async function getProjectCategories(): Promise<ProjectCategory[]> {
+export async function getProjectCategories(locale: Locale = DEFAULT_LOCALE): Promise<ProjectCategory[]> {
   return (await client.fetch(
-    `*[_type == "projectCategory"] | order(order asc, title asc)`
+    listWithFallback("projectCategory", locale, "{...}", " | order(order asc, title asc)")
   )) || [];
 }
 
@@ -179,9 +199,9 @@ export async function getFeaturedProjects(limit = 4): Promise<Project[]> {
 
 // --- Services ---
 
-export async function getServices(): Promise<Service[]> {
+export async function getServices(locale: Locale = DEFAULT_LOCALE): Promise<Service[]> {
   return (await client.fetch(
-    `*[_type == "service"] | order(featured desc, order asc)`
+    listWithFallback("service", locale, "{...}", " | order(featured desc, order asc)")
   )) || [];
 }
 
@@ -204,16 +224,18 @@ export async function getServiceSlugs(): Promise<{ slug: { current: string }; _u
 
 // --- FAQ ---
 
-export async function getFAQs(): Promise<FAQ[]> {
+export async function getFAQs(locale: Locale = DEFAULT_LOCALE): Promise<FAQ[]> {
   return (await client.fetch(
-    `*[_type == "faq"] | order(order asc)`
+    listWithFallback("faq", locale, "{...}", " | order(order asc)")
   )) || [];
 }
 
 // --- Page Content ---
 
-export const getPageContent = cache(async function getPageContent(): Promise<PageContent | null> {
-  return client.fetch(`*[_type == "pageContent"][0]`);
+export const getPageContent = cache(async function getPageContent(
+  locale: Locale = DEFAULT_LOCALE,
+): Promise<PageContent | null> {
+  return client.fetch(bySlugOrSingleton("pageContent", locale));
 });
 
 // --- Contact Forms ---

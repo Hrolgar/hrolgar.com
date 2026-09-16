@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import type { Metadata } from "next";
 import { breadcrumbJsonLd, buildSeoMetadata, jsonLdScript } from "@/lib/seo";
+import { formatDate } from "@/lib/dates";
 
 export const revalidate = 3600;
 
@@ -35,14 +36,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title: `${category.title} Articles & Guides`,
     description: categoryMetadataDescription(category),
     path: `/blog/category/${slug}`,
-  });
-}
-
-function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
   });
 }
 

@@ -3,16 +3,20 @@ import Navbar from "@/components/Navbar";
 import { getContact, getPageContent, getServices, getSettings } from "@/sanity/lib/queries";
 import type { Service } from "@/sanity/types";
 import type { Metadata } from "next";
-import { breadcrumbJsonLd, buildSeoMetadata, jsonLdScript } from "@/lib/seo";
+import { breadcrumbJsonLd, buildSeoMetadata, jsonLdScript, withAlternates } from "@/lib/seo";
+import type { Locale } from "@/sanity/locale";
+import { DEFAULT_LOCALE, localePrefix } from "@/sanity/locale";
+import { t } from "@/lib/ui";
 
 export const revalidate = 3600;
 
 export async function generateMetadata(): Promise<Metadata> {
-  return buildSeoMetadata({
+  const meta = await buildSeoMetadata({
     title: "What I Do - Backend & Infrastructure Services",
     description: "Backend engineering, API delivery, systems integration, and infrastructure automation for teams that need practical software shipped cleanly.",
     path: "/services",
   });
+  return withAlternates(meta, "/services");
 }
 
 const iconMap: Record<string, string> = {
@@ -26,13 +30,14 @@ function getServiceIcon(service: Service) {
   return iconMap[service.icon] || service.icon;
 }
 
-export default async function ServicesPage() {
+export async function ServicesPageBody({ locale = DEFAULT_LOCALE }: { locale?: Locale }) {
   const [services, contact, pageContent, settings] = await Promise.all([
-    getServices(),
+    getServices(locale),
     getContact(),
-    getPageContent(),
+    getPageContent(locale),
     getSettings(),
   ]);
+  const p = localePrefix[locale];
 
   const servicesHeading = pageContent?.servicesHeading || "What I Do";
   const servicesIntro =
@@ -47,14 +52,14 @@ export default async function ServicesPage() {
     <>
       {jsonLdScript(breadcrumbJsonLd([
         { name: "Home", path: "/" },
-        { name: "Services", path: "/services" },
+        { name: "Services", path: `${p}/services` },
       ]))}
-      <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} showBlog={settings?.showBlog} />
+      <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} showBlog={settings?.showBlog} locale={locale} />
       <main id="main-content" className="px-6 pb-16 pt-24 md:pb-24">
         <div className="mx-auto max-w-5xl">
           <section className="border-b border-border pb-12 md:pb-16">
             <p className="mb-5 text-sm uppercase tracking-[0.24em] text-primary">
-              Services
+              {t("servicesLabel", locale)}
             </p>
             <h1 className="max-w-[10ch] font-[family-name:var(--font-serif)] text-5xl font-bold tracking-tight text-foreground sm:text-6xl md:text-7xl">
               {servicesHeading}
@@ -79,14 +84,14 @@ export default async function ServicesPage() {
                       {service.title}
                     </h2>
                     <p className="mt-4 flex-1 text-sm leading-relaxed text-muted md:text-base">
-                      {service.summary || "Details coming soon."}
+                      {service.summary || t("detailsComingSoon", locale)}
                     </p>
                     {service.slug?.current && (
                       <a
                         href={`/services/${service.slug.current}`}
                         className="mt-6 inline-flex min-h-11 items-center text-sm font-semibold text-primary transition-colors hover:text-secondary"
                       >
-                        Learn more
+                        {t("learnMore", locale)}
                       </a>
                     )}
                   </article>
@@ -95,10 +100,10 @@ export default async function ServicesPage() {
             ) : (
               <div className="rounded-[calc(var(--radius)*2)] border border-dashed border-border bg-surface/70 p-8 text-center">
                 <h2 className="font-[family-name:var(--font-serif)] text-2xl font-semibold text-foreground">
-                  Services are being updated
+                  {t("servicesUpdating", locale)}
                 </h2>
                 <p className="mt-3 text-base leading-relaxed text-muted">
-                  The service catalog is in progress. Reach out directly if you want to discuss integrations, APIs, or automation work.
+                  {t("servicesUpdatingBody", locale)}
                 </p>
               </div>
             )}
@@ -106,7 +111,7 @@ export default async function ServicesPage() {
 
           <section className="rounded-[calc(var(--radius)*2)] border border-border bg-[color:color-mix(in_srgb,var(--color-surface)_80%,black)] px-8 py-10 md:px-10 md:py-12">
             <p className="text-sm uppercase tracking-[0.24em] text-accent">
-              Start a project
+              {t("startAProject", locale)}
             </p>
             <h2 className="mt-4 font-[family-name:var(--font-serif)] text-3xl font-bold text-foreground md:text-4xl">
               {servicesCta}
@@ -115,15 +120,19 @@ export default async function ServicesPage() {
               {servicesCtaDescription}
             </p>
             <a
-              href="/contact"
+              href={`${p}/contact`}
               className="mt-8 inline-flex min-h-11 items-center justify-center rounded-[var(--radius)] bg-accent px-6 py-3 text-sm font-semibold text-bg transition-colors hover:bg-[color:color-mix(in_srgb,var(--color-accent)_88%,white)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
-              Get in touch
+              {t("getInTouch", locale)}
             </a>
           </section>
         </div>
       </main>
-      <Footer contact={contact} footerTagline={pageContent?.footerTagline} siteName={settings?.siteName} navItems={pageContent?.navItems} showBlog={settings?.showBlog} />
+      <Footer contact={contact} footerTagline={pageContent?.footerTagline} siteName={settings?.siteName} navItems={pageContent?.navItems} showBlog={settings?.showBlog} locale={locale} />
     </>
   );
+}
+
+export default async function ServicesPage() {
+  return <ServicesPageBody locale="en" />;
 }

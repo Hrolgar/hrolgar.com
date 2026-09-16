@@ -2,12 +2,16 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useScrollY } from "@/lib/hooks/useScrollY";
+import type { Locale } from "@/sanity/locale";
+import { DEFAULT_LOCALE, localeHref } from "@/sanity/locale";
+import { t } from "@/lib/ui";
 
 interface Props {
   floatingCtaText?: string | null;
+  locale?: Locale;
 }
 
-export default function FloatingCTA({ floatingCtaText }: Props) {
+export default function FloatingCTA({ floatingCtaText, locale = DEFAULT_LOCALE }: Props) {
   const [visible, setVisible] = useState(false);
   const contactRef = useRef<HTMLElement | null>(null);
   const scrollY = useScrollY();
@@ -30,7 +34,7 @@ export default function FloatingCTA({ floatingCtaText }: Props) {
 
   return (
     <a
-      href="/contact"
+      href={localeHref("/contact", locale)}
       data-umami-event="contact-cta-click"
             data-umami-event-source="floating"
       aria-hidden={!visible}
