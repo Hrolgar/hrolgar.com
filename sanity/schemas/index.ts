@@ -14,6 +14,7 @@ import service from './service'
 import faq from './faq'
 import contactForm from './contactForm'
 import pageContent from './pageContent'
+import {localeTypes} from './localeFields'
 
 export const schemaTypes = [
   siteSettings,
@@ -32,4 +33,6 @@ export const schemaTypes = [
   faq,
   contactForm,
   pageContent,
+  // Generated from LOCALES — see localeFields.ts
+  ...localeTypes,
 ]

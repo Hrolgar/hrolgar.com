@@ -2,23 +2,34 @@ import { cache } from "react";
 import { client } from "./client";
 import type { Locale } from "@/sanity/locale";
 import { DEFAULT_LOCALE } from "@/sanity/locale";
-import { langFilter, listWithFallback } from "@/sanity/lib/localeQuery";
+import { resolveLocale } from "@/sanity/lib/resolveLocale";
 
-/** Singletons (about, pageContent, homelabPage) have no slug: match on type + language,
- *  falling back to the English document when no translation exists. */
-function bySlugOrSingleton(type: string, locale: Locale): string {
-  if (locale === DEFAULT_LOCALE) return `*[_type == "${type}" && ${langFilter(locale)}][0]`;
-  // Field-level merge, for the same reason as `bySlugWithFallback`: a singleton that is
-  // only half translated must not blank out the fields nobody has got to yet.
-  return `*[_type == "${type}" && ${langFilter(DEFAULT_LOCALE)}][0] {
-    "_localised": *[_type == "${type}" && language == "${locale}"][0],
-    ...
-  } {
-    ...,
-    ..._localised,
-    "_id": _id,
-    "_localised": null
-  }`;
+/**
+ * Fetch, then collapse translatable fields to one language.
+ *
+ * There is one document per thing, so the queries carry no language filter at all and read
+ * the same as they did before translation existed. Everything language-aware happens in
+ * `resolveLocale`, which is why adding a language does not touch this file.
+ */
+/**
+ * TEMPORARY, delete once `scripts/migrate-field-locales.mjs` has run against the dataset.
+ *
+ * Until it does, the old per-language duplicate documents are still there, and the queries
+ * no longer filter by language, so every service and every project would be listed TWICE —
+ * on the English pages as well as the Norwegian ones. This drops the leftovers. Once they
+ * are gone no document has a `language` field at all and the clause matches everything, so
+ * it is safe to deploy this before the migration and safe to delete after it.
+ *
+ * Search for LEGACY_TRANSLATIONS to remove: it is this constant and its ten uses.
+ */
+const LEGACY_TRANSLATIONS = ` && language != "nb"`;
+
+async function localised<T>(
+  query: string,
+  locale: Locale,
+  params: Record<string, unknown> = {},
+): Promise<T> {
+  return resolveLocale<T>(await client.fetch(query, params), locale);
 }
 import type {
   SiteSettings,
@@ -46,10 +57,10 @@ export const getSettings = cache(async function getSettings(): Promise<SiteSetti
 });
 
 export async function getAbout(locale: Locale = DEFAULT_LOCALE): Promise<About | null> {
-  return client.fetch(`${bySlugOrSingleton("about", locale)}{
+  return localised(`*[_type == "about"${LEGACY_TRANSLATIONS}][0]{
     ...,
     "resumeFile": resumeFile{asset->{url}}
-  }`);
+  }`, locale);
 }
 
 export const getContact = cache(async function getContact(): Promise<ContactInfo | null> {
@@ -65,61 +76,61 @@ export async function getSkills(): Promise<Skill[]> {
 }
 
 export async function getExperience(locale: Locale = DEFAULT_LOCALE): Promise<Experience[]> {
-  return (await client.fetch(
-    listWithFallback("experience", locale, "{ ..., technologies[]-> }", " | order(startDate desc)")
+  return (await localised(
+    `*[_type == "experience"${LEGACY_TRANSLATIONS}] | order(startDate desc) { ..., technologies[]-> }`, locale
   )) || [];
 }
 
 export async function getProjects(locale: Locale = DEFAULT_LOCALE): Promise<Project[]> {
-  return (await client.fetch(
-    listWithFallback("project", locale, "{ ..., technologies[]->, categories[]-> }", " | order(featured desc, order asc)")
+  return (await localised(
+    `*[_type == "project"${LEGACY_TRANSLATIONS}] | order(featured desc, order asc) { ..., technologies[]->, categories[]-> }`, locale
   )) || [];
 }
 
-export async function getProjectBySlug(slug: string): Promise<Project | null> {
-  return client.fetch(
-    `*[_type == "project" && slug.current == $slug][0] { ..., technologies[]->, categories[]-> }`,
+export async function getProjectBySlug(slug: string, locale: Locale = DEFAULT_LOCALE): Promise<Project | null> {
+  return localised(
+    `*[_type == "project"${LEGACY_TRANSLATIONS} && slug.current == $slug][0] { ..., technologies[]->, categories[]-> }`, locale,
     { slug }
   );
 }
 
 export async function getProjectSlugs(): Promise<{ slug: { current: string }; _updatedAt?: string }[]> {
   return (await client.fetch(
-    `*[_type == "project" && defined(slug.current)]{ slug, _updatedAt }`
+    `*[_type == "project"${LEGACY_TRANSLATIONS} && defined(slug.current)]{ slug, _updatedAt }`
   )) || [];
 }
 
 // --- Blog ---
 
-export async function getPosts(limit?: number): Promise<Post[]> {
+export async function getPosts(limit?: number, locale: Locale = DEFAULT_LOCALE): Promise<Post[]> {
   const limitClause = limit ? `[0...${limit}]` : "";
-  return (await client.fetch(
-    `*[_type == "post" && status == "published"] | order(publishedAt desc) ${limitClause} {
+  return (await localised(
+    `*[_type == "post"${LEGACY_TRANSLATIONS} && status == "published"] | order(publishedAt desc) ${limitClause} {
       ...,
       categories[]->,
-    }`
+    }`, locale
   )) || [];
 }
 
-export async function getFeaturedPosts(): Promise<Post[]> {
-  return (await client.fetch(
-    `*[_type == "post" && featured == true && status == "published"] | order(publishedAt desc) [0...3] {
+export async function getFeaturedPosts(locale: Locale = DEFAULT_LOCALE): Promise<Post[]> {
+  return (await localised(
+    `*[_type == "post"${LEGACY_TRANSLATIONS} && featured == true && status == "published"] | order(publishedAt desc) [0...3] {
       ...,
       categories[]->,
-    }`
+    }`, locale
   )) || [];
 }
 
-export async function getPostBySlug(slug: string): Promise<Post | null> {
-  return client.fetch(
-    `*[_type == "post" && slug.current == $slug && status == "published"][0] {
+export async function getPostBySlug(slug: string, locale: Locale = DEFAULT_LOCALE): Promise<Post | null> {
+  return localised(
+    `*[_type == "post"${LEGACY_TRANSLATIONS} && slug.current == $slug && status == "published"][0] {
       ...,
       _updatedAt,
       title,
       publishedAt,
       coverImage,
       categories[]->,
-    }`,
+    }`, locale,
     { slug }
   );
 }
@@ -133,22 +144,24 @@ export async function getPostSlugs(): Promise<{
   // categories come back as raw references so the sitemap can tell which category
   // pages would actually list something.
   return (await client.fetch(
-    `*[_type == "post" && defined(slug.current) && status == "published"]{ slug, _updatedAt, publishedAt, categories }`
+    `*[_type == "post"${LEGACY_TRANSLATIONS} && defined(slug.current) && status == "published"]{ slug, _updatedAt, publishedAt, categories }`
   )) || [];
 }
 
 export async function getCategories(locale: Locale = DEFAULT_LOCALE): Promise<Category[]> {
-  return (await client.fetch(
-    listWithFallback("category", locale, "{ ..., _updatedAt }", " | order(title asc)")
+  return (await localised(
+    // Ordered by the default language: the running order of a list must not change
+    // depending on which language a visitor is reading it in.
+    `*[_type == "category"${LEGACY_TRANSLATIONS}] | order(title.${DEFAULT_LOCALE} asc) { ..., _updatedAt }`, locale
   )) || [];
 }
 
-export async function getPostsByCategory(categorySlug: string): Promise<Post[]> {
-  return (await client.fetch(
-    `*[_type == "post" && $categorySlug in categories[]->slug.current && status == "published"] | order(publishedAt desc) {
+export async function getPostsByCategory(categorySlug: string, locale: Locale = DEFAULT_LOCALE): Promise<Post[]> {
+  return (await localised(
+    `*[_type == "post"${LEGACY_TRANSLATIONS} && $categorySlug in categories[]->slug.current && status == "published"] | order(publishedAt desc) {
       ...,
       categories[]->,
-    }`,
+    }`, locale,
     { categorySlug }
   )) || [];
 }
@@ -169,30 +182,30 @@ export async function getHomelabServices(): Promise<HomelabService[]> {
   )) || [];
 }
 
-export async function getHomelabPage(): Promise<HomelabPage | null> {
-  return client.fetch(`*[_type == "homelabPage"][0]`);
+export async function getHomelabPage(locale: Locale = DEFAULT_LOCALE): Promise<HomelabPage | null> {
+  return localised(`*[_type == "homelabPage"${LEGACY_TRANSLATIONS}][0]`, locale);
 }
 
 // --- Project Categories ---
 
 export async function getProjectCategories(locale: Locale = DEFAULT_LOCALE): Promise<ProjectCategory[]> {
-  return (await client.fetch(
-    listWithFallback("projectCategory", locale, "{...}", " | order(order asc, title asc)")
+  return (await localised(
+    `*[_type == "projectCategory"${LEGACY_TRANSLATIONS}] | order(order asc, title.${DEFAULT_LOCALE} asc) {...}`, locale
   )) || [];
 }
 
 // --- Project filters ---
 
-export async function getProjectsByType(type: string): Promise<Project[]> {
-  return (await client.fetch(
-    `*[_type == "project" && projectType == $type] | order(featured desc, order asc) { ..., technologies[]-> }`,
+export async function getProjectsByType(type: string, locale: Locale = DEFAULT_LOCALE): Promise<Project[]> {
+  return (await localised(
+    `*[_type == "project"${LEGACY_TRANSLATIONS} && projectType == $type] | order(featured desc, order asc) { ..., technologies[]-> }`, locale,
     { type }
   )) || [];
 }
 
-export async function getFeaturedProjects(limit = 4): Promise<Project[]> {
-  return (await client.fetch(
-    `*[_type == "project" && featured == true] | order(order asc) [0...$limit] { ..., technologies[]-> }`,
+export async function getFeaturedProjects(limit = 4, locale: Locale = DEFAULT_LOCALE): Promise<Project[]> {
+  return (await localised(
+    `*[_type == "project"${LEGACY_TRANSLATIONS} && featured == true] | order(order asc) [0...$limit] { ..., technologies[]-> }`, locale,
     { limit }
   )) || [];
 }
@@ -200,33 +213,33 @@ export async function getFeaturedProjects(limit = 4): Promise<Project[]> {
 // --- Services ---
 
 export async function getServices(locale: Locale = DEFAULT_LOCALE): Promise<Service[]> {
-  return (await client.fetch(
-    listWithFallback("service", locale, "{...}", " | order(featured desc, order asc)")
+  return (await localised(
+    `*[_type == "service"${LEGACY_TRANSLATIONS}] | order(featured desc, order asc) {...}`, locale
   )) || [];
 }
 
-export async function getServiceBySlug(slug: string): Promise<Service | null> {
-  return client.fetch(
-    `*[_type == "service" && slug.current == $slug][0]{
+export async function getServiceBySlug(slug: string, locale: Locale = DEFAULT_LOCALE): Promise<Service | null> {
+  return localised(
+    `*[_type == "service"${LEGACY_TRANSLATIONS} && slug.current == $slug][0]{
       ...,
       _updatedAt,
       title
-    }`,
+    }`, locale,
     { slug }
   );
 }
 
 export async function getServiceSlugs(): Promise<{ slug: { current: string }; _updatedAt?: string }[]> {
   return (await client.fetch(
-    `*[_type == "service" && defined(slug.current)]{ slug, _updatedAt }`
+    `*[_type == "service"${LEGACY_TRANSLATIONS} && defined(slug.current)]{ slug, _updatedAt }`
   )) || [];
 }
 
 // --- FAQ ---
 
 export async function getFAQs(locale: Locale = DEFAULT_LOCALE): Promise<FAQ[]> {
-  return (await client.fetch(
-    listWithFallback("faq", locale, "{...}", " | order(order asc)")
+  return (await localised(
+    `*[_type == "faq"${LEGACY_TRANSLATIONS}] | order(order asc) {...}`, locale
   )) || [];
 }
 
@@ -235,7 +248,7 @@ export async function getFAQs(locale: Locale = DEFAULT_LOCALE): Promise<FAQ[]> {
 export const getPageContent = cache(async function getPageContent(
   locale: Locale = DEFAULT_LOCALE,
 ): Promise<PageContent | null> {
-  return client.fetch(bySlugOrSingleton("pageContent", locale));
+  return localised(`*[_type == "pageContent"${LEGACY_TRANSLATIONS}][0]`, locale);
 });
 
 // --- Contact Forms ---

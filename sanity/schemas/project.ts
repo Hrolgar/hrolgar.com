@@ -1,4 +1,6 @@
 import {defineType, defineField} from 'sanity'
+import {DEFAULT_LOCALE} from '../locale'
+import {localeRequired, localeSlugSource} from './localeFields'
 
 export default defineType({
   name: 'project',
@@ -6,32 +8,16 @@ export default defineType({
   type: 'document',
   fields: [
     defineField({
-      name: 'language',
-      title: 'Language',
-      type: 'string',
-      options: {list: [{title: 'English', value: 'en'}, {title: 'Norsk', value: 'nb'}], layout: 'radio'},
-      initialValue: 'en',
-      description: 'Which language this document is written in. Leave as English unless this IS the Norwegian version.',
-    }),
-    defineField({
-      name: 'translationOf',
-      title: 'Translation of',
-      type: 'reference',
-      to: [{type: 'project'}],
-      description: 'On a Norwegian document, point this at the English original. Leave empty on English documents.',
-      hidden: ({document}) => document?.language !== 'nb',
-    }),
-    defineField({
       name: 'title',
       title: 'Title',
-      type: 'string',
-      validation: (rule) => rule.required(),
+      type: 'localeString',
+      validation: localeRequired,
     }),
     defineField({
       name: 'slug',
       title: 'Slug',
       type: 'slug',
-      options: {source: 'title', maxLength: 96},
+      options: {source: (doc) => localeSlugSource(doc), maxLength: 96},
       validation: (rule) => rule.required(),
     }),
     defineField({
@@ -56,26 +42,12 @@ export default defineType({
     defineField({
       name: 'summary',
       title: 'Summary',
-      type: 'text',
+      type: 'localeText',
     }),
     defineField({
       name: 'description',
       title: 'Description',
-      type: 'array',
-      of: [
-        {type: 'block'},
-        {
-          type: 'image',
-          options: {hotspot: true},
-          fields: [
-            defineField({
-              name: 'alt',
-              title: 'Alt Text',
-              type: 'string',
-            }),
-          ],
-        },
-      ],
+      type: 'localeBlock',
     }),
     defineField({
       name: 'image',
@@ -102,22 +74,19 @@ export default defineType({
     defineField({
       name: 'problem',
       title: 'The Problem',
-      type: 'text',
-      rows: 4,
+      type: 'localeText',
       description: 'What problem did this project solve?',
     }),
     defineField({
       name: 'approach',
       title: 'The Approach',
-      type: 'text',
-      rows: 4,
+      type: 'localeText',
       description: 'How did you approach solving it?',
     }),
     defineField({
       name: 'outcome',
       title: 'The Outcome',
-      type: 'text',
-      rows: 4,
+      type: 'localeText',
       description: 'What was the result?',
     }),
     defineField({
@@ -129,8 +98,7 @@ export default defineType({
     defineField({
       name: 'testimonial',
       title: 'Client Testimonial',
-      type: 'text',
-      rows: 3,
+      type: 'localeText',
       description: 'Optional quote from the client',
     }),
     defineField({
@@ -147,8 +115,8 @@ export default defineType({
   ],
   preview: {
     select: {
-      title: 'title',
-      summary: 'summary',
+      title: `title.${DEFAULT_LOCALE}`,
+      summary: `summary.${DEFAULT_LOCALE}`,
       projectType: 'projectType',
       media: 'image',
     },

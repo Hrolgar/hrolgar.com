@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { localeHref, withLocale, LOCALES } from "@/sanity/locale";
 import { defaultNav, footerServices, skillCategory, t, tf } from "@/lib/ui";
 import { duration, formatDate, formatMonthYear } from "@/lib/dates";
+import { resolveLocale } from "@/sanity/lib/resolveLocale";
 
 describe("localeHref", () => {
   it("leaves English alone", () => {
@@ -98,5 +99,76 @@ describe("dates", () => {
     expect(duration("2023-08-01", "2025-11-01", "nb")).toBe("2 år 3 mnd");
     expect(duration("2025-01-01", "2025-10-01", "en")).toBe("9mo");
     expect(duration("2023-08-01", "2025-08-01", "en")).toBe("2yr");
+  });
+});
+
+describe("resolveLocale", () => {
+  const doc = {
+    _id: "project-x",
+    slug: { current: "refinarr" },
+    order: 3,
+    title: { _type: "localeString", en: "Refinarr", nb: "Refinarr NO" },
+    summary: { _type: "localeText", en: "English summary", nb: "" },
+    tags: { _type: "localeStringList", en: ["a", "b"], nb: [] },
+    body: {
+      _type: "localeBlock",
+      en: [{ _type: "block", children: [{ text: "hello" }] }],
+      nb: [{ _type: "block", children: [{ text: "hallo" }] }],
+    },
+    image: { _type: "image", asset: { _ref: "image-1" } },
+  };
+
+  it("picks the requested language", () => {
+    const out = resolveLocale<Record<string, unknown>>(doc, "nb");
+    expect(out.title).toBe("Refinarr NO");
+    expect((out.body as { children: { text: string }[] }[])[0].children[0].text).toBe("hallo");
+  });
+
+  it("falls back per field, not per document", () => {
+    const out = resolveLocale<Record<string, unknown>>(doc, "nb");
+    // Title was translated, summary was not. The document must not revert wholesale.
+    expect(out.title).toBe("Refinarr NO");
+    expect(out.summary).toBe("English summary");
+  });
+
+  it("treats an empty box as untranslated, not as an empty value", () => {
+    const out = resolveLocale<Record<string, unknown>>(doc, "nb");
+    expect(out.summary).toBe("English summary");
+    expect(out.tags).toEqual(["a", "b"]);
+  });
+
+  it("leaves language-neutral fields exactly as they are", () => {
+    const out = resolveLocale<Record<string, unknown>>(doc, "nb");
+    expect(out.slug).toEqual({ current: "refinarr" });
+    expect(out.order).toBe(3);
+    expect(out.image).toEqual({ _type: "image", asset: { _ref: "image-1" } });
+    expect(out._id).toBe("project-x");
+  });
+
+  it("does not touch an ordinary object that happens to have en/nb keys", () => {
+    const notALocaleField = { _type: "someOtherThing", en: 1, nb: 2 };
+    expect(resolveLocale(notALocaleField, "nb")).toEqual(notALocaleField);
+  });
+
+  it("walks arrays and nested objects", () => {
+    const nested = {
+      items: [
+        { label: { _type: "localeString", en: "One", nb: "En" } },
+        { label: { _type: "localeString", en: "Two" } },
+      ],
+    };
+    const out = resolveLocale<{ items: { label: string }[] }>(nested, "nb");
+    expect(out.items.map((i) => i.label)).toEqual(["En", "Two"]);
+  });
+
+  it("returns null for a field with no value in any language", () => {
+    const out = resolveLocale<{ x: unknown }>({ x: { _type: "localeString" } }, "nb");
+    expect(out.x).toBeNull();
+  });
+
+  it("is a no-op for English", () => {
+    const out = resolveLocale<Record<string, unknown>>(doc, "en");
+    expect(out.title).toBe("Refinarr");
+    expect(out.summary).toBe("English summary");
   });
 });

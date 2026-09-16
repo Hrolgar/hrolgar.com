@@ -1,4 +1,6 @@
 import {defineType, defineField} from 'sanity'
+import {DEFAULT_LOCALE} from '../locale'
+import {localeRequired} from './localeFields'
 
 export default defineType({
   name: 'about',
@@ -11,42 +13,25 @@ export default defineType({
   ],
   fields: [
     defineField({
-      name: 'language',
-      title: 'Language',
-      type: 'string',
-      options: {list: [{title: 'English', value: 'en'}, {title: 'Norsk', value: 'nb'}], layout: 'radio'},
-      initialValue: 'en',
-      description: 'Which language this document is written in. Leave as English unless this IS the Norwegian version.',
-    }),
-    defineField({
-      name: 'translationOf',
-      title: 'Translation of',
-      type: 'reference',
-      to: [{type: 'about'}],
-      description: 'On a Norwegian document, point this at the English original. Leave empty on English documents.',
-      hidden: ({document}) => document?.language !== 'nb',
-    }),
-    defineField({
       name: 'heading',
       title: 'Heading',
-      type: 'string',
+      type: 'localeString',
       group: 'hero',
-      validation: (rule) => rule.required(),
+      validation: localeRequired,
       description: 'Main heading shown in the hero section',
     }),
     defineField({
       name: 'tagline',
       title: 'Tagline',
-      type: 'string',
+      type: 'localeText',
       group: 'hero',
-      validation: (rule) => rule.required(),
+      validation: localeRequired,
       description: 'Short description below the heading',
     }),
     defineField({
       name: 'roles',
       title: 'Animated Roles',
-      type: 'array',
-      of: [{type: 'string'}],
+      type: 'localeStringList',
       group: 'hero',
       description: 'Roles that cycle with a typing animation (e.g. ".NET Developer", "Homelab Enthusiast")',
     }),
@@ -61,7 +46,7 @@ export default defineType({
     defineField({
       name: 'heroCta1Text',
       title: 'Primary CTA Text',
-      type: 'string',
+      type: 'localeString',
       group: 'hero',
       description: 'e.g. "See my work"',
     }),
@@ -75,7 +60,7 @@ export default defineType({
     defineField({
       name: 'heroCta2Text',
       title: 'Secondary CTA Text',
-      type: 'string',
+      type: 'localeString',
       group: 'hero',
       description: 'e.g. "Get in touch"',
     }),
@@ -89,8 +74,7 @@ export default defineType({
     defineField({
       name: 'body',
       title: 'About Text',
-      type: 'array',
-      of: [{type: 'block'}],
+      type: 'localeBlock',
       group: 'about',
       description: 'Rich text content for the About Me section',
     }),
@@ -104,7 +88,7 @@ export default defineType({
   ],
   preview: {
     select: {
-      title: 'heading',
+      title: `heading.${DEFAULT_LOCALE}`,
       media: 'profileImage',
     },
   },
