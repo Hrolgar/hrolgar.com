@@ -202,9 +202,19 @@ export default function ContactFormModal({
         throw new Error("Failed to submit contact form");
       }
 
-      window.umami?.track('contact-form-submit');
+      // Which form, and whether it actually landed. The old single event fired on
+      // success only and did not say which form it was, so a rise in failures was
+      // indistinguishable from a drop in interest.
+      window.umami?.track("contact-form-submit", {
+        form: form.slug?.current || form.name || "unknown",
+        result: "success",
+      });
       setStatus("success");
     } catch {
+      window.umami?.track("contact-form-submit", {
+        form: form.slug?.current || form.name || "unknown",
+        result: "error",
+      });
       setStatus("error");
       setErrorMessage("Something went wrong. Please try again or email directly.");
     }
