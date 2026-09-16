@@ -1,7 +1,6 @@
 import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
-import { LOCALES, withLocale } from "@/sanity/locale";
 
 const INDEXNOW_KEY = '89367e5b474265a644c2c41429045b83';
 
@@ -73,15 +72,23 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: "Invalid secret" }, { status: 401 });
   }
 
-  // Every page that exists in both languages, in both languages. Listing only the English
-  // paths left /no publishing into a void: a Norwegian edit reached the English page and
-  // then sat behind the hour-long ISR window on its own. Driven off LOCALES so a new
-  // language is refreshed without anyone remembering to add it here.
-  for (const locale of LOCALES) {
-    for (const path of ["/", "/projects", "/experience", "/homelab", "/services", "/blog", "/contact"]) {
-      revalidatePath(withLocale(path === "/" ? "" : path, locale) || "/");
-    }
+  for (const path of ["/", "/projects", "/experience", "/homelab", "/services", "/blog", "/contact"]) {
+    revalidatePath(path);
   }
+  // The translated pages under app/[locale] are DELIBERATELY not revalidated here, and this
+  // is the one place the two languages behave differently.
+  //
+  // Measured against a production build, both ways of naming them destroy the page: the
+  // concrete path ("/no/contact") and the route pattern ("/[locale]/contact", "page") each
+  // drop the prebuilt entry, and `dynamicParams = false` then forbids rebuilding it, so
+  // every Norwegian page answers 404 until the next deploy. Setting dynamicParams = true
+  // does let them rebuild, but then an unknown segment like /xx renders the 404 page with
+  // an HTTP 200 — a soft 404, which is worse than a slow page because Google indexes it.
+  //
+  // So they ride their own `revalidate = 3600`: a Norwegian edit is live within the hour
+  // rather than instantly. The real fix is tagging the Sanity fetches and using
+  // revalidateTag, which sidesteps path invalidation entirely. Worth doing when Norwegian
+  // content is edited often enough for the hour to matter.
   revalidatePath("/projects/[slug]", "page");
   revalidatePath("/blog/[slug]", "page");
   revalidatePath("/blog/category/[slug]", "page");

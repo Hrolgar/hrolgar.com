@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { localeHref, withLocale, LOCALES } from "@/sanity/locale";
 import { defaultNav, footerServices, skillCategory, t, tf } from "@/lib/ui";
@@ -184,5 +185,34 @@ describe("revalidation covers every language", () => {
     expect(paths).toContain("/services");
     expect(paths).toContain("/no");
     expect(paths).toContain("/no/services");
+  });
+});
+
+describe("revalidation must not name the locale route", () => {
+  // Naming it either way — the concrete path or the route pattern — drops the prebuilt
+  // Norwegian pages, and dynamicParams = false then forbids rebuilding them, so every /no
+  // URL answers 404 until the next deploy. Measured against a production build twice.
+  // If instant Norwegian revalidation is wanted, tag the Sanity fetches and use
+  // revalidateTag; do not put these paths back.
+  it("revalidatePath is never called on a /no or [locale] path", () => {
+    const source = readFileSync("app/api/revalidate/route.ts", "utf8");
+    const calls = [...source.matchAll(/revalidatePath\(\s*(`[^`]*`|"[^"]*")/g)].map((m) => m[1]);
+    expect(calls.length).toBeGreaterThan(0);
+    for (const call of calls) {
+      expect(call).not.toContain("[locale]");
+      expect(call).not.toContain("/no");
+    }
+  });
+
+  it("every locale page refuses unknown segments at the router", () => {
+    for (const file of [
+      "app/[locale]/page.tsx",
+      "app/[locale]/services/page.tsx",
+      "app/[locale]/blog/page.tsx",
+    ]) {
+      const source = readFileSync(file, "utf8");
+      // dynamicParams = true makes /xx render the 404 page with an HTTP 200.
+      expect(source).toContain("export const dynamicParams = false;");
+    }
   });
 });
