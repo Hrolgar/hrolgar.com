@@ -4,16 +4,19 @@ import Image from "next/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import type { Metadata } from "next";
-import { breadcrumbJsonLd, buildSeoMetadata, jsonLdScript } from "@/lib/seo";
+import type { Locale } from "@/sanity/locale";
+import { DEFAULT_LOCALE } from "@/sanity/locale";
+import { breadcrumbJsonLd, buildSeoMetadata, jsonLdScript , withAlternates} from "@/lib/seo";
 
 export const revalidate = 3600;
 
 export async function generateMetadata(): Promise<Metadata> {
-  return buildSeoMetadata({
+  const meta = await buildSeoMetadata({
     title: "Blog - Development, Homelab & Backend Notes",
     description: "Notes from real backend builds, homelab work, self-hosting fixes, and the bits of infrastructure that were useful enough to write down.",
     path: "/blog",
   });
+  return withAlternates(meta, "/blog");
 }
 
 function formatDate(dateStr: string): string {
@@ -24,8 +27,8 @@ function formatDate(dateStr: string): string {
   });
 }
 
-export default async function BlogPage() {
-  const [posts, categories, pageContent, settings] = await Promise.all([getPosts(), getCategories(), getPageContent(), getSettings()]);
+export async function BlogBody({ locale = DEFAULT_LOCALE }: { locale?: Locale }) {
+  const [posts, categories, pageContent, settings] = await Promise.all([getPosts(), getCategories(), getPageContent(locale), getSettings()]);
 
   return (
     <>
@@ -129,4 +132,8 @@ export default async function BlogPage() {
       <Footer footerTagline={pageContent?.footerTagline} siteName={settings?.siteName} navItems={pageContent?.navItems} showBlog={settings?.showBlog} />
     </>
   );
+}
+
+export default async function BlogPage() {
+  return <BlogBody locale="en" />;
 }

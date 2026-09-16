@@ -13,16 +13,19 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import ScrollReveal from "@/components/ScrollReveal";
 import type { Metadata } from "next";
-import { breadcrumbJsonLd, buildSeoMetadata, jsonLdScript } from "@/lib/seo";
+import type { Locale } from "@/sanity/locale";
+import { DEFAULT_LOCALE } from "@/sanity/locale";
+import { breadcrumbJsonLd, buildSeoMetadata, jsonLdScript , withAlternates} from "@/lib/seo";
 
 export const revalidate = 3600;
 
 export async function generateMetadata(): Promise<Metadata> {
-  return buildSeoMetadata({
+  const meta = await buildSeoMetadata({
     title: "Experience - Backend, .NET & Infrastructure",
     description: "A quick view of my backend development, .NET, integration, and infrastructure experience across product teams and freelance projects.",
     path: "/experience",
   });
+  return withAlternates(meta, "/experience");
 }
 
 function formatDate(dateStr: string): string {
@@ -43,12 +46,12 @@ function duration(start: string, end?: string): string {
   return `${years}yr ${remaining}mo`;
 }
 
-export default async function ExperiencePage() {
+export async function ExperienceBody({ locale = DEFAULT_LOCALE }: { locale?: Locale }) {
   const [about, experience, contact, pageContent, settings] = await Promise.all([
-    getAbout(),
+    getAbout(locale),
     getExperience(),
     getContact(),
-    getPageContent(),
+    getPageContent(locale),
     getSettings(),
   ]);
 
@@ -160,4 +163,8 @@ export default async function ExperiencePage() {
       <Footer contact={contact} footerTagline={pageContent?.footerTagline} siteName={settings?.siteName} navItems={pageContent?.navItems} showBlog={settings?.showBlog} />
     </>
   );
+}
+
+export default async function ExperiencePage() {
+  return <ExperienceBody locale="en" />;
 }

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
-import { buildSeoMetadata } from "@/lib/seo";
+import type { Locale } from "@/sanity/locale";
+import { DEFAULT_LOCALE } from "@/sanity/locale";
+import { buildSeoMetadata , withAlternates} from "@/lib/seo";
 import {
   getAbout,
   getSkills,
@@ -19,12 +21,13 @@ const HOMEPAGE_DESCRIPTION =
   "Freelance .NET and systems-integration engineer. Backend systems, APIs, data platforms and the infrastructure to run them. C#, ASP.NET Core, Postgres.";
 
 export async function generateMetadata(): Promise<Metadata> {
-  return buildSeoMetadata({
+  const meta = await buildSeoMetadata({
     title: { absolute: HOMEPAGE_TITLE },
     ogTitle: HOMEPAGE_TITLE,
     description: HOMEPAGE_DESCRIPTION,
     path: "/",
   });
+  return withAlternates(meta, "/");
 }
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
@@ -44,19 +47,19 @@ import SectionDots from "@/components/SectionDots";
 
 export const revalidate = 3600;
 
-export default async function Home() {
+export async function HomeBody({ locale = DEFAULT_LOCALE }: { locale?: Locale }) {
   const [about, skills, experience, projects, contact, certifications, homelabPage, featuredPosts, recentPosts, pageContent, settings] =
     await Promise.all([
-      getAbout(),
+      getAbout(locale),
       getSkills(),
       getExperience(),
-      getProjects(),
+      getProjects(locale),
       getContact(),
       getCertifications(),
       getHomelabPage(),
       getFeaturedPosts(),
       getPosts(3),
-      getPageContent(),
+      getPageContent(locale),
       getSettings(),
     ]);
 
@@ -85,4 +88,8 @@ export default async function Home() {
       <SectionDots />
     </>
   );
+}
+
+export default async function Home() {
+  return <HomeBody locale="en" />;
 }

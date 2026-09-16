@@ -4,24 +4,27 @@ import Footer from "@/components/Footer";
 import ScrollReveal from "@/components/ScrollReveal";
 import ProjectsFilter from "@/components/ProjectsFilter";
 import type { Metadata } from "next";
-import { breadcrumbJsonLd, buildSeoMetadata, jsonLdScript } from "@/lib/seo";
+import type { Locale } from "@/sanity/locale";
+import { DEFAULT_LOCALE } from "@/sanity/locale";
+import { breadcrumbJsonLd, buildSeoMetadata, jsonLdScript , withAlternates} from "@/lib/seo";
 
 export const revalidate = 3600;
 
 export async function generateMetadata(): Promise<Metadata> {
-  return buildSeoMetadata({
+  const meta = await buildSeoMetadata({
     title: "Projects - Backend, Automation & Homelab Work",
     description: "A practical look at the backend systems, automation tools, and self-hosted infrastructure projects I have built for clients and myself.",
     path: "/projects",
   });
+  return withAlternates(meta, "/projects");
 }
 
-export default async function ProjectsPage() {
+export async function ProjectsBody({ locale = DEFAULT_LOCALE }: { locale?: Locale }) {
   const [allProjects, projectCategories, contact, pageContent, settings] = await Promise.all([
-    getProjects(),
+    getProjects(locale),
     getProjectCategories(),
     getContact(),
-    getPageContent(),
+    getPageContent(locale),
     getSettings(),
   ]);
 
@@ -57,4 +60,8 @@ export default async function ProjectsPage() {
       <Footer contact={contact} footerTagline={pageContent?.footerTagline} siteName={settings?.siteName} navItems={pageContent?.navItems} showBlog={settings?.showBlog} />
     </>
   );
+}
+
+export default async function ProjectsPage() {
+  return <ProjectsBody locale="en" />;
 }

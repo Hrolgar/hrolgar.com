@@ -13,17 +13,20 @@ import ScrollReveal from "@/components/ScrollReveal";
 import Image from "next/image";
 import { urlFor } from "@/sanity/lib/image";
 import type { HomelabService } from "@/sanity/types";
-import { breadcrumbJsonLd, buildSeoMetadata, jsonLdScript } from "@/lib/seo";
+import { breadcrumbJsonLd, buildSeoMetadata, jsonLdScript , withAlternates} from "@/lib/seo";
+import type { Locale } from "@/sanity/locale";
+import { DEFAULT_LOCALE } from "@/sanity/locale";
 
 export const revalidate = 3600;
 
 export async function generateMetadata() {
-  return buildSeoMetadata({
+  const meta = await buildSeoMetadata({
     title: "Homelab | Hrolgar",
     description:
       "A look inside my self-hosted infrastructure: Proxmox virtualization, Docker, ZFS storage, and 50+ services managed with Infrastructure as Code.",
     path: "/homelab",
   });
+  return withAlternates(meta, "/homelab");
 }
 
 const categoryLabels: Record<string, string> = {
@@ -39,13 +42,13 @@ const categoryLabels: Record<string, string> = {
   other: "Other",
 };
 
-export default async function HomelabDetailPage() {
+export async function HomelabBody({ locale = DEFAULT_LOCALE }: { locale?: Locale }) {
   const [homelabPage, homelabServices, contact, pageContent, settings] =
     await Promise.all([
       getHomelabPage(),
       getHomelabServices(),
       getContact(),
-      getPageContent(),
+      getPageContent(locale),
       getSettings(),
     ]);
 
@@ -258,4 +261,8 @@ export default async function HomelabDetailPage() {
       />
     </>
   );
+}
+
+export default async function HomelabDetailPage() {
+  return <HomelabBody locale="en" />;
 }

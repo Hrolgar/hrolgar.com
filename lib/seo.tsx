@@ -32,6 +32,27 @@ export function jsonLdScript(data: unknown) {
   );
 }
 
+/**
+ * Declare the English/Norwegian pair on a page's metadata.
+ *
+ * `enPath` is the English path; the Norwegian one is the same path under /no, because the
+ * slugs are identical in both languages. Both sides must declare the pair or Google
+ * ignores it, and x-default points at English since that is the primary audience.
+ */
+export function withAlternates(meta: Metadata, enPath: string): Metadata {
+  return {
+    ...meta,
+    alternates: {
+      ...(meta.alternates ?? {}),
+      languages: {
+        en: enPath,
+        "nb-NO": `/no${enPath === "/" ? "" : enPath}`,
+        "x-default": enPath,
+      },
+    },
+  };
+}
+
 export function breadcrumbJsonLd(items: Array<{ name: string; path: string }>) {
   return {
     "@context": "https://schema.org",

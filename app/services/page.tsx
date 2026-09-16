@@ -3,7 +3,7 @@ import Navbar from "@/components/Navbar";
 import { getContact, getPageContent, getServices, getSettings } from "@/sanity/lib/queries";
 import type { Service } from "@/sanity/types";
 import type { Metadata } from "next";
-import { breadcrumbJsonLd, buildSeoMetadata, jsonLdScript } from "@/lib/seo";
+import { breadcrumbJsonLd, buildSeoMetadata, jsonLdScript, withAlternates } from "@/lib/seo";
 import type { Locale } from "@/sanity/locale";
 import { DEFAULT_LOCALE, localePrefix } from "@/sanity/locale";
 
@@ -15,14 +15,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description: "Backend engineering, API delivery, systems integration, and infrastructure automation for teams that need practical software shipped cleanly.",
     path: "/services",
   });
-  // Declared on BOTH sides. A one-way hreflang is ignored by Google.
-  return {
-    ...meta,
-    alternates: {
-      ...meta.alternates,
-      languages: { en: "/services", "nb-NO": "/no/services", "x-default": "/services" },
-    },
-  };
+  return withAlternates(meta, "/services");
 }
 
 const iconMap: Record<string, string> = {
