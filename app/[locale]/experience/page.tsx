@@ -9,9 +9,12 @@ import {
 } from "@/lib/localeRoute";
 
 export const revalidate = 3600;
-// Only the languages in LOCALES are built. Anything else under this segment is a 404
-// rather than a silent copy of the English page.
-export const dynamicParams = false;
+// The languages in LOCALES are prerendered. `dynamicParams` stays TRUE so the page can be
+// regenerated on demand: with it false, `revalidatePath("/no/contact")` drops the prebuilt
+// entry and nothing is allowed to rebuild it, which took every /no page to a 404 the first
+// time the Sanity webhook fired. Unknown segments are still a 404, because
+// `localeFromParams` calls notFound() for anything that is not a language.
+export const dynamicParams = true;
 export const generateStaticParams = localeStaticParams;
 
 export async function generateMetadata({ params }: LocaleParams): Promise<Metadata> {
