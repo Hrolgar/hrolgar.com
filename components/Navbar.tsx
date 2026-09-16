@@ -5,6 +5,7 @@ import { defaultNav, t } from "@/lib/ui";
 import type { Locale } from "@/sanity/locale";
 import { DEFAULT_LOCALE, localeHref } from "@/sanity/locale";
 import { useScrollY } from "@/lib/hooks/useScrollY";
+import LanguageSwitcher from "./LanguageSwitcher";
 
 
 interface NavItem {
@@ -74,6 +75,7 @@ export default function Navbar({ navItems, siteName, showBlog, locale = DEFAULT_
                 </li>
               ))}
             </ul>
+            <LanguageSwitcher locale={locale} />
             <a
               href={localeHref("/contact", locale)}
               data-umami-event="nav-contact-click"
@@ -137,6 +139,9 @@ export default function Navbar({ navItems, siteName, showBlog, locale = DEFAULT_
               >
                 {t("hireMe", locale)}
               </a>
+            </li>
+            <li className="pt-2">
+              <LanguageSwitcher locale={locale} />
             </li>
           </ul>
         </div>

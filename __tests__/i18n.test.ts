@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { localeHref, withLocale, LOCALES } from "@/sanity/locale";
+import { localeHref, withLocale, LOCALES, counterpartPath, stripLocale } from "@/sanity/locale";
 import { defaultNav, footerServices, skillCategory, t, tf } from "@/lib/ui";
 import { duration, formatDate, formatMonthYear } from "@/lib/dates";
 import { resolveLocale } from "@/sanity/lib/resolveLocale";
@@ -214,5 +214,37 @@ describe("revalidation must not name the locale route", () => {
       // dynamicParams = true makes /xx render the 404 page with an HTTP 200.
       expect(source).toContain("export const dynamicParams = false;");
     }
+  });
+});
+
+describe("language switcher paths", () => {
+  it("swaps a page for its counterpart", () => {
+    expect(counterpartPath("/services", "nb")).toBe("/no/services");
+    expect(counterpartPath("/no/services", "en")).toBe("/services");
+    expect(counterpartPath("/", "nb")).toBe("/no");
+    expect(counterpartPath("/no", "en")).toBe("/");
+  });
+
+  it("never points at a URL that does not exist", () => {
+    // Case studies, posts and service detail pages are English only. Sending a visitor to
+    // /no/blog/why-i-self-host-everything would 404, which is the one thing a language
+    // switcher must not do, so those fall back to that language's home page.
+    expect(counterpartPath("/blog/why-i-self-host-everything", "nb")).toBe("/no");
+    expect(counterpartPath("/projects/refinarr", "nb")).toBe("/no");
+    expect(counterpartPath("/services/backend-dotnet", "nb")).toBe("/no");
+    expect(counterpartPath("/blog/category/homelab", "nb")).toBe("/no");
+  });
+
+  it("ignores query strings and hashes", () => {
+    expect(counterpartPath("/blog?page=2", "nb")).toBe("/no/blog");
+    expect(counterpartPath("/no/contact#form", "en")).toBe("/contact");
+  });
+
+  it("strips a locale prefix back to the English path", () => {
+    expect(stripLocale("/no/services")).toBe("/services");
+    expect(stripLocale("/no")).toBe("/");
+    expect(stripLocale("/services")).toBe("/services");
+    // Not a prefix, just a path that happens to start with the same letters.
+    expect(stripLocale("/nothing-here")).toBe("/nothing-here");
   });
 });

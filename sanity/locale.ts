@@ -85,3 +85,31 @@ export function localeHref(href: string, locale: Locale = DEFAULT_LOCALE): strin
   if (!LOCALISED_PATHS.has(path)) return href;
   return `${localePrefix[locale]}${path === "/" ? "" : path}${rest}` || "/";
 }
+
+/** Is this English path available in every language? */
+export function hasTranslation(path: string): boolean {
+  return LOCALISED_PATHS.has(path);
+}
+
+/** Drop any locale prefix, giving the English path. `/no/services` -> `/services`. */
+export function stripLocale(path: string): string {
+  for (const locale of PREFIXED_LOCALES) {
+    const prefix = localePrefix[locale];
+    if (path === prefix) return "/";
+    if (path.startsWith(`${prefix}/`)) return path.slice(prefix.length);
+  }
+  return path;
+}
+
+/**
+ * The same page in another language, for the language switcher.
+ *
+ * Case studies, blog posts and service detail pages exist in English only, so there is no
+ * counterpart to send anyone to. Those fall back to that language's home page rather than
+ * to a URL that would 404, which is the one thing a language switcher must never do.
+ */
+export function counterpartPath(path: string, locale: Locale): string {
+  const english = stripLocale(path.split(/[?#]/)[0]);
+  const target = hasTranslation(english) ? english : "/";
+  return withLocale(target === "/" ? "" : target, locale) || "/";
+}
