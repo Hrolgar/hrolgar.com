@@ -20,7 +20,7 @@ export async function generateMetadata(): Promise<Metadata> {
     ...meta,
     alternates: {
       ...meta.alternates,
-      languages: { en: "/services", "nb-NO": "/no/tjenester", "x-default": "/services" },
+      languages: { en: "/services", "nb-NO": "/no/services", "x-default": "/services" },
     },
   };
 }

@@ -9,7 +9,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: "Tjenester: backend, integrasjoner og dataplattformer",
     description:
       "Frilans systemutvikler i Ålesund. Backend og API-er i .NET, systemintegrasjoner, dataplattformer og infrastrukturen som holder dem i drift.",
-    path: "/no/tjenester",
+    path: "/no/services",
   });
   // hreflang: without these Google reads the two pages as duplicates rather than as the
   // same page in two languages, and picks one to show. x-default points at English.
@@ -19,13 +19,13 @@ export async function generateMetadata(): Promise<Metadata> {
       ...meta.alternates,
       languages: {
         en: "/services",
-        "nb-NO": "/no/tjenester",
+        "nb-NO": "/no/services",
         "x-default": "/services",
       },
     },
   };
 }
 
-export default async function TjenesterPage() {
+export default async function ServicesPageNb() {
   return <ServicesPageBody locale="nb" />;
 }

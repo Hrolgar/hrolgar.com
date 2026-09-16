@@ -23,9 +23,9 @@ export function isLocale(value: string): value is Locale {
 }
 
 /**
- * Localised path for a route that is already an English path.
- * Norwegian slugs are deliberately NOT derived here; they come from the CMS per document,
- * because "tjenester" is not something you can compute from "services".
+ * Localised path for an English path. Slugs stay English in both languages
+ * (`/services` and `/no/services`), so the two route trees mirror each other exactly and
+ * a localised path is just the prefix plus the English one.
  */
 export function withLocale(path: string, locale: Locale): string {
   return `${localePrefix[locale]}${path}`;
