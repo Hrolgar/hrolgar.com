@@ -79,6 +79,7 @@ export default async function ExperiencePage() {
                     href={resumeUrl}
                     target="_blank"
                     rel="noopener noreferrer"
+                    data-umami-event="resume-download"
                     className="flex-shrink-0 inline-flex items-center gap-2 bg-surface border border-border rounded px-4 py-2 text-sm text-muted hover:text-foreground hover:border-primary transition-all"
                   >
                     Download resume ↓

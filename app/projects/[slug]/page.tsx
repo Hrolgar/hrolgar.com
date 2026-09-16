@@ -5,6 +5,7 @@ import Image from "next/image";
 import { getContact, getPageContent, getProjectBySlug, getProjectSlugs, getSettings } from "@/sanity/lib/queries";
 import { urlFor } from "@/sanity/lib/image";
 import Navbar from "@/components/Navbar";
+import ReadDepth from "@/components/ReadDepth";
 import Footer from "@/components/Footer";
 import type { Metadata } from "next";
 import { breadcrumbJsonLd, buildSeoMetadata, jsonLdScript, projectReviewJsonLd } from "@/lib/seo";
@@ -229,7 +230,9 @@ export default async function ProjectPage({ params }: PageProps) {
               )}
             </div>
           )}
+          <div id="read-depth-sentinel" aria-hidden="true" />
         </article>
+        <ReadDepth kind="project" slug={slug} />
       </main>
       <Footer contact={contact} footerTagline={pageContent?.footerTagline} siteName={settings?.siteName} navItems={pageContent?.navItems} showBlog={settings?.showBlog} />
     </>

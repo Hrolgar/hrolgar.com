@@ -82,6 +82,7 @@ export default function Navbar({ navItems, siteName, showBlog }: Props) {
             <a
               href="/contact"
               data-umami-event="nav-contact-click"
+              data-umami-event-source="navbar"
               className="inline-flex items-center rounded-[var(--radius)] bg-accent px-4 py-2 text-sm font-semibold text-bg transition-colors hover:bg-[color:color-mix(in_srgb,var(--color-accent)_88%,white)]"
             >
               Hire Me
@@ -136,6 +137,7 @@ export default function Navbar({ navItems, siteName, showBlog }: Props) {
                 href="/contact"
                 onClick={closeMenu}
                 data-umami-event="nav-contact-click"
+                data-umami-event-source="mobile-menu"
                 className="inline-flex items-center rounded-[var(--radius)] bg-accent px-4 py-2 text-sm font-semibold text-bg transition-colors hover:bg-[color:color-mix(in_srgb,var(--color-accent)_88%,white)]"
               >
                 Hire Me

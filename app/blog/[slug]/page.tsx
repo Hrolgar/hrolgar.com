@@ -6,6 +6,7 @@ import { getPostBySlug, getPostSlugs, getPageContent, getSettings } from "@/sani
 import { portableTextComponents } from "@/lib/portableText";
 import { urlFor } from "@/sanity/lib/image";
 import Navbar from "@/components/Navbar";
+import ReadDepth from "@/components/ReadDepth";
 import Footer from "@/components/Footer";
 import type { Metadata } from "next";
 import { absoluteUrl, breadcrumbJsonLd, buildSeoMetadata, jsonLdScript, personJsonLd } from "@/lib/seo";
@@ -165,7 +166,9 @@ export default async function BlogPostPage({ params }: PageProps) {
               </div>
             </div>
           )}
+          <div id="read-depth-sentinel" aria-hidden="true" />
         </article>
+        <ReadDepth kind="post" slug={slug} />
       </main>
       <Footer footerTagline={pageContent?.footerTagline} siteName={settings?.siteName} navItems={pageContent?.navItems} showBlog={settings?.showBlog} />
     </>

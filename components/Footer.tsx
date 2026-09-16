@@ -112,6 +112,8 @@ export default function Footer({ contact, footerTagline, siteName, navItems, sho
                   href={social.url}
                   target="_blank"
                   rel="noopener noreferrer"
+                  data-umami-event="outbound-click"
+                  data-umami-event-destination={social.key}
                   className="inline-flex min-h-11 items-center gap-2 rounded-[var(--radius)] border border-border px-4 py-3 text-sm text-muted transition-all duration-150 hover:border-primary hover:text-primary hover:scale-110"
                   aria-label={social.label}
                 >
