@@ -11,7 +11,11 @@ import WebVitals from "@/components/WebVitals";
 
 const dmSans = DM_Sans({ subsets: ["latin"], display: "swap", variable: "--font-sans" });
 const fraunces = Fraunces({ subsets: ["latin"], display: "swap", variable: "--font-serif" });
-const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], display: "swap", variable: "--font-mono" });
+// The mono face is only used by inline code and code blocks in article bodies, which
+// most pages never render, but next/font preloads by default so every visitor paid
+// ~36 KB for it on first load. Lighthouse measured three fonts at 112 KB with LCP
+// (the serif nav logo) at 3.3s. It still loads when something actually uses it.
+const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], display: "swap", variable: "--font-mono", preload: false });
 
 export const viewport: Viewport = {
   themeColor: "#111116",
