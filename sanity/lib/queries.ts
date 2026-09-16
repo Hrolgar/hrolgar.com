@@ -104,9 +104,16 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
   );
 }
 
-export async function getPostSlugs(): Promise<{ slug: { current: string }; _updatedAt?: string; publishedAt?: string }[]> {
+export async function getPostSlugs(): Promise<{
+  slug: { current: string };
+  _updatedAt?: string;
+  publishedAt?: string;
+  categories?: { _ref: string }[];
+}[]> {
+  // categories come back as raw references so the sitemap can tell which category
+  // pages would actually list something.
   return (await client.fetch(
-    `*[_type == "post" && defined(slug.current) && status == "published"]{ slug, _updatedAt, publishedAt }`
+    `*[_type == "post" && defined(slug.current) && status == "published"]{ slug, _updatedAt, publishedAt, categories }`
   )) || [];
 }
 

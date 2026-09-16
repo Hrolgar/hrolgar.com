@@ -36,12 +36,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const service = await getServiceBySlug(slug);
 
   if (!service) {
-    return { title: "Service Not Found", alternates: { canonical: `/services/${slug}` } };
+    return { title: "Service Not Found", robots: { index: false, follow: false } };
   }
 
   return buildSeoMetadata({
-    title: `${service.title} — Hrolgar`,
-    description: service.summary || `${service.title} — professional service by Hrolgar`,
+    title: `${service.title}, by Hrolgar`,
+    description: service.summary || `${service.title}, a professional service by Hrolgar`,
     path: `/services/${slug}`,
   });
 }
@@ -54,7 +54,7 @@ export default async function ServicePage({ params }: PageProps) {
     notFound();
   }
 
-  const description = service.summary || `${service.title} — professional service by Hrolgar`;
+  const description = service.summary || `${service.title}, a professional service by Hrolgar`;
   const serviceJsonLd = {
     "@context": "https://schema.org",
     "@type": "Service",

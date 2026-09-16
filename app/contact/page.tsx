@@ -4,7 +4,7 @@ import Navbar from "@/components/Navbar";
 import ContactPageClient from "@/components/ContactPageClient";
 import { getContact, getFAQs, getPageContent, getServices, getContactForms, getSettings } from "@/sanity/lib/queries";
 import type { FAQ } from "@/sanity/types";
-import { breadcrumbJsonLd, buildSeoMetadata, jsonLdScript } from "@/lib/seo";
+import { breadcrumbJsonLd, buildSeoMetadata, faqPageJsonLd, jsonLdScript } from "@/lib/seo";
 
 export const revalidate = 3600;
 
@@ -39,7 +39,7 @@ const defaultFAQs: FAQ[] = [
     _id: "default-4",
     _type: "faq",
     question: "Do you do frontend work?",
-    answer: "My focus is backend and infrastructure. For projects that need frontend work, I can coordinate with frontend specialists.",
+    answer: "Yes. Most of what I ship is full stack: a .NET or Python backend with a React front end on top, and I build both ends myself.",
   },
 ];
 
@@ -59,6 +59,10 @@ export default async function ContactPage() {
         { name: "Home", path: "/" },
         { name: "Contact", path: "/contact" },
       ]))}
+      {(() => {
+        const faqLd = faqPageJsonLd(faqs.length > 0 ? faqs : defaultFAQs);
+        return faqLd ? jsonLdScript(faqLd) : null;
+      })()}
       <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} showBlog={settings?.showBlog} />
       <ContactPageClient
         contact={contact}

@@ -77,14 +77,42 @@ describe("sitemap", () => {
       { slug: { current: "project-one" }, _updatedAt: "2026-01-02T03:04:05.000Z" },
     ]);
     mocks.getPostSlugs.mockResolvedValue([
-      { slug: { current: "post-one" }, _updatedAt: "2026-02-03T04:05:06.000Z" },
+      {
+        slug: { current: "post-one" },
+        _updatedAt: "2026-02-03T04:05:06.000Z",
+        categories: [{ _ref: "category-engineering" }],
+      },
     ]);
     mocks.getCategories.mockResolvedValue([
-      { slug: { current: "engineering" }, _updatedAt: "2026-04-05T06:07:08.000Z" },
+      { _id: "category-engineering", slug: { current: "engineering" }, _updatedAt: "2026-04-05T06:07:08.000Z" },
     ]);
     mocks.getServiceSlugs.mockResolvedValue([
       { slug: { current: "net-development" }, _updatedAt: "2026-03-01T00:00:00.000Z" },
     ]);
+  });
+
+  it("omits category pages that no published post references", async () => {
+    mocks.getCategories.mockResolvedValue([
+      { _id: "category-engineering", slug: { current: "engineering" }, _updatedAt: "2026-04-05T06:07:08.000Z" },
+      { _id: "category-orphan", slug: { current: "orphan" }, _updatedAt: "2026-04-05T06:07:08.000Z" },
+    ]);
+
+    const urls = (await sitemap()).map((entry) => entry.url);
+
+    expect(urls).toContain("https://hrolgar.com/blog/category/engineering");
+    expect(urls).not.toContain("https://hrolgar.com/blog/category/orphan");
+  });
+
+  it("derives static page lastModified from the newest content it lists", async () => {
+    const entries = await sitemap();
+    const at = (u: string) => entries.find((e) => e.url === u)?.lastModified;
+
+    // /projects is as fresh as the newest project, not a hardcoded build date.
+    expect(at("https://hrolgar.com/projects")).toEqual(new Date("2026-01-02T03:04:05.000Z"));
+    expect(at("https://hrolgar.com/blog")).toEqual(new Date("2026-02-03T04:05:06.000Z"));
+    expect(at("https://hrolgar.com/services")).toEqual(new Date("2026-03-01T00:00:00.000Z"));
+    // the home page takes the newest of all three
+    expect(at("https://hrolgar.com")).toEqual(new Date("2026-03-01T00:00:00.000Z"));
   });
 
   it("includes missing static routes and uses document timestamps for dynamic entries", async () => {

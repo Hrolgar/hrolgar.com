@@ -83,6 +83,10 @@ export async function POST(req: NextRequest) {
   revalidatePath("/blog/[slug]", "page");
   revalidatePath("/blog/category/[slug]", "page");
   revalidatePath("/services/[slug]", "page");
+  // The sitemap and robots are their own routes; without these a publish reaches every
+  // page but leaves the sitemap advertising the old set of URLs.
+  revalidatePath("/sitemap.xml");
+  revalidatePath("/robots.txt");
 
   let body: unknown = undefined;
   try {

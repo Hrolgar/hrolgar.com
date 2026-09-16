@@ -7,7 +7,7 @@ import { urlFor } from "@/sanity/lib/image";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import type { Metadata } from "next";
-import { breadcrumbJsonLd, buildSeoMetadata, jsonLdScript } from "@/lib/seo";
+import { breadcrumbJsonLd, buildSeoMetadata, jsonLdScript, projectReviewJsonLd } from "@/lib/seo";
 import type { Project } from "@/sanity/types";
 
 export const revalidate = 3600;
@@ -70,7 +70,14 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const project = await getProjectBySlug(slug);
-  if (!project) return { title: "Project Not Found", alternates: { canonical: `/projects/${slug}` } };
+  // Next serves a build-time fallback for any param outside generateStaticParams, so
+  // notFound() cannot set a 404 status here and an unknown slug answers 200. Setting
+  // dynamicParams=false would give a real 404 but would also 404 every page published
+  // from the CMS until the next deploy, which is worse for a CMS-driven site. noindex
+  // is the part that actually matters to search: it keeps the soft 404 out of the
+  // index. The canonical is dropped deliberately, since pointing a canonical at a dead
+  // URL invites Google to index it.
+  if (!project) return { title: "Project Not Found", robots: { index: false, follow: false } };
   const title = projectMetadataTitle(project);
   const description = projectMetadataDescription(project);
   return buildSeoMetadata({
@@ -93,6 +100,10 @@ export default async function ProjectPage({ params }: PageProps) {
         { name: "Projects", path: "/projects" },
         { name: project.title, path: `/projects/${slug}` },
       ]))}
+      {(() => {
+        const reviewLd = projectReviewJsonLd(project);
+        return reviewLd ? jsonLdScript(reviewLd) : null;
+      })()}
       <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} showBlog={settings?.showBlog} />
       <main id="main-content" className="pt-24 pb-16 px-6">
         <article className="max-w-5xl mx-auto">
@@ -211,7 +222,7 @@ export default async function ProjectPage({ params }: PageProps) {
                   </p>
                   {project.clientName && (
                     <cite className="mt-3 block text-sm text-muted not-italic">
-                      — {project.clientName}
+                      {project.clientName}
                     </cite>
                   )}
                 </blockquote>
