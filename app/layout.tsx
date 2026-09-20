@@ -7,7 +7,7 @@ import { urlFor } from "@/sanity/lib/image";
 import { settingsToCssVars } from "@/lib/theme";
 import { jsonLdHtml } from "@/lib/seo";
 import type { About, ContactInfo, Service } from "@/sanity/types";
-import WebVitals from "@/components/WebVitals";
+import StatsOptOut from "@/components/StatsOptOut";
 
 const dmSans = DM_Sans({ subsets: ["latin"], display: "swap", variable: "--font-sans" });
 const fraunces = Fraunces({ subsets: ["latin"], display: "swap", variable: "--font-serif" });
@@ -162,8 +162,9 @@ export default async function RootLayout({
           src="https://umami.hrolgar.com/script.js"
           data-website-id={process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID || "4c80368f-5246-4407-9733-abca5084b9e6"}
           strategy="afterInteractive"
+          data-performance="true"
         />
-        <WebVitals />
+        <StatsOptOut />
         {children}
       </body>
     </html>
