@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { buildIndexNowUrls } from '@/app/api/revalidate/route'
+import { buildIndexNowUrls, resolveIndexNowUrls, webhookDocIds } from '@/app/api/revalidate/route'
 
 describe('buildIndexNowUrls', () => {
   it('always includes the homepage', () => {
@@ -41,5 +41,45 @@ describe('buildIndexNowUrls', () => {
     const blogUrls = urls.filter(u => u === 'https://hrolgar.com/blog')
     expect(blogUrls).toHaveLength(1)
     expect(urls).toContain('https://hrolgar.com/blog/category/javascript')
+  })
+})
+
+describe('resolveIndexNowUrls', () => {
+  it('looks the document up when the webhook sends only an id', async () => {
+    const urls = await resolveIndexNowUrls({ _id: 'drafts.post-x' }, async (ids) => {
+      expect(ids).toEqual(['post-x'])
+      return [{ _type: 'post', slug: 'my-post', status: 'published' }]
+    })
+    expect(urls).toContain('https://hrolgar.com/blog/my-post')
+  })
+
+  it('understands the legacy ids payload', async () => {
+    const urls = await resolveIndexNowUrls({ ids: { created: [], updated: ['project-a'], deleted: [] } }, async () => [
+      { _type: 'project', slug: 'a' },
+    ])
+    expect(urls).toContain('https://hrolgar.com/projects/a')
+  })
+
+  it('leaves out a post that is still a draft', async () => {
+    const urls = await resolveIndexNowUrls({ _id: 'post-y' }, async () => [{ _type: 'post', slug: 'y', status: 'draft' }])
+    expect(urls).toEqual(['https://hrolgar.com'])
+  })
+
+  it('does not look anything up when the body already names the page', async () => {
+    const urls = await resolveIndexNowUrls({ _type: 'post', slug: { current: 'z' } }, async () => {
+      throw new Error('should not be called')
+    })
+    expect(urls).toContain('https://hrolgar.com/blog/z')
+  })
+
+  it('still sends the homepage when the lookup fails', async () => {
+    const urls = await resolveIndexNowUrls({ _id: 'post-q' }, async () => {
+      throw new Error('network')
+    })
+    expect(urls).toEqual(['https://hrolgar.com'])
+  })
+
+  it('collects ids from both shapes without duplicates', () => {
+    expect(webhookDocIds({ _id: 'a', ids: { updated: ['drafts.a', 'b'] } })).toEqual(['a', 'b'])
   })
 })

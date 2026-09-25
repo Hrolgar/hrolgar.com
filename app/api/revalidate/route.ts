@@ -1,6 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
+import { client } from "@/sanity/lib/client";
 
 const INDEXNOW_KEY = '89367e5b474265a644c2c41429045b83';
 
@@ -51,6 +52,57 @@ export function buildIndexNowUrls(body: unknown): string[] {
     if (!urls.includes(itemUrl)) urls.push(itemUrl);
   }
 
+  return urls;
+}
+
+type DocRef = { _type?: string; slug?: string; status?: string };
+
+/** Document ids named by a webhook body, whatever shape it arrived in, without the drafts. prefix. */
+export function webhookDocIds(body: unknown): string[] {
+  if (!body || typeof body !== 'object') return [];
+  const b = body as Record<string, unknown>;
+  const ids: string[] = [];
+  const doc = (b.document && typeof b.document === 'object' ? b.document : b) as Record<string, unknown>;
+  if (typeof doc._id === 'string') ids.push(doc._id);
+  // Legacy-style webhooks send only { ids: { created, updated, deleted } }.
+  const idGroups = b.ids && typeof b.ids === 'object' ? (b.ids as Record<string, unknown>) : undefined;
+  for (const group of ['created', 'updated']) {
+    const list = idGroups?.[group];
+    if (Array.isArray(list)) ids.push(...list.filter((x): x is string => typeof x === 'string'));
+  }
+  return [...new Set(ids.map((id) => id.replace(/^drafts\./, '')))];
+}
+
+/**
+ * The URLs to send to IndexNow for one webhook call.
+ *
+ * The Sanity webhook sends neither the document type nor its slug, so buildIndexNowUrls on the
+ * raw body only ever produced the homepage: from June to September Bing received exactly one
+ * URL per publish, and no post or project page was ever submitted. When the body does not name
+ * a page, the document is looked up by id instead. A post that is still a draft (status field)
+ * is left out, since its URL is a 404.
+ */
+export async function resolveIndexNowUrls(
+  body: unknown,
+  fetchDocs: (ids: string[]) => Promise<DocRef[]> = (ids) =>
+    client.fetch(`*[_id in $ids]{_type, "slug": slug.current, status}`, { ids }),
+): Promise<string[]> {
+  const urls = buildIndexNowUrls(body);
+  if (urls.length > 1) return urls;
+  const ids = webhookDocIds(body);
+  if (ids.length === 0) return urls;
+  let docs: DocRef[] = [];
+  try {
+    docs = (await fetchDocs(ids)) || [];
+  } catch (err) {
+    console.error('[IndexNow] document lookup failed:', err);
+  }
+  for (const doc of docs) {
+    if (doc._type === 'post' && doc.status !== 'published') continue;
+    for (const url of buildIndexNowUrls({ _type: doc._type, slug: doc.slug })) {
+      if (!urls.includes(url)) urls.push(url);
+    }
+  }
   return urls;
 }
 
@@ -106,7 +158,8 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const urlList = buildIndexNowUrls(body);
+    const urlList = await resolveIndexNowUrls(body);
+    console.log('[IndexNow] submitting', urlList);
     await fetch('https://api.indexnow.org/indexnow', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
