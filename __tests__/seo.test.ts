@@ -98,7 +98,7 @@ describe("sitemap", () => {
     ]);
   });
 
-  it("omits category pages that no published post references", async () => {
+  it("leaves category pages out, since they are noindex", async () => {
     mocks.getCategories.mockResolvedValue([
       { _id: "category-engineering", slug: { current: "engineering" }, _updatedAt: "2026-04-05T06:07:08.000Z" },
       { _id: "category-orphan", slug: { current: "orphan" }, _updatedAt: "2026-04-05T06:07:08.000Z" },
@@ -106,8 +106,7 @@ describe("sitemap", () => {
 
     const urls = (await sitemap()).map((entry) => entry.url);
 
-    expect(urls).toContain("https://hrolgar.com/blog/category/engineering");
-    expect(urls).not.toContain("https://hrolgar.com/blog/category/orphan");
+    expect(urls.some((u) => u.includes("/blog/category/"))).toBe(false);
   });
 
   it("derives static page lastModified from the newest content it lists", async () => {
@@ -137,9 +136,6 @@ describe("sitemap", () => {
     );
     expect(entries.find((entry) => entry.url.endsWith("/blog/post-one"))?.lastModified).toEqual(
       new Date("2026-02-03T04:05:06.000Z")
-    );
-    expect(entries.find((entry) => entry.url.endsWith("/blog/category/engineering"))?.lastModified).toEqual(
-      new Date("2026-04-05T06:07:08.000Z")
     );
     expect(urls).toContain("https://hrolgar.com/services/net-development");
     expect(entries.find((entry) => entry.url.endsWith("/services/net-development"))?.lastModified).toEqual(

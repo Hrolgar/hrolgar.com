@@ -142,6 +142,20 @@ export default defineType({
       group: 'services',
     }),
     defineField({
+      name: 'serviceCaseStudiesHeading',
+      title: 'Service Case Studies Heading',
+      type: 'localeString',
+      group: 'services',
+      description: 'Heading above the case studies on a service detail page',
+    }),
+    defineField({
+      name: 'projectServicesHeading',
+      title: 'Project Related Services Heading',
+      type: 'localeString',
+      group: 'services',
+      description: 'Heading above the related services on a project detail page',
+    }),
+    defineField({
       name: 'serviceDetailCtaHeading',
       title: 'Service Detail CTA Heading',
       type: 'localeString',
