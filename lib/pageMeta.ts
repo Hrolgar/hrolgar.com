@@ -20,6 +20,7 @@ export const PAGE_KEYS = [
   "experience",
   "homelab",
   "blog",
+  "privacy",
 ] as const;
 
 export type PageKey = (typeof PAGE_KEYS)[number];
@@ -33,6 +34,7 @@ export const pagePath: Record<PageKey, string> = {
   experience: "/experience",
   homelab: "/homelab",
   blog: "/blog",
+  privacy: "/privacy",
 };
 
 type Meta = { title: string; description: string };
@@ -73,6 +75,11 @@ export const pageMeta: Record<Exclude<Locale, typeof DEFAULT_LOCALE>, Record<Pag
       title: "Blogg: notater fra backend, drift og selvhosting",
       description:
         "Notater fra ekte bygg: backend, integrasjoner, hjemmelab og de bitene av infrastruktur som var verdt å skrive ned.",
+    },
+    privacy: {
+      title: "Personvern",
+      description:
+        "Hvilke opplysninger hrolgar.com samler inn, hvorfor, hvor lenge de lagres og hvordan du får dem slettet.",
     },
   },
 };

@@ -3,7 +3,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { ContactForm } from "@/sanity/types";
 import type { Locale } from "@/sanity/locale";
-import { DEFAULT_LOCALE } from "@/sanity/locale";
+import { DEFAULT_LOCALE, localeHref } from "@/sanity/locale";
 import { t } from "@/lib/ui";
 
 interface Props {
@@ -357,6 +357,12 @@ export default function ContactFormModal({
         >
           {status === "submitting" ? t("sending", locale) : form.submitText || t("sendMessage", locale)}
         </button>
+        <p className="text-center text-xs text-muted">
+          {t("formPrivacyNote", locale)}{" "}
+          <a href={localeHref("/privacy", locale)} className="underline underline-offset-4 hover:text-primary">
+            {t("privacy", locale)}
+          </a>
+        </p>
       </form>
     </>
   );
