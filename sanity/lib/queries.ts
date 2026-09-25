@@ -260,6 +260,10 @@ export const getPageContent = cache(async function getPageContent(
 
 // --- Contact Forms ---
 
+export async function getContactFormBySlug(slug: string): Promise<ContactForm | null> {
+  return client.fetch(`*[_type == "contactForm" && slug.current == $slug][0]`, { slug });
+}
+
 export async function getContactForms(): Promise<ContactForm[]> {
   return (await client.fetch(
     `*[_type == "contactForm"] | order(_createdAt asc)`
