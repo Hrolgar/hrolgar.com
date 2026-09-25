@@ -5,7 +5,7 @@ import type { Service } from "@/sanity/types";
 import type { Metadata } from "next";
 import { breadcrumbJsonLd, buildSeoMetadata, jsonLdScript, withAlternates } from "@/lib/seo";
 import type { Locale } from "@/sanity/locale";
-import { DEFAULT_LOCALE, localePrefix } from "@/sanity/locale";
+import { DEFAULT_LOCALE, localeHref, localePrefix } from "@/sanity/locale";
 import { t } from "@/lib/ui";
 
 export const revalidate = 3600;
@@ -88,7 +88,7 @@ export async function ServicesPageBody({ locale = DEFAULT_LOCALE }: { locale?: L
                     </p>
                     {service.slug?.current && (
                       <a
-                        href={`/services/${service.slug.current}`}
+                        href={localeHref(`/services/${service.slug.current}`, locale)}
                         className="mt-6 inline-flex min-h-11 items-center text-sm font-semibold text-primary transition-colors hover:text-secondary"
                       >
                         {t("learnMore", locale)}

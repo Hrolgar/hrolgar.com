@@ -63,9 +63,10 @@ export function withLocale(path: string, locale: Locale): string {
 }
 
 /**
- * Pages that exist in both languages. Case studies, blog posts, service detail pages and
- * blog categories are English-only, so a link to one from a Norwegian page has to stay on
- * the English URL: prefixing it would point at a route that does not exist.
+ * Pages that exist in both languages. Case studies, blog posts and blog categories are
+ * English-only, so a link to one from a Norwegian page has to stay on the English URL:
+ * prefixing it would point at a route that does not exist. Service detail pages are
+ * translated (LOCALISED_PREFIXES), because they are what a Norwegian buyer is looking for.
  */
 const LOCALISED_PATHS = new Set([
   "/",
@@ -90,14 +91,19 @@ export function localeHref(href: string, locale: Locale = DEFAULT_LOCALE): strin
   const cut = href.search(/[#?]/);
   const path = cut === -1 ? href : href.slice(0, cut);
   const rest = cut === -1 ? "" : href.slice(cut);
-  if (!LOCALISED_PATHS.has(path)) return href;
+  if (!hasTranslation(path)) return href;
   return `${localePrefix[locale]}${path === "/" ? "" : path}${rest}` || "/";
 }
 
 /** Is this English path available in every language? */
 export function hasTranslation(path: string): boolean {
-  return LOCALISED_PATHS.has(path);
+  if (LOCALISED_PATHS.has(path)) return true;
+  // /services/<slug>: one segment below a translated prefix.
+  return LOCALISED_PREFIXES.some((prefix) => path.startsWith(prefix) && !path.slice(prefix.length).includes("/") && path.length > prefix.length);
 }
+
+/** Detail pages that exist in every language, matched by prefix. */
+const LOCALISED_PREFIXES = ["/services/"];
 
 /** Drop any locale prefix, giving the English path. `/no/services` -> `/services`. */
 export function stripLocale(path: string): string {

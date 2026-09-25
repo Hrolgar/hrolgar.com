@@ -5,7 +5,10 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import { portableTextComponents } from "@/lib/portableText";
 import { getContact, getPageContent, getServiceBySlug, getServiceSlugs, getSettings } from "@/sanity/lib/queries";
-import { absoluteUrl, breadcrumbJsonLd, buildSeoMetadata, jsonLdScript, personJsonLd } from "@/lib/seo";
+import { absoluteUrl, breadcrumbJsonLd, buildSeoMetadata, jsonLdScript, personJsonLd, withAlternates } from "@/lib/seo";
+import { t } from "@/lib/ui";
+import type { Locale } from "@/sanity/locale";
+import { DEFAULT_LOCALE, localeHref, withLocale } from "@/sanity/locale";
 
 export const revalidate = 3600;
 
@@ -31,30 +34,41 @@ export async function generateStaticParams() {
     .map((service) => ({ slug: service.slug.current }));
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { slug } = await params;
-  const service = await getServiceBySlug(slug);
+/** Title, description, canonical and the en/nb pair for one service page in one language. */
+export async function serviceMetadata(slug: string, locale: Locale = DEFAULT_LOCALE): Promise<Metadata> {
+  const service = await getServiceBySlug(slug, locale);
 
   if (!service) {
     return { title: "Service Not Found", robots: { index: false, follow: false } };
   }
 
-  return buildSeoMetadata({
-    title: `${service.title}, by Hrolgar`,
-    description: service.summary || `${service.title}, a professional service by Hrolgar`,
-    path: `/services/${slug}`,
+  const meta = await buildSeoMetadata({
+    title: `${service.title}, ${t("serviceByline", locale)}`,
+    description: service.summary || service.title,
+    path: withLocale(`/services/${slug}`, locale),
   });
+  return withAlternates(meta, `/services/${slug}`);
 }
 
-export default async function ServicePage({ params }: PageProps) {
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
-  const [service, contact, pageContent, settings] = await Promise.all([getServiceBySlug(slug), getContact(), getPageContent(), getSettings()]);
+  return serviceMetadata(slug);
+}
+
+export async function ServiceBody({ slug, locale = DEFAULT_LOCALE }: { slug: string; locale?: Locale }) {
+  const [service, contact, pageContent, settings] = await Promise.all([
+    getServiceBySlug(slug, locale),
+    getContact(locale),
+    getPageContent(locale),
+    getSettings(),
+  ]);
 
   if (!service) {
     notFound();
   }
 
-  const description = service.summary || `${service.title}, a professional service by Hrolgar`;
+  const path = withLocale(`/services/${slug}`, locale);
+  const description = service.summary || service.title;
   const serviceJsonLd = {
     "@context": "https://schema.org",
     "@type": "Service",
@@ -62,25 +76,26 @@ export default async function ServicePage({ params }: PageProps) {
     description,
     provider: personJsonLd,
     areaServed: "Worldwide",
-    url: absoluteUrl(`/services/${slug}`),
+    url: absoluteUrl(path),
+    inLanguage: locale === "nb" ? "nb-NO" : "en",
   };
 
   return (
     <>
       {jsonLdScript(serviceJsonLd)}
       {jsonLdScript(breadcrumbJsonLd([
-        { name: "Home", path: "/" },
-        { name: "Services", path: "/services" },
-        { name: service.title, path: `/services/${slug}` },
+        { name: t("navHome", locale), path: localeHref("/", locale) },
+        { name: t("navServices", locale), path: localeHref("/services", locale) },
+        { name: service.title, path },
       ]))}
-      <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} showBlog={settings?.showBlog} />
+      <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} showBlog={settings?.showBlog} locale={locale} />
       <main id="main-content" className="px-6 pb-16 pt-24">
         <article className="mx-auto max-w-3xl">
           <a
-            href="/services"
+            href={localeHref("/services", locale)}
             className="mb-8 inline-flex min-h-11 items-center text-sm text-muted transition-colors hover:text-primary"
           >
-            ← Back to services
+            ← {t("backToServices", locale)}
           </a>
 
           <div className="border-b border-border pb-10">
@@ -88,7 +103,7 @@ export default async function ServicePage({ params }: PageProps) {
               <div className="flex h-14 w-14 items-center justify-center rounded-[var(--radius)] border border-accent/20 bg-accent/10 text-2xl text-accent">
                 {getServiceIcon(service.icon)}
               </div>
-              <p className="text-sm uppercase tracking-[0.24em] text-primary">Service</p>
+              <p className="text-sm uppercase tracking-[0.24em] text-primary">{t("serviceLabel", locale)}</p>
             </div>
 
             <h1 className="font-[family-name:var(--font-serif)] text-4xl font-bold text-foreground md:text-5xl">
@@ -111,7 +126,7 @@ export default async function ServicePage({ params }: PageProps) {
           {service.caseStudies && service.caseStudies.length > 0 && (
             <section className="mt-16">
               <h2 className="font-[family-name:var(--font-serif)] text-2xl font-semibold text-foreground mb-6">
-                {pageContent?.serviceCaseStudiesHeading || "Case studies"}
+                {pageContent?.serviceCaseStudiesHeading || t("caseStudies", locale)}
               </h2>
               <ul className="grid gap-4 md:grid-cols-2">
                 {service.caseStudies.filter((p) => p?.slug?.current).map((p) => (
@@ -130,25 +145,30 @@ export default async function ServicePage({ params }: PageProps) {
           )}
 
           <section className="mt-16 rounded-[calc(var(--radius)*2)] border border-border bg-surface p-8 md:p-10">
-            <p className="text-sm uppercase tracking-[0.24em] text-accent">Next step</p>
+            <p className="text-sm uppercase tracking-[0.24em] text-accent">{t("nextStep", locale)}</p>
             <h2 className="mt-4 font-[family-name:var(--font-serif)] text-2xl font-bold text-foreground">
-              {pageContent?.serviceDetailCtaHeading || 'Interested in this service?'}
+              {pageContent?.serviceDetailCtaHeading || t("serviceCtaHeading", locale)}
             </h2>
             <p className="mt-3 max-w-xl leading-relaxed text-muted">
-              {pageContent?.serviceDetailCtaDescription || "Let\u2019s discuss your project, the constraints you\u2019re working with, and what a practical delivery plan could look like."}
+              {pageContent?.serviceDetailCtaDescription || t("serviceCtaDescription", locale)}
             </p>
             <a
-              href="/contact"
+              href={localeHref("/contact", locale)}
               data-umami-event="contact-cta-click"
             data-umami-event-source="service-page"
               className="mt-6 inline-flex min-h-11 items-center justify-center rounded-[var(--radius)] bg-accent px-6 py-3 text-sm font-semibold text-bg transition-colors hover:bg-[color:color-mix(in_srgb,var(--color-accent)_88%,white)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
-              {pageContent?.serviceDetailCtaButtonText || 'Start a conversation'}
+              {pageContent?.serviceDetailCtaButtonText || t("serviceCtaButton", locale)}
             </a>
           </section>
         </article>
       </main>
-      <Footer contact={contact} footerTagline={pageContent?.footerTagline} siteName={settings?.siteName} navItems={pageContent?.navItems} showBlog={settings?.showBlog} />
+      <Footer contact={contact} footerTagline={pageContent?.footerTagline} siteName={settings?.siteName} navItems={pageContent?.navItems} showBlog={settings?.showBlog} locale={locale} />
     </>
   );
+}
+
+export default async function ServicePage({ params }: PageProps) {
+  const { slug } = await params;
+  return <ServiceBody slug={slug} />;
 }

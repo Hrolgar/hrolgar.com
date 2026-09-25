@@ -95,12 +95,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Category pages are noindex (see app/blog/category/[slug]/page.tsx), so they stay out of the
   // sitemap: listing a URL that asks not to be indexed is a contradiction Search Console flags.
-  const servicePages: MetadataRoute.Sitemap = serviceSlugs.map((s) => ({
-    url: `${baseUrl}/services/${s.slug.current}`,
-    lastModified: lastModifiedFrom(s._updatedAt),
-    changeFrequency: "monthly" as const,
-    priority: 0.8,
-  }));
+  // Service pages exist in both languages, so each is listed twice with the hreflang pair,
+  // the same as the static pages above.
+  const servicePages: MetadataRoute.Sitemap = serviceSlugs.flatMap((s) => {
+    const path = `/services/${s.slug.current}`;
+    const en = `${baseUrl}${path}`;
+    const nb = `${baseUrl}${withLocale(path, "nb")}`;
+    const shared = {
+      lastModified: lastModifiedFrom(s._updatedAt),
+      changeFrequency: "monthly" as const,
+      alternates: { languages: { en, "nb-NO": nb, "x-default": en } },
+    };
+    return [
+      { url: en, ...shared, priority: 0.8 },
+      { url: nb, ...shared, priority: 0.7 },
+    ];
+  });
 
   return [...staticPages, ...projectPages, ...postPages, ...servicePages];
 }

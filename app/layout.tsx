@@ -8,6 +8,7 @@ import { settingsToCssVars } from "@/lib/theme";
 import { jsonLdHtml } from "@/lib/seo";
 import type { About, ContactInfo, Service } from "@/sanity/types";
 import StatsOptOut from "@/components/StatsOptOut";
+import LanguageHint from "@/components/LanguageHint";
 
 const dmSans = DM_Sans({ subsets: ["latin"], display: "swap", variable: "--font-sans" });
 const fraunces = Fraunces({ subsets: ["latin"], display: "swap", variable: "--font-serif" });
@@ -165,6 +166,7 @@ export default async function RootLayout({
           data-performance="true"
         />
         <StatsOptOut />
+        <LanguageHint />
         {children}
       </body>
     </html>
