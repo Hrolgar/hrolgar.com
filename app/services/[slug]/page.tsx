@@ -4,7 +4,8 @@ import { notFound } from "next/navigation";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import { portableTextComponents } from "@/lib/portableText";
-import { getContact, getPageContent, getServiceBySlug, getServiceSlugs, getSettings } from "@/sanity/lib/queries";
+import { getContact, getContactFormBySlug, getPageContent, getPrivacyPage, getServiceBySlug, getServiceSlugs, getSettings } from "@/sanity/lib/queries";
+import ServiceInquiry from "@/components/ServiceInquiry";
 import { absoluteUrl, breadcrumbJsonLd, buildSeoMetadata, jsonLdScript, personJsonLd, withAlternates } from "@/lib/seo";
 import { t } from "@/lib/ui";
 import type { Locale } from "@/sanity/locale";
@@ -56,11 +57,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export async function ServiceBody({ slug, locale = DEFAULT_LOCALE }: { slug: string; locale?: Locale }) {
-  const [service, contact, pageContent, settings] = await Promise.all([
+  const [service, contact, pageContent, settings, inquiryForm, privacy] = await Promise.all([
     getServiceBySlug(slug, locale),
     getContact(locale),
     getPageContent(locale),
     getSettings(),
+    // One short form per language: contact forms are not field-level translated.
+    getContactFormBySlug(locale === DEFAULT_LOCALE ? "service-inquiry" : `service-inquiry-${locale}`),
+    getPrivacyPage(locale),
   ]);
 
   if (!service) {
@@ -144,23 +148,34 @@ export async function ServiceBody({ slug, locale = DEFAULT_LOCALE }: { slug: str
             </section>
           )}
 
-          <section className="mt-16 rounded-[calc(var(--radius)*2)] border border-border bg-surface p-8 md:p-10">
-            <p className="text-sm uppercase tracking-[0.24em] text-accent">{t("nextStep", locale)}</p>
-            <h2 className="mt-4 font-[family-name:var(--font-serif)] text-2xl font-bold text-foreground">
-              {pageContent?.serviceDetailCtaHeading || t("serviceCtaHeading", locale)}
-            </h2>
-            <p className="mt-3 max-w-xl leading-relaxed text-muted">
-              {pageContent?.serviceDetailCtaDescription || t("serviceCtaDescription", locale)}
-            </p>
-            <a
-              href={localeHref("/contact", locale)}
-              data-umami-event="contact-cta-click"
-            data-umami-event-source="service-page"
-              className="mt-6 inline-flex min-h-11 items-center justify-center rounded-[var(--radius)] bg-accent px-6 py-3 text-sm font-semibold text-bg transition-colors hover:bg-[color:color-mix(in_srgb,var(--color-accent)_88%,white)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-            >
-              {pageContent?.serviceDetailCtaButtonText || t("serviceCtaButton", locale)}
-            </a>
-          </section>
+          {inquiryForm ? (
+            <section id="inquiry" className="mt-16">
+              <ServiceInquiry form={inquiryForm} locale={locale} privacyNote={privacy?.formNote} service={service.title} />
+              <p className="mt-4 text-sm text-muted">
+                <a href={localeHref("/contact", locale)} className="underline underline-offset-4 hover:text-primary">
+                  {t("fullProjectForm", locale)}
+                </a>
+              </p>
+            </section>
+          ) : (
+            <section className="mt-16 rounded-[calc(var(--radius)*2)] border border-border bg-surface p-8 md:p-10">
+              <p className="text-sm uppercase tracking-[0.24em] text-accent">{t("nextStep", locale)}</p>
+              <h2 className="mt-4 font-[family-name:var(--font-serif)] text-2xl font-bold text-foreground">
+                {pageContent?.serviceDetailCtaHeading || t("serviceCtaHeading", locale)}
+              </h2>
+              <p className="mt-3 max-w-xl leading-relaxed text-muted">
+                {pageContent?.serviceDetailCtaDescription || t("serviceCtaDescription", locale)}
+              </p>
+              <a
+                href={localeHref("/contact", locale)}
+                data-umami-event="contact-cta-click"
+              data-umami-event-source="service-page"
+                className="mt-6 inline-flex min-h-11 items-center justify-center rounded-[var(--radius)] bg-accent px-6 py-3 text-sm font-semibold text-bg transition-colors hover:bg-[color:color-mix(in_srgb,var(--color-accent)_88%,white)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              >
+                {pageContent?.serviceDetailCtaButtonText || t("serviceCtaButton", locale)}
+              </a>
+            </section>
+          )}
         </article>
       </main>
       <Footer contact={contact} footerTagline={pageContent?.footerTagline} siteName={settings?.siteName} navItems={pageContent?.navItems} showBlog={settings?.showBlog} locale={locale} />

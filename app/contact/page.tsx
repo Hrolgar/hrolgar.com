@@ -24,7 +24,7 @@ const defaultFAQs: FAQ[] = [
     _id: "default-1",
     _type: "faq",
     question: "What's your availability?",
-    answer: "I take on 1-2 freelance projects at a time alongside my full-time role. Current availability is shown above.",
+    answer: "I take on one or two freelance projects at a time alongside my full-time role. Send me a line about yours and I'll tell you honestly when I can start.",
   },
   {
     _id: "default-2",

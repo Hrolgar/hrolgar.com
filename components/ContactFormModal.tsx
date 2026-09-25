@@ -10,10 +10,13 @@ interface Props {
   form: ContactForm;
   isOpen: boolean;
   onClose: () => void;
-  variant?: "desktop" | "inline";
+  /** "embedded" is always open inside a page (a service page): no close or collapse controls. */
+  variant?: "desktop" | "inline" | "embedded";
   locale?: Locale;
   /** From the privacy page document. No note is shown when it is empty. */
   privacyNote?: string;
+  /** Sent with the submission but not shown, e.g. which service page the inquiry came from. */
+  extraFields?: Record<string, string>;
 }
 
 type Status = "idle" | "submitting" | "success" | "error";
@@ -25,6 +28,7 @@ export default function ContactFormModal({
   variant = "desktop",
   locale = DEFAULT_LOCALE,
   privacyNote,
+  extraFields,
 }: Props) {
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -50,7 +54,7 @@ export default function ContactFormModal({
   }, [isOpen]);
 
   useEffect(() => {
-    if (variant !== "inline") return;
+    if (variant === "desktop") return;
 
     if (inlineTimeoutRef.current) {
       window.clearTimeout(inlineTimeoutRef.current);
@@ -202,7 +206,7 @@ export default function ContactFormModal({
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({
           formName: form.name,
-          fields: formData,
+          fields: { ...(extraFields || {}), ...formData },
         }),
       });
 
@@ -316,7 +320,7 @@ export default function ContactFormModal({
           ) : null}
         </div>
 
-        {!isDesktopModal ? (
+        {variant === "inline" ? (
           <button
             type="button"
             onClick={handleClose}
@@ -385,13 +389,13 @@ export default function ContactFormModal({
       <p className="mt-3 text-sm leading-relaxed text-muted">
         {form.successMessage || t("thanksReply", locale)}
       </p>
-      <button
+      {variant !== "embedded" && <button
         type="button"
         onClick={handleClose}
         className="mt-6 inline-flex min-h-11 items-center justify-center rounded-[var(--radius)] border border-border px-6 py-3 text-sm font-semibold text-foreground transition-colors hover:border-primary hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
       >
         {t("close", locale)}
-      </button>
+      </button>}
     </div>
   );
 
