@@ -11,6 +11,7 @@ const mocks = vi.hoisted(() => ({
   getServiceSlugs: vi.fn(),
   getPageContent: vi.fn(),
   getPosts: vi.fn(),
+  getPrivacyPage: vi.fn().mockResolvedValue({ lastUpdated: "2026-09-25" }),
 }));
 
 vi.mock("@/sanity/lib/queries", () => ({
@@ -21,6 +22,7 @@ vi.mock("@/sanity/lib/queries", () => ({
   getServiceSlugs: mocks.getServiceSlugs,
   getPageContent: mocks.getPageContent,
   getPosts: mocks.getPosts,
+  getPrivacyPage: mocks.getPrivacyPage,
 }));
 
 vi.mock("@/sanity/lib/image", () => ({

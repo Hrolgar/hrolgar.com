@@ -4,7 +4,7 @@ import { DEFAULT_LOCALE } from "@/sanity/locale";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import ContactPageClient from "@/components/ContactPageClient";
-import { getContact, getFAQs, getPageContent, getServices, getContactForms, getSettings } from "@/sanity/lib/queries";
+import { getContact, getFAQs, getPageContent, getPrivacyPage, getServices, getContactForms, getSettings } from "@/sanity/lib/queries";
 import type { FAQ } from "@/sanity/types";
 import { breadcrumbJsonLd, buildSeoMetadata, faqPageJsonLd, jsonLdScript , withAlternates} from "@/lib/seo";
 
@@ -47,13 +47,14 @@ const defaultFAQs: FAQ[] = [
 ];
 
 export async function ContactBody({ locale = DEFAULT_LOCALE }: { locale?: Locale }) {
-  const [contact, services, pageContent, faqs, forms, settings] = await Promise.all([
+  const [contact, services, pageContent, faqs, forms, settings, privacy] = await Promise.all([
     getContact(locale),
     getServices(locale),
     getPageContent(locale),
     getFAQs(locale),
     getContactForms(),
     getSettings(),
+    getPrivacyPage(locale),
   ]);
 
   return (
@@ -75,6 +76,7 @@ export async function ContactBody({ locale = DEFAULT_LOCALE }: { locale?: Locale
         faqs={faqs}
         forms={forms}
         defaultFAQs={defaultFAQs}
+        privacyNote={privacy?.formNote}
       />
       <Footer contact={contact} footerTagline={pageContent?.footerTagline} siteName={settings?.siteName} navItems={pageContent?.navItems} showBlog={settings?.showBlog} locale={locale} />
     </>
