@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { Locale } from "@/sanity/locale";
 import { DEFAULT_LOCALE } from "@/sanity/locale";
+import { resolveHomeSections } from "@/sanity/homeSections";
 import { buildSeoMetadata , withAlternates} from "@/lib/seo";
 import {
   getAbout,
@@ -68,19 +69,28 @@ export async function HomeBody({ locale = DEFAULT_LOCALE }: { locale?: Locale })
       <ScrollProgress />
       <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} showBlog={settings?.showBlog} locale={locale} />
       <main id="main-content">
-        <Hero about={about} />
-        {/* Work comes before the bio on purpose. Measured in Umami: of 57 people who
-            landed on the home page, 11 reached /projects and 5 reached /contact. With
-            About, Experience and Skills stacked above it, the work was the fifth thing
-            a visitor scrolled to, which is backwards for someone deciding who to hire. */}
-        <Projects projects={projects} heading={pageContent?.projectsHeading} intro={pageContent?.projectsIntro} locale={locale} />
-        <About about={about} heading={pageContent?.aboutHeading} />
-        <Experience experience={experience} heading={pageContent?.experienceHeading} resumeUrl={about?.resumeFile?.asset?.url} locale={locale} />
-        <Skills skills={skills} heading={pageContent?.skillsHeading} locale={locale} />
-        <Homelab heading={pageContent?.homelabHeading} subtitle={pageContent?.homelabSubtitle} stats={homelabPage?.stats} locale={locale} />
-        <Certifications certifications={certifications} heading={pageContent?.certificationsHeading} />
-        {settings?.showBlog !== false && <BlogPreview posts={featuredPosts.length > 0 ? featuredPosts : recentPosts} heading={pageContent?.blogPreviewHeading} showBlog={settings?.showBlog} locale={locale} />}
-        <Contact contact={contact} heading={pageContent?.contactSectionHeading} tagline={pageContent?.contactSectionTagline} locale={locale} />
+        {resolveHomeSections(pageContent?.homeSections).map((key) => {
+          switch (key) {
+            case "hero":
+              return <Hero key={key} about={about} />;
+            case "about":
+              return <About key={key} about={about} heading={pageContent?.aboutHeading} />;
+            case "projects":
+              return <Projects key={key} projects={projects} heading={pageContent?.projectsHeading} intro={pageContent?.projectsIntro} locale={locale} />;
+            case "experience":
+              return <Experience key={key} experience={experience} heading={pageContent?.experienceHeading} resumeUrl={about?.resumeFile?.asset?.url} locale={locale} />;
+            case "skills":
+              return <Skills key={key} skills={skills} heading={pageContent?.skillsHeading} locale={locale} />;
+            case "homelab":
+              return <Homelab key={key} heading={pageContent?.homelabHeading} subtitle={pageContent?.homelabSubtitle} stats={homelabPage?.stats} locale={locale} />;
+            case "certifications":
+              return <Certifications key={key} certifications={certifications} heading={pageContent?.certificationsHeading} />;
+            case "blog":
+              return settings?.showBlog !== false ? <BlogPreview key={key} posts={featuredPosts.length > 0 ? featuredPosts : recentPosts} heading={pageContent?.blogPreviewHeading} showBlog={settings?.showBlog} locale={locale} /> : null;
+            case "contact":
+              return <Contact key={key} contact={contact} heading={pageContent?.contactSectionHeading} tagline={pageContent?.contactSectionTagline} locale={locale} />;
+          }
+        })}
       </main>
       <Footer contact={contact} footerTagline={pageContent?.footerTagline} siteName={settings?.siteName} navItems={pageContent?.navItems} showBlog={settings?.showBlog} locale={locale} />
       <BackToTop />

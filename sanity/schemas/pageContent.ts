@@ -1,13 +1,15 @@
-import {defineField, defineType} from 'sanity'
+import {defineArrayMember, defineField, defineType} from 'sanity'
 import {DEFAULT_LOCALE} from '../locale'
 import {localeRequired} from './localeFields'
+import {HOME_SECTIONS} from '../homeSections'
 
 export default defineType({
   name: 'pageContent',
   title: 'Page Content',
   type: 'document',
   groups: [
-    {name: 'contact', title: 'Contact Page', default: true},
+    {name: 'home', title: 'Home Page', default: true},
+    {name: 'contact', title: 'Contact Page'},
     {name: 'services', title: 'Services Page'},
     {name: 'blog', title: 'Blog'},
     {name: 'navigation', title: 'Navigation'},
@@ -15,6 +17,43 @@ export default defineType({
     {name: 'sections', title: 'Section Headings'},
   ],
   fields: [
+    defineField({
+      name: 'homeSections',
+      title: 'Home Page Sections',
+      type: 'array',
+      group: 'home',
+      description:
+        'The sections on the home page, top to bottom. Drag to reorder, switch "Show" off to hide one for now, or remove it. Headings are edited under Section Headings. An empty list shows every section in the default order.',
+      of: [
+        defineArrayMember({
+          type: 'object',
+          name: 'homeSection',
+          fields: [
+            defineField({
+              name: 'section',
+              title: 'Section',
+              type: 'string',
+              options: {list: HOME_SECTIONS.map((s) => ({title: s.title, value: s.value}))},
+              validation: (rule) => rule.required(),
+            }),
+            defineField({name: 'enabled', title: 'Show', type: 'boolean', initialValue: true}),
+          ],
+          preview: {
+            select: {section: 'section', enabled: 'enabled'},
+            prepare({section, enabled}) {
+              const title = HOME_SECTIONS.find((s) => s.value === section)?.title ?? 'Pick a section'
+              return {title, subtitle: enabled === false ? 'Hidden' : undefined}
+            },
+          },
+        }),
+      ],
+      validation: (rule) =>
+        rule.custom((items?: Array<{section?: string}>) => {
+          const names = (items ?? []).map((i) => i.section).filter(Boolean)
+          const dup = names.find((n, i) => names.indexOf(n) !== i)
+          return dup ? `"${HOME_SECTIONS.find((s) => s.value === dup)?.title ?? dup}" is in the list twice` : true
+        }),
+    }),
     defineField({
       name: 'contactHeading',
       title: 'Contact Page Heading',
