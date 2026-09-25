@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { getProjectSlugs, getPostSlugs, getCategories, getServiceSlugs } from "@/sanity/lib/queries";
+import { getProjectSlugs, getPostSlugs, getCategories, getServiceSlugs, getPrivacyPage } from "@/sanity/lib/queries";
 import { withLocale } from "@/sanity/locale";
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://hrolgar.com";
@@ -29,11 +29,12 @@ function newestOf(docs: { _updatedAt?: string; publishedAt?: string }[]): Date {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [projectSlugs, postSlugs, categories, serviceSlugs] = await Promise.all([
+  const [projectSlugs, postSlugs, categories, serviceSlugs, privacy] = await Promise.all([
     getProjectSlugs(),
     getPostSlugs(),
     getCategories(),
     getServiceSlugs(),
+    getPrivacyPage(),
   ]);
 
   const projectsUpdated = newestOf(projectSlugs);
@@ -55,6 +56,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "/contact", lastModified: FALLBACK_LAST_MODIFIED, changeFrequency: "monthly", priority: 0.7 },
     { path: "/experience", lastModified: FALLBACK_LAST_MODIFIED, changeFrequency: "monthly", priority: 0.7 },
     { path: "/homelab", lastModified: FALLBACK_LAST_MODIFIED, changeFrequency: "monthly", priority: 0.6 },
+    { path: "/privacy", lastModified: lastModifiedFrom(privacy?.lastUpdated), changeFrequency: "monthly", priority: 0.2 },
   ];
 
   const staticPages: MetadataRoute.Sitemap = bilingual.flatMap((page) => {

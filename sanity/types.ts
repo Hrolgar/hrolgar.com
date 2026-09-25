@@ -262,6 +262,17 @@ export interface HomelabStat {
   value: string;
 }
 
+export interface PrivacyPage {
+  _id: string;
+  _type: "privacyPage";
+  _updatedAt?: string;
+  title?: string;
+  intro?: string;
+  body?: PortableTextBlock[];
+  lastUpdated?: string;
+  formNote?: string;
+}
+
 export interface HomelabPage {
   _id: string;
   _type: "homelabPage";

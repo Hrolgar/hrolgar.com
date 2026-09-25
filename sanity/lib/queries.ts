@@ -16,6 +16,7 @@ import type {
   Certification,
   HomelabService,
   HomelabPage,
+  PrivacyPage,
   Service,
   FAQ,
   PageContent,
@@ -176,6 +177,12 @@ export async function getHomelabServices(): Promise<HomelabService[]> {
 export async function getHomelabPage(locale: Locale = DEFAULT_LOCALE): Promise<HomelabPage | null> {
   return localised(`*[_type == "homelabPage"][0]`, locale);
 }
+
+export const getPrivacyPage = cache(async function getPrivacyPage(
+  locale: Locale = DEFAULT_LOCALE,
+): Promise<PrivacyPage | null> {
+  return localised(`*[_type == "privacyPage"][0]`, locale);
+});
 
 // --- Project Categories ---
 

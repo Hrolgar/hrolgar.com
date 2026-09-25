@@ -122,6 +122,10 @@ export default function Footer({ contact, footerTagline, siteName, navItems, sho
         <div className="md:col-span-4 flex flex-wrap items-center justify-between gap-4 pt-6 border-t border-border">
           <p className="text-xs text-muted">
             &copy; {new Date().getFullYear()} {siteName || "Hrolgar"}
+            <span aria-hidden="true"> · </span>
+            <a href={localeHref("/privacy", locale)} className="hover:text-primary transition-colors">
+              {t("privacy", locale)}
+            </a>
           </p>
           <LanguageSwitcher locale={locale} />
         </div>

@@ -15,6 +15,7 @@ interface Props {
   forms: ContactForm[];
   defaultFAQs: FAQ[];
   locale?: Locale;
+  privacyNote?: string;
 }
 
 const socialIcons: Record<string, string> = {
@@ -56,6 +57,7 @@ export default function ContactPageClient({
   forms,
   defaultFAQs,
   locale = DEFAULT_LOCALE,
+  privacyNote,
 }: Props) {
   const [openFormSlug, setOpenFormSlug] = useState<string | null>(null);
   const isDesktop = useIsDesktop();
@@ -212,6 +214,7 @@ export default function ContactPageClient({
                 <div id="contact-form-project-inquiry">
                   <ContactFormModal
                     locale={locale}
+                    privacyNote={privacyNote}
                     form={projectInquiryForm}
                     isOpen={true}
                     variant={formVariant}
@@ -291,6 +294,7 @@ export default function ContactPageClient({
                 <div id="contact-form-general-contact">
                   <ContactFormModal
                     locale={locale}
+                    privacyNote={privacyNote}
                     form={generalContactForm}
                     isOpen={true}
                     variant={formVariant}
@@ -326,6 +330,7 @@ export default function ContactPageClient({
       {isDesktop && openForm && (
         <ContactFormModal
                     locale={locale}
+          privacyNote={privacyNote}
           form={openForm}
           isOpen={true}
           variant={formVariant}

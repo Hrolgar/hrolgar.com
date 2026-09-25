@@ -3,7 +3,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { ContactForm } from "@/sanity/types";
 import type { Locale } from "@/sanity/locale";
-import { DEFAULT_LOCALE } from "@/sanity/locale";
+import { DEFAULT_LOCALE, localeHref } from "@/sanity/locale";
 import { t } from "@/lib/ui";
 
 interface Props {
@@ -12,6 +12,8 @@ interface Props {
   onClose: () => void;
   variant?: "desktop" | "inline";
   locale?: Locale;
+  /** From the privacy page document. No note is shown when it is empty. */
+  privacyNote?: string;
 }
 
 type Status = "idle" | "submitting" | "success" | "error";
@@ -22,6 +24,7 @@ export default function ContactFormModal({
   onClose,
   variant = "desktop",
   locale = DEFAULT_LOCALE,
+  privacyNote,
 }: Props) {
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -357,6 +360,14 @@ export default function ContactFormModal({
         >
           {status === "submitting" ? t("sending", locale) : form.submitText || t("sendMessage", locale)}
         </button>
+        {privacyNote ? (
+          <p className="text-center text-xs text-muted">
+            {privacyNote}{" "}
+            <a href={localeHref("/privacy", locale)} className="underline underline-offset-4 hover:text-primary">
+              {t("privacy", locale)}
+            </a>
+          </p>
+        ) : null}
       </form>
     </>
   );
