@@ -75,6 +75,7 @@ const LOCALISED_PATHS = new Set([
   "/experience",
   "/homelab",
   "/blog",
+  "/privacy",
 ]);
 
 /**

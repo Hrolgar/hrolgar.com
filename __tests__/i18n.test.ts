@@ -6,6 +6,10 @@ import { duration, formatDate, formatMonthYear } from "@/lib/dates";
 import { resolveLocale } from "@/sanity/lib/resolveLocale";
 
 describe("localeHref", () => {
+  it("keeps a Norwegian visitor on the Norwegian privacy page", () => {
+    expect(localeHref("/privacy", "nb")).toBe("/no/privacy");
+  });
+
   it("leaves English alone", () => {
     expect(localeHref("/contact", "en")).toBe("/contact");
     expect(localeHref("/", "en")).toBe("/");

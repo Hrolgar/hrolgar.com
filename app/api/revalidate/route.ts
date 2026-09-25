@@ -11,14 +11,14 @@ const TYPE_LIST_PATHS: Record<string, string> = {
   service: '/services',
   category: '/blog',
   blogCategory: '/blog',
+  privacyPage: '/privacy',
 };
 
+// Category pages are noindex, so they are never submitted as items.
 const TYPE_ITEM_PATHS: Record<string, string> = {
   post: '/blog',
   project: '/projects',
   service: '/services',
-  category: '/blog/category',
-  blogCategory: '/blog/category',
 };
 
 export function buildIndexNowUrls(body: unknown): string[] {
@@ -76,21 +76,20 @@ export function webhookDocIds(body: unknown): string[] {
 /**
  * The URLs to send to IndexNow for one webhook call.
  *
- * The Sanity webhook sends neither the document type nor its slug, so buildIndexNowUrls on the
- * raw body only ever produced the homepage: from June to September Bing received exactly one
- * URL per publish, and no post or project page was ever submitted. When the body does not name
- * a page, the document is looked up by id instead. A post that is still a draft (status field)
- * is left out, since its URL is a 404.
+ * The Sanity webhook body is empty, so the document is identified by id (the
+ * sanity-document-id header, merged in by POST, or _id / ids in the body) and looked up. Whenever
+ * an id is available the lookup is the source of truth, so a post's status is always checked
+ * and a draft's 404 URL is never submitted. Only when there is no id at all does the body's own
+ * _type/slug get used.
  */
 export async function resolveIndexNowUrls(
   body: unknown,
   fetchDocs: (ids: string[]) => Promise<DocRef[]> = (ids) =>
     client.fetch(`*[_id in $ids]{_type, "slug": slug.current, status}`, { ids }),
 ): Promise<string[]> {
-  const urls = buildIndexNowUrls(body);
-  if (urls.length > 1) return urls;
   const ids = webhookDocIds(body);
-  if (ids.length === 0) return urls;
+  if (ids.length === 0) return buildIndexNowUrls(body);
+  const urls = ['https://hrolgar.com'];
   let docs: DocRef[] = [];
   try {
     docs = (await fetchDocs(ids)) || [];
@@ -124,7 +123,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: "Invalid secret" }, { status: 401 });
   }
 
-  for (const path of ["/", "/projects", "/experience", "/homelab", "/services", "/blog", "/contact"]) {
+  for (const path of ["/", "/projects", "/experience", "/homelab", "/services", "/blog", "/contact", "/privacy"]) {
     revalidatePath(path);
   }
   // The translated pages under app/[locale] are DELIBERATELY not revalidated here, and this
@@ -162,13 +161,15 @@ export async function POST(req: NextRequest) {
     // _type, slug or _id), but every GROQ webhook names its document in this header.
     const headerId = req.headers.get('sanity-document-id');
     const shaped =
-      headerId && webhookDocIds(body).length === 0 && buildIndexNowUrls(body).length === 1
+      headerId && webhookDocIds(body).length === 0
         ? { ...(body && typeof body === 'object' ? (body as Record<string, unknown>) : {}), _id: headerId }
         : body;
     if (body && typeof body === 'object') console.log('[IndexNow] webhook body keys', Object.keys(body), 'header id', headerId);
     const urlList = await resolveIndexNowUrls(shaped);
     console.log('[IndexNow] submitting', urlList);
-    await fetch('https://api.indexnow.org/indexnow', {
+    const res = await fetch('https://api.indexnow.org/indexnow', {
+      // A hung IndexNow must not hold the webhook open: Sanity would retry and revalidate again.
+      signal: AbortSignal.timeout(5000),
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -178,6 +179,8 @@ export async function POST(req: NextRequest) {
         urlList,
       }),
     });
+    // 200/202 = accepted. Anything else (403 key mismatch, 422 URL not on host) used to vanish.
+    console.log('[IndexNow] response', res.status);
   } catch (err) {
     console.error('[IndexNow] ping failed:', err);
   }
