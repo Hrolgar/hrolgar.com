@@ -36,11 +36,10 @@ describe('buildIndexNowUrls', () => {
     expect(urls).toEqual(['https://hrolgar.com'])
   })
 
-  it('deduplicates list and item when they are the same path', () => {
+  it('submits the blog list but never a (noindex) category page', () => {
     const urls = buildIndexNowUrls({ _type: 'category', slug: { current: 'javascript' } })
-    const blogUrls = urls.filter(u => u === 'https://hrolgar.com/blog')
-    expect(blogUrls).toHaveLength(1)
-    expect(urls).toContain('https://hrolgar.com/blog/category/javascript')
+    expect(urls.filter(u => u === 'https://hrolgar.com/blog')).toHaveLength(1)
+    expect(urls.some(u => u.includes('/blog/category/'))).toBe(false)
   })
 })
 
@@ -65,11 +64,18 @@ describe('resolveIndexNowUrls', () => {
     expect(urls).toEqual(['https://hrolgar.com'])
   })
 
-  it('does not look anything up when the body already names the page', async () => {
+  it('uses the body only when there is no id to look up', async () => {
     const urls = await resolveIndexNowUrls({ _type: 'post', slug: { current: 'z' } }, async () => {
       throw new Error('should not be called')
     })
     expect(urls).toContain('https://hrolgar.com/blog/z')
+  })
+
+  it('trusts the lookup over the body when an id is present, so a draft post is not submitted', async () => {
+    const urls = await resolveIndexNowUrls({ _id: 'post-d', _type: 'post', slug: { current: 'd' } }, async () => [
+      { _type: 'post', slug: 'd', status: 'draft' },
+    ])
+    expect(urls).toEqual(['https://hrolgar.com'])
   })
 
   it('still sends the homepage when the lookup fails', async () => {

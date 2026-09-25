@@ -9,6 +9,16 @@ const RATE_LIMIT_MAX = 5;
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 const ipTimestamps = new Map<string, number[]>();
 
+// The privacy page promises the IP is held for ten minutes. Pruning only inside POST would keep
+// the last visitor's IP until someone else submitted, which on a quiet site can be weeks.
+const sweep = setInterval(() => {
+  const windowStart = Date.now() - RATE_LIMIT_WINDOW_MS;
+  for (const [k, ts] of ipTimestamps) {
+    if (ts.every((t) => t <= windowStart)) ipTimestamps.delete(k);
+  }
+}, 60 * 1000);
+sweep.unref?.();
+
 export async function POST(request: Request) {
   try {
     const ip =

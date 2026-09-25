@@ -15,7 +15,9 @@ export const revalidate = 3600;
 const FALLBACK_LAST_MODIFIED = new Date("2026-06-20T00:00:00.000Z");
 
 function lastModifiedFrom(value?: string): Date {
-  return value ? new Date(value) : FALLBACK_LAST_MODIFIED;
+  const d = value ? new Date(value) : FALLBACK_LAST_MODIFIED;
+  // An unparseable CMS date must not throw inside the sitemap and take the whole file down.
+  return Number.isNaN(d.getTime()) ? FALLBACK_LAST_MODIFIED : d;
 }
 
 /** Newest _updatedAt in a set of documents, or the fallback when the set is empty. */
@@ -55,7 +57,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "/contact", lastModified: FALLBACK_LAST_MODIFIED, changeFrequency: "monthly", priority: 0.7 },
     { path: "/experience", lastModified: FALLBACK_LAST_MODIFIED, changeFrequency: "monthly", priority: 0.7 },
     { path: "/homelab", lastModified: FALLBACK_LAST_MODIFIED, changeFrequency: "monthly", priority: 0.6 },
-    { path: "/privacy", lastModified: lastModifiedFrom(privacy?.lastUpdated), changeFrequency: "monthly", priority: 0.2 },
+    // Only when the document exists: without it /privacy is a 404.
+    ...(privacy ? [{ path: "/privacy", lastModified: lastModifiedFrom(privacy.lastUpdated), changeFrequency: "monthly" as const, priority: 0.2 }] : []),
   ];
 
   const staticPages: MetadataRoute.Sitemap = bilingual.flatMap((page) => {
