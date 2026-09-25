@@ -39,6 +39,14 @@ export default defineType({
       description: 'Icon identifier (e.g. "api", "backend", "automation")',
     }),
     defineField({
+      name: 'caseStudies',
+      title: 'Case studies',
+      type: 'array',
+      of: [{type: 'reference', to: [{type: 'project'}]}],
+      description:
+        'Projects that show this service in practice. Listed on the service page, and each project links back to the services that list it.',
+    }),
+    defineField({
       name: 'featured',
       title: 'Featured',
       type: 'boolean',

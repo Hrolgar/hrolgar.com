@@ -108,6 +108,27 @@ export default async function ServicePage({ params }: PageProps) {
             </div>
           )}
 
+          {service.caseStudies && service.caseStudies.length > 0 && (
+            <section className="mt-16">
+              <h2 className="font-[family-name:var(--font-serif)] text-2xl font-semibold text-foreground mb-6">
+                {pageContent?.serviceCaseStudiesHeading || "Case studies"}
+              </h2>
+              <ul className="grid gap-4 md:grid-cols-2">
+                {service.caseStudies.filter((p) => p?.slug?.current).map((p) => (
+                  <li key={p._id}>
+                    <a
+                      href={`/projects/${p.slug.current}`}
+                      className="block h-full rounded-[var(--radius)] border border-border bg-surface p-5 transition-colors hover:border-primary"
+                    >
+                      <p className="font-semibold text-foreground">{p.title}</p>
+                      {p.summary && <p className="mt-2 text-sm leading-relaxed text-muted">{p.summary}</p>}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
           <section className="mt-16 rounded-[calc(var(--radius)*2)] border border-border bg-surface p-8 md:p-10">
             <p className="text-sm uppercase tracking-[0.24em] text-accent">Next step</p>
             <h2 className="mt-4 font-[family-name:var(--font-serif)] text-2xl font-bold text-foreground">

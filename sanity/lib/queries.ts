@@ -79,6 +79,14 @@ export async function getProjects(locale: Locale = DEFAULT_LOCALE): Promise<Proj
   )) || [];
 }
 
+/** Services that list this project as a case study: the reverse of service.caseStudies. */
+export async function getServicesForProject(projectId: string, locale: Locale = DEFAULT_LOCALE): Promise<{ _id: string; title: string; slug: { current: string } }[]> {
+  return (await localised(
+    `*[_type == "service" && references($projectId)] | order(order asc) { _id, title, slug }`, locale,
+    { projectId }
+  )) || [];
+}
+
 export async function getProjectBySlug(slug: string, locale: Locale = DEFAULT_LOCALE): Promise<Project | null> {
   return localised(
     `*[_type == "project" && slug.current == $slug][0] { ..., technologies[]->, categories[]-> }`, locale,
@@ -221,7 +229,8 @@ export async function getServiceBySlug(slug: string, locale: Locale = DEFAULT_LO
     `*[_type == "service" && slug.current == $slug][0]{
       ...,
       _updatedAt,
-      title
+      title,
+      "caseStudies": caseStudies[]->{ _id, title, summary, slug }
     }`, locale,
     { slug }
   );

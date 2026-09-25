@@ -32,11 +32,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const category = categories.find((c) => c.slug.current === slug);
   if (!category) return { title: "Category Not Found", robots: { index: false, follow: false } };
 
-  return buildSeoMetadata({
+  const meta = await buildSeoMetadata({
     title: `${category.title} Articles & Guides`,
     description: categoryMetadataDescription(category),
     path: `/blog/category/${slug}`,
   });
+  // A category page is a list of links to posts that are indexed in their own right. Google
+  // left all four "discovered, not indexed" for six months. noindex keeps them out of the index
+  // and out of the site's quality picture; follow keeps them passing links to the posts.
+  return { ...meta, robots: { index: false, follow: true } };
 }
 
 export default async function CategoryPage({ params }: PageProps) {

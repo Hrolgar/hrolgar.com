@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { getProjectSlugs, getPostSlugs, getCategories, getServiceSlugs, getPrivacyPage } from "@/sanity/lib/queries";
+import { getProjectSlugs, getPostSlugs, getServiceSlugs, getPrivacyPage } from "@/sanity/lib/queries";
 import { withLocale } from "@/sanity/locale";
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://hrolgar.com";
@@ -29,10 +29,9 @@ function newestOf(docs: { _updatedAt?: string; publishedAt?: string }[]): Date {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [projectSlugs, postSlugs, categories, serviceSlugs, privacy] = await Promise.all([
+  const [projectSlugs, postSlugs, serviceSlugs, privacy] = await Promise.all([
     getProjectSlugs(),
     getPostSlugs(),
-    getCategories(),
     getServiceSlugs(),
     getPrivacyPage(),
   ]);
@@ -91,21 +90,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }));
 
-  // A category page that lists nothing is a thin page. Submitting four of them was
-  // actively unhelpful while every post sat in draft, so only categories that a
-  // published post actually references get into the sitemap.
-  const usedCategoryIds = new Set(
-    postSlugs.flatMap((p) => (p.categories || []).map((c) => c._ref).filter(Boolean)),
-  );
-  const categoryPages: MetadataRoute.Sitemap = categories
-    .filter((c) => usedCategoryIds.has(c._id))
-    .map((c) => ({
-      url: `${baseUrl}/blog/category/${c.slug.current}`,
-      lastModified: lastModifiedFrom(c._updatedAt),
-      changeFrequency: "weekly" as const,
-      priority: 0.5,
-    }));
-
+  // Category pages are noindex (see app/blog/category/[slug]/page.tsx), so they stay out of the
+  // sitemap: listing a URL that asks not to be indexed is a contradiction Search Console flags.
   const servicePages: MetadataRoute.Sitemap = serviceSlugs.map((s) => ({
     url: `${baseUrl}/services/${s.slug.current}`,
     lastModified: lastModifiedFrom(s._updatedAt),
@@ -113,5 +99,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  return [...staticPages, ...projectPages, ...postPages, ...categoryPages, ...servicePages];
+  return [...staticPages, ...projectPages, ...postPages, ...servicePages];
 }

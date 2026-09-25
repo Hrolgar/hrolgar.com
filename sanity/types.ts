@@ -165,6 +165,8 @@ export interface PageContent {
   servicesIntro?: string;
   servicesCta?: string;
   servicesCtaDescription?: string;
+  serviceCaseStudiesHeading?: string;
+  projectServicesHeading?: string;
   serviceDetailCtaHeading?: string;
   serviceDetailCtaDescription?: string;
   serviceDetailCtaButtonText?: string;
@@ -201,6 +203,7 @@ export interface Service {
   icon?: string;
   featured?: boolean;
   order?: number;
+  caseStudies?: { _id: string; title: string; summary?: string; slug: { current: string } }[];
 }
 
 export interface Category {

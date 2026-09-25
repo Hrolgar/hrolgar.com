@@ -1,6 +1,7 @@
 import type { ContactInfo } from "@/sanity/types";
 import { defaultNav, footerServices, t } from "@/lib/ui";
 import type { Locale } from "@/sanity/locale";
+import { getServices } from "@/sanity/lib/queries";
 import { DEFAULT_LOCALE, localeHref } from "@/sanity/locale";
 import LanguageSwitcher from "./LanguageSwitcher";
 
@@ -22,10 +23,19 @@ interface Props {
   locale?: Locale;
 }
 
-export default function Footer({ contact, footerTagline, siteName, navItems, showBlog, locale = DEFAULT_LOCALE }: Props) {
+export default async function Footer({ contact, footerTagline, siteName, navItems, showBlog, locale = DEFAULT_LOCALE }: Props) {
   const navLinks = (navItems && navItems.length > 0 ? navItems : defaultNav(locale))
     .filter(p => showBlog !== false || p.href !== "/blog");
-  const serviceLinks = footerServices(locale);
+  // Every service page is linked from every page. Google finds new pages through links from
+  // pages it already crawls, and a service page reachable only from /services was left
+  // "unknown to Google" for months. The hardcoded shortlist is only a fallback for a CMS outage.
+  const services = await getServices(locale).catch(() => []);
+  const serviceLinks =
+    services.length > 0
+      ? services
+          .filter((s) => s.slug?.current && s.title)
+          .map((s) => ({ label: s.title, href: `/services/${s.slug.current}` }))
+      : footerServices(locale);
   const socials = [
     { key: "github", url: contact?.github, label: "GitHub", iconPath: githubPath },
     { key: "linkedin", url: contact?.linkedin, label: "LinkedIn", iconPath: linkedinPath },

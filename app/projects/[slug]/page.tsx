@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { PortableText } from "@portabletext/react";
 import { portableTextComponents } from "@/lib/portableText";
 import Image from "next/image";
-import { getContact, getPageContent, getProjectBySlug, getProjectSlugs, getSettings } from "@/sanity/lib/queries";
+import { getContact, getPageContent, getProjectBySlug, getProjectSlugs, getServicesForProject, getSettings } from "@/sanity/lib/queries";
 import { urlFor } from "@/sanity/lib/image";
 import Navbar from "@/components/Navbar";
 import ReadDepth from "@/components/ReadDepth";
@@ -93,6 +93,7 @@ export default async function ProjectPage({ params }: PageProps) {
   const { slug } = await params;
   const [project, contact, pageContent, settings] = await Promise.all([getProjectBySlug(slug), getContact(), getPageContent(), getSettings()]);
   if (!project) notFound();
+  const relatedServices = (await getServicesForProject(project._id)).filter((s) => s.slug?.current);
 
   return (
     <>
@@ -229,6 +230,25 @@ export default async function ProjectPage({ params }: PageProps) {
                 </blockquote>
               )}
             </div>
+          )}
+          {relatedServices.length > 0 && (
+            <nav className="mt-12 border-t border-border pt-8" aria-label={pageContent?.projectServicesHeading || "Related services"}>
+              <p className="mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-primary">
+                {pageContent?.projectServicesHeading || "Related services"}
+              </p>
+              <ul className="flex flex-wrap gap-3">
+                {relatedServices.map((s) => (
+                  <li key={s._id}>
+                    <a
+                      href={`/services/${s.slug.current}`}
+                      className="inline-flex rounded-[var(--radius)] border border-border px-4 py-2 text-sm text-foreground transition-colors hover:border-primary hover:text-primary"
+                    >
+                      {s.title}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
           )}
           <div id="read-depth-sentinel" aria-hidden="true" />
         </article>
