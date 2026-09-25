@@ -1,4 +1,5 @@
 import type { PortableTextBlock } from "@portabletext/types";
+import type { HomeSectionItem } from "./homeSections";
 
 export interface SanityImage {
   _type: "image";
@@ -186,6 +187,7 @@ export interface PageContent {
   projectsPageHeading?: string;
   projectsPageSubtitle?: string;
   homelabPageHeading?: string;
+  homeSections?: HomeSectionItem[];
 }
 
 export interface Service {

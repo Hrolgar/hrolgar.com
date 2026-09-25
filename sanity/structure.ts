@@ -6,6 +6,12 @@ export const structure: StructureResolver = (S) =>
     .title("Content")
     .items([
       // Singletons
+      // Opens Page Content on its Home Page tab (the default group), where the section
+      // order lives. Same document as "Page Content" further down.
+      S.listItem()
+        .title("Home Page")
+        .id("homePage")
+        .child(S.document().schemaType("pageContent").documentId("pageContent").title("Home Page")),
       S.listItem()
         .title("Site Settings")
         .id("siteSettings")
