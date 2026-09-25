@@ -158,7 +158,15 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const urlList = await resolveIndexNowUrls(body);
+    // Sanity's webhook body carries none of the fields above (the live one arrives without
+    // _type, slug or _id), but every GROQ webhook names its document in this header.
+    const headerId = req.headers.get('sanity-document-id');
+    const shaped =
+      headerId && webhookDocIds(body).length === 0 && buildIndexNowUrls(body).length === 1
+        ? { ...(body && typeof body === 'object' ? (body as Record<string, unknown>) : {}), _id: headerId }
+        : body;
+    if (body && typeof body === 'object') console.log('[IndexNow] webhook body keys', Object.keys(body), 'header id', headerId);
+    const urlList = await resolveIndexNowUrls(shaped);
     console.log('[IndexNow] submitting', urlList);
     await fetch('https://api.indexnow.org/indexnow', {
       method: 'POST',
