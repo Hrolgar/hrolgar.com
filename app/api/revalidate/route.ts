@@ -50,6 +50,8 @@ export function buildIndexNowUrls(body: unknown): string[] {
   if (docType && slug && TYPE_ITEM_PATHS[docType]) {
     const itemUrl = `https://hrolgar.com${TYPE_ITEM_PATHS[docType]}/${slug}`;
     if (!urls.includes(itemUrl)) urls.push(itemUrl);
+    // Service pages are translated; the Norwegian twin changed too.
+    if (docType === 'service') urls.push(`https://hrolgar.com/no/services/${slug}`);
   }
 
   return urls;

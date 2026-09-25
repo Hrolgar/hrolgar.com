@@ -25,8 +25,14 @@ describe("localeHref", () => {
     // There is no /no/blog/<slug>; prefixing one of these would 404.
     expect(localeHref("/blog/why-i-self-host-everything", "nb")).toBe("/blog/why-i-self-host-everything");
     expect(localeHref("/projects/refinarr", "nb")).toBe("/projects/refinarr");
-    expect(localeHref("/services/backend-dotnet", "nb")).toBe("/services/backend-dotnet");
     expect(localeHref("/blog/category/homelab", "nb")).toBe("/blog/category/homelab");
+  });
+
+  it("sends Norwegian visitors to the Norwegian service page, which exists", () => {
+    expect(localeHref("/services/backend-dotnet", "nb")).toBe("/no/services/backend-dotnet");
+    expect(localeHref("/services", "nb")).toBe("/no/services");
+    // only one segment below /services/ is a service page
+    expect(localeHref("/services/a/b", "nb")).toBe("/services/a/b");
   });
 
   it("keeps hashes and query strings", () => {
@@ -230,13 +236,17 @@ describe("language switcher paths", () => {
   });
 
   it("never points at a URL that does not exist", () => {
-    // Case studies, posts and service detail pages are English only. Sending a visitor to
+    // Case studies and posts are English only. Sending a visitor to
     // /no/blog/why-i-self-host-everything would 404, which is the one thing a language
     // switcher must not do, so those fall back to that language's home page.
     expect(counterpartPath("/blog/why-i-self-host-everything", "nb")).toBe("/no");
     expect(counterpartPath("/projects/refinarr", "nb")).toBe("/no");
-    expect(counterpartPath("/services/backend-dotnet", "nb")).toBe("/no");
     expect(counterpartPath("/blog/category/homelab", "nb")).toBe("/no");
+  });
+
+  it("switches between the two languages of a service page", () => {
+    expect(counterpartPath("/services/backend-dotnet", "nb")).toBe("/no/services/backend-dotnet");
+    expect(counterpartPath("/no/services/backend-dotnet", "en")).toBe("/services/backend-dotnet");
   });
 
   it("ignores query strings and hashes", () => {
