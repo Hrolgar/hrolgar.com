@@ -5,6 +5,10 @@ import { getContact } from "@/sanity/lib/queries";
 
 const DISCORD_WEBHOOK = process.env.DISCORD_CONTACT_WEBHOOK;
 
+// A person cannot read the form and type a name, an email and a message faster than this.
+// The bot on 26.09 posted about four seconds after the service page loaded.
+const MIN_FILL_MS = 5000;
+
 const RATE_LIMIT_MAX = 5;
 const RATE_LIMIT_WINDOW_MS = 10 * 60 * 1000;
 const ipTimestamps = new Map<string, number[]>();
@@ -41,10 +45,21 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { formName, fields } = body;
+    const { formName, fields, homepage, elapsed } = body;
 
     if (!fields || typeof fields !== "object" || Array.isArray(fields)) {
       return NextResponse.json({ error: "Invalid form data" }, { status: 400 });
+    }
+
+    // Bot checks. `homepage` is a field people never see, so anything in it was filled in
+    // by a script; `elapsed` is how long the form was open, and the site's own form always
+    // sends it. Either failing gets the same success a person gets, so the bot learns
+    // nothing, and nothing is delivered.
+    const trapped = typeof homepage === "string" && homepage.trim() !== "";
+    const tooFast = typeof elapsed !== "number" || elapsed < MIN_FILL_MS;
+    if (trapped || tooFast) {
+      console.log("Contact form dropped as bot:", { trapped, elapsed, formName });
+      return NextResponse.json({ success: true });
     }
 
     const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
