@@ -40,6 +40,8 @@ export default function ContactFormModal({
   const titleId = useId();
   const descriptionId = useId();
   const inlineTimeoutRef = useRef<number | null>(null);
+  const openedAtRef = useRef(0);
+  const [trap, setTrap] = useState("");
   const isDesktopModal = variant === "desktop";
 
   const fields = useMemo(() => form.fields || [], [form.fields]);
@@ -47,6 +49,8 @@ export default function ContactFormModal({
   useEffect(() => {
     if (!isOpen) return;
 
+    openedAtRef.current = Date.now();
+    setTrap("");
     setFormData({});
     setErrors({});
     setStatus("idle");
@@ -207,6 +211,8 @@ export default function ContactFormModal({
         body: JSON.stringify({
           formName: form.name,
           fields: { ...(extraFields || {}), ...formData },
+          homepage: trap,
+          elapsed: Date.now() - openedAtRef.current,
         }),
       });
 
@@ -350,6 +356,21 @@ export default function ContactFormModal({
             ) : null}
           </div>
         ))}
+
+        {/* Honeypot: off-screen and out of the tab order, so only a script fills it in.
+            Off-screen rather than display:none, which some bots know to skip. */}
+        <div aria-hidden="true" className="absolute -left-[10000px] top-auto h-px w-px overflow-hidden">
+          <label htmlFor={`${titleId}-homepage`}>Leave this field empty</label>
+          <input
+            id={`${titleId}-homepage`}
+            name="homepage"
+            type="text"
+            tabIndex={-1}
+            autoComplete="off"
+            value={trap}
+            onChange={(event) => setTrap(event.target.value)}
+          />
+        </div>
 
         {status === "error" && errorMessage ? (
           <p className="rounded-[var(--radius)] border border-accent/30 bg-accent/10 px-4 py-3 text-sm text-accent">

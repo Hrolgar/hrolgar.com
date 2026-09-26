@@ -149,6 +149,7 @@ export default async function RootLayout({
   ]);
   const cssVars = settingsToCssVars(settings);
   const jsonLd = buildJsonLd(contact, about, services);
+  const umamiWebsiteId = process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID || "4c80368f-5246-4407-9733-abca5084b9e6";
 
   return (
     <html lang="en" style={cssVars} className={`${dmSans.variable} ${fraunces.variable} ${jetbrainsMono.variable} antialiased`}>
@@ -161,11 +162,11 @@ export default async function RootLayout({
       <body className="font-[family-name:var(--font-sans)] bg-bg text-foreground min-h-screen">
         <Script
           src="https://umami.hrolgar.com/script.js"
-          data-website-id={process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID || "4c80368f-5246-4407-9733-abca5084b9e6"}
+          data-website-id={umamiWebsiteId}
           strategy="afterInteractive"
           data-performance="true"
         />
-        <StatsOptOut />
+        <StatsOptOut websiteId={umamiWebsiteId} />
         <LanguageHint />
         {children}
       </body>
