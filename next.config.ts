@@ -2,12 +2,12 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
-  // Ko-fi strips query strings from profile links and sends them with noreferrer,
-  // so the UTM tags live here and the Ko-fi profile links to /ko-fi.
+  // Ko-fi strips query strings from profile links, sends them with noreferrer and
+  // hides any link with "ko-fi" in it, so the profile links to /coffee and the tags live here.
   async redirects() {
     return [
       {
-        source: "/ko-fi",
+        source: "/coffee",
         destination: "/?utm_source=ko-fi&utm_medium=referral&utm_campaign=kofi-profile",
         permanent: false,
       },
