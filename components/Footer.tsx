@@ -126,6 +126,18 @@ export default async function Footer({ contact, footerTagline, siteName, navItem
                 </a>
               ))}
             </div>
+            <a
+              href="https://ko-fi.com/J5T627R3F8"
+              target="_blank"
+              rel="noopener noreferrer"
+              data-umami-event="outbound-click"
+              data-umami-event-destination="ko-fi"
+              className="mt-4 inline-flex min-h-11 items-center gap-2 rounded-[var(--radius)] bg-[#1a2436] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-all duration-150 hover:scale-105 hover:brightness-125"
+            >
+              {/* Ko-fi's cup, served from here so the footer loads nothing from Ko-fi. */}
+              <img src="/images/kofi-cup.png" alt="" width={20} height={16} className="h-4 w-5" />
+              <span>{t("supportKofi", locale)}</span>
+            </a>
           </div>
         )}
 
