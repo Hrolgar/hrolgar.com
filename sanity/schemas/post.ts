@@ -61,6 +61,14 @@ export default defineType({
       initialValue: false,
     }),
     defineField({
+      name: 'crosspost',
+      title: 'Cross-post to dev.to and Hashnode',
+      type: 'boolean',
+      description:
+        'hrolbot copies the post to dev.to and Hashnode two days after publishing, with the canonical URL pointing here. Only posts published on or after 2026-09-27 are ever cross-posted.',
+      initialValue: false,
+    }),
+    defineField({
       name: 'status',
       title: 'Status',
       type: 'string',
