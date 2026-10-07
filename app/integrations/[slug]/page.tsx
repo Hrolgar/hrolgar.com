@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import ServiceInquiry from "@/components/ServiceInquiry";
+import InquiryLayout from "@/components/InquiryLayout";
 import { portableTextComponents } from "@/lib/portableText";
 import { absoluteUrl, breadcrumbJsonLd, buildSeoMetadata, jsonLdScript, personJsonLd, withAlternates } from "@/lib/seo";
 import { t } from "@/lib/ui";
@@ -96,7 +97,18 @@ export async function IntegrationBody({ slug, locale = DEFAULT_LOCALE }: { slug:
       ]))}
       <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} showBlog={settings?.showBlog} locale={locale} />
       <main id="main-content" className="px-6 pb-16 pt-24">
-        <article className="mx-auto max-w-3xl">
+        <InquiryLayout
+          aside={inquiryForm && (
+            <section id="inquiry">
+              <ServiceInquiry form={inquiryForm} locale={locale} privacyNote={privacy?.formNote} service={integration.title} />
+              <p className="mt-4 text-sm text-muted">
+                <a href={localeHref("/contact", locale)} className="underline underline-offset-4 hover:text-primary">
+                  {t("fullProjectForm", locale)}
+                </a>
+              </p>
+            </section>
+          )}
+        >
           <a
             href={localeHref("/integrations", locale)}
             className="mb-8 inline-flex min-h-11 items-center text-sm text-muted transition-colors hover:text-primary"
@@ -136,17 +148,7 @@ export async function IntegrationBody({ slug, locale = DEFAULT_LOCALE }: { slug:
             </section>
           )}
 
-          {inquiryForm && (
-            <section id="inquiry" className="mt-16">
-              <ServiceInquiry form={inquiryForm} locale={locale} privacyNote={privacy?.formNote} service={integration.title} />
-              <p className="mt-4 text-sm text-muted">
-                <a href={localeHref("/contact", locale)} className="underline underline-offset-4 hover:text-primary">
-                  {t("fullProjectForm", locale)}
-                </a>
-              </p>
-            </section>
-          )}
-        </article>
+        </InquiryLayout>
       </main>
       <Footer contact={contact} footerTagline={pageContent?.footerTagline} siteName={settings?.siteName} navItems={pageContent?.navItems} showBlog={settings?.showBlog} locale={locale} />
     </>
