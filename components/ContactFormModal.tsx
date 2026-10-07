@@ -222,10 +222,12 @@ export default function ContactFormModal({
 
       // Which form, and whether it actually landed. The old single event fired on
       // success only and did not say which form it was, so a rise in failures was
-      // indistinguishable from a drop in interest.
+      // indistinguishable from a drop in interest. Bot-filtered posts get their own
+      // result so they stop counting as enquiries.
+      const body = (await response.json().catch(() => ({}))) as { filtered?: boolean };
       window.umami?.track("contact-form-submit", {
         form: form.slug?.current || form.name || "unknown",
-        result: "success",
+        result: body.filtered ? "filtered" : "success",
       });
       setStatus("success");
     } catch {
