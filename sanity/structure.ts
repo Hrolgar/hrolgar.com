@@ -73,6 +73,10 @@ export const structure: StructureResolver = (S) =>
         .schemaType("service")
         .child(S.documentTypeList("service").title("Services")),
       S.listItem()
+        .title("Integrations")
+        .schemaType("integration")
+        .child(S.documentTypeList("integration").title("Integrations").defaultOrdering([{ field: "order", direction: "asc" }])),
+      S.listItem()
         .title("FAQ")
         .schemaType("faq")
         .child(S.documentTypeList("faq").title("FAQ")),
