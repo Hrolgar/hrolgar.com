@@ -54,6 +54,23 @@ export default defineType({
       type: 'localeBlock',
     }),
     defineField({
+      name: 'faqs',
+      title: 'Questions',
+      type: 'array',
+      description: 'Shown under the body and sent to Google as FAQ data',
+      of: [
+        {
+          type: 'object',
+          name: 'integrationFaq',
+          fields: [
+            defineField({name: 'question', title: 'Question', type: 'localeString', validation: localeRequired}),
+            defineField({name: 'answer', title: 'Answer', type: 'localeText', validation: localeRequired}),
+          ],
+          preview: {select: {title: `question.${DEFAULT_LOCALE}`}},
+        },
+      ],
+    }),
+    defineField({
       name: 'order',
       title: 'Order',
       type: 'number',

@@ -74,9 +74,21 @@ export async function IntegrationBody({ slug, locale = DEFAULT_LOCALE }: { slug:
     inLanguage: locale === "nb" ? "nb-NO" : "en",
   };
 
+  const faqs = (integration.faqs || []).filter((f) => f.question && f.answer);
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((f) => ({
+      "@type": "Question",
+      name: f.question,
+      acceptedAnswer: { "@type": "Answer", text: f.answer },
+    })),
+  };
+
   return (
     <>
       {jsonLdScript(serviceJsonLd)}
+      {faqs.length > 0 && jsonLdScript(faqJsonLd)}
       {jsonLdScript(breadcrumbJsonLd([
         { name: t("navHome", locale), path: localeHref("/", locale) },
         { name: t("integrationsLabel", locale), path: localeHref("/integrations", locale) },
@@ -106,6 +118,22 @@ export async function IntegrationBody({ slug, locale = DEFAULT_LOCALE }: { slug:
             <div className="prose-editorial mt-10 text-base leading-relaxed">
               <PortableText value={integration.description} components={portableTextComponents} />
             </div>
+          )}
+
+          {faqs.length > 0 && (
+            <section className="mt-16">
+              <h2 className="mb-6 font-[family-name:var(--font-serif)] text-2xl font-semibold text-foreground">
+                {t("faqHeading", locale)}
+              </h2>
+              <dl className="divide-y divide-border border-y border-border">
+                {faqs.map((f) => (
+                  <div key={f._key} className="py-5">
+                    <dt className="font-semibold text-foreground">{f.question}</dt>
+                    <dd className="mt-2 leading-relaxed text-muted">{f.answer}</dd>
+                  </div>
+                ))}
+              </dl>
+            </section>
           )}
 
           {inquiryForm && (
