@@ -40,6 +40,7 @@ const STRINGS = {
     integrationsIntro:
       "Accounting, banking, identity, public registers, CRM and payments. If your business already runs on one of these, this is the kind of glue I build around it.",
     integrationsOnService: "Systems I have integrated with",
+    faqHeading: "Common questions",
     serviceLabel: "Service",
     serviceByline: "by Hrolgar",
     caseStudies: "Case studies",
@@ -139,6 +140,7 @@ const STRINGS = {
     integrationsIntro:
       "Regnskap, bank, BankID, offentlige registre, CRM og betaling. Kjører bedriften din allerede på et av disse, er det denne typen kobling jeg bygger rundt det.",
     integrationsOnService: "Systemer jeg har integrert mot",
+    faqHeading: "Vanlige spørsmål",
     serviceLabel: "Tjeneste",
     serviceByline: "frilans fra Ålesund",
     caseStudies: "Kundecaser",

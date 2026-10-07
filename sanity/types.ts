@@ -216,6 +216,7 @@ export interface Integration {
   seoTitle?: string;
   summary?: string;
   description?: PortableTextBlock[];
+  faqs?: { _key: string; question: string; answer: string }[];
   order?: number;
 }
 
