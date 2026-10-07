@@ -16,6 +16,7 @@ export const PAGE_KEYS = [
   "home",
   "projects",
   "services",
+  "integrations",
   "contact",
   "experience",
   "homelab",
@@ -30,6 +31,7 @@ export const pagePath: Record<PageKey, string> = {
   home: "/",
   projects: "/projects",
   services: "/services",
+  integrations: "/integrations",
   contact: "/contact",
   experience: "/experience",
   homelab: "/homelab",
@@ -55,6 +57,11 @@ export const pageMeta: Record<Exclude<Locale, typeof DEFAULT_LOCALE>, Record<Pag
       title: "Tjenester: backend, integrasjoner og dataplattformer",
       description:
         "Frilans systemutvikler i Ålesund. Backend og API-er i .NET, systemintegrasjoner, dataplattformer og infrastrukturen som holder dem i drift.",
+    },
+    integrations: {
+      title: "Integrasjoner: Fiken, Tripletex, Visma, BankID og flere",
+      description:
+        "Integrasjoner mot systemene norske bedrifter allerede bruker: regnskap, bank, BankID, Brønnøysundregistrene, Dynamics og betaling.",
     },
     contact: {
       title: "Kontakt: backend, integrasjoner og dataplattformer",

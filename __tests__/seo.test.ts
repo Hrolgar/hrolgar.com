@@ -9,6 +9,7 @@ const mocks = vi.hoisted(() => ({
   getPostSlugs: vi.fn(),
   getCategories: vi.fn(),
   getServiceSlugs: vi.fn(),
+  getIntegrationSlugs: vi.fn(),
   getPageContent: vi.fn(),
   getPosts: vi.fn(),
   getPrivacyPage: vi.fn().mockResolvedValue({ lastUpdated: "2026-09-25" }),
@@ -20,6 +21,7 @@ vi.mock("@/sanity/lib/queries", () => ({
   getPostSlugs: mocks.getPostSlugs,
   getCategories: mocks.getCategories,
   getServiceSlugs: mocks.getServiceSlugs,
+  getIntegrationSlugs: mocks.getIntegrationSlugs,
   getPageContent: mocks.getPageContent,
   getPosts: mocks.getPosts,
   getPrivacyPage: mocks.getPrivacyPage,
@@ -96,6 +98,25 @@ describe("sitemap", () => {
     mocks.getServiceSlugs.mockResolvedValue([
       { slug: { current: "net-development" }, _updatedAt: "2026-03-01T00:00:00.000Z" },
     ]);
+    mocks.getIntegrationSlugs.mockResolvedValue([]);
+  });
+
+  it("leaves /integrations out until an integration is published", async () => {
+    const urls = (await sitemap()).map((entry) => entry.url);
+    expect(urls.some((u) => u.includes("/integrations"))).toBe(false);
+  });
+
+  it("lists integration pages in both languages once published", async () => {
+    mocks.getIntegrationSlugs.mockResolvedValue([
+      { slug: { current: "fiken" }, _updatedAt: "2026-10-08T00:00:00.000Z" },
+    ]);
+    const urls = (await sitemap()).map((entry) => entry.url);
+    expect(urls).toEqual(expect.arrayContaining([
+      "https://hrolgar.com/integrations",
+      "https://hrolgar.com/no/integrations",
+      "https://hrolgar.com/integrations/fiken",
+      "https://hrolgar.com/no/integrations/fiken",
+    ]));
   });
 
   it("leaves category pages out, since they are noindex", async () => {

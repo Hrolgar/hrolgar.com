@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { getProjectSlugs, getPostSlugs, getServiceSlugs, getPrivacyPage } from "@/sanity/lib/queries";
+import { getProjectSlugs, getPostSlugs, getServiceSlugs, getIntegrationSlugs, getPrivacyPage } from "@/sanity/lib/queries";
 import { withLocale } from "@/sanity/locale";
 
 const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://hrolgar.com";
@@ -31,10 +31,11 @@ function newestOf(docs: { _updatedAt?: string; publishedAt?: string }[]): Date {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [projectSlugs, postSlugs, serviceSlugs, privacy] = await Promise.all([
+  const [projectSlugs, postSlugs, serviceSlugs, integrationSlugs, privacy] = await Promise.all([
     getProjectSlugs(),
     getPostSlugs(),
     getServiceSlugs(),
+    getIntegrationSlugs(),
     getPrivacyPage(),
   ]);
 
@@ -53,6 +54,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "", lastModified: siteUpdated, changeFrequency: "weekly", priority: 1 },
     { path: "/projects", lastModified: projectsUpdated, changeFrequency: "weekly", priority: 0.9 },
     { path: "/services", lastModified: servicesUpdated, changeFrequency: "monthly", priority: 0.9 },
+    // Only once something is published: until then /integrations is a 404.
+    ...(integrationSlugs.length > 0 ? [{ path: "/integrations", lastModified: newestOf(integrationSlugs), changeFrequency: "monthly" as const, priority: 0.8 }] : []),
     { path: "/blog", lastModified: postsUpdated, changeFrequency: "weekly", priority: 0.8 },
     { path: "/contact", lastModified: FALLBACK_LAST_MODIFIED, changeFrequency: "monthly", priority: 0.7 },
     { path: "/experience", lastModified: FALLBACK_LAST_MODIFIED, changeFrequency: "monthly", priority: 0.7 },
@@ -97,8 +100,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // sitemap: listing a URL that asks not to be indexed is a contradiction Search Console flags.
   // Service pages exist in both languages, so each is listed twice with the hreflang pair,
   // the same as the static pages above.
-  const servicePages: MetadataRoute.Sitemap = serviceSlugs.flatMap((s) => {
-    const path = `/services/${s.slug.current}`;
+  const detailPages = [
+    ...serviceSlugs.map((s) => ({ ...s, path: `/services/${s.slug.current}` })),
+    ...integrationSlugs.map((s) => ({ ...s, path: `/integrations/${s.slug.current}` })),
+  ];
+  const servicePages: MetadataRoute.Sitemap = detailPages.flatMap((s) => {
+    const path = s.path;
     const en = `${baseUrl}${path}`;
     const nb = `${baseUrl}${withLocale(path, "nb")}`;
     const shared = {

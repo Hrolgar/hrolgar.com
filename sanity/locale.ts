@@ -72,6 +72,7 @@ const LOCALISED_PATHS = new Set([
   "/",
   "/projects",
   "/services",
+  "/integrations",
   "/contact",
   "/experience",
   "/homelab",
@@ -103,7 +104,7 @@ export function hasTranslation(path: string): boolean {
 }
 
 /** Detail pages that exist in every language, matched by prefix. */
-const LOCALISED_PREFIXES = ["/services/"];
+const LOCALISED_PREFIXES = ["/services/", "/integrations/"];
 
 /** Drop any locale prefix, giving the English path. `/no/services` -> `/services`. */
 export function stripLocale(path: string): string {

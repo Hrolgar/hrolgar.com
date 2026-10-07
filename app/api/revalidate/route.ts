@@ -9,6 +9,7 @@ const TYPE_LIST_PATHS: Record<string, string> = {
   post: '/blog',
   project: '/projects',
   service: '/services',
+  integration: '/integrations',
   category: '/blog',
   blogCategory: '/blog',
   privacyPage: '/privacy',
@@ -19,6 +20,7 @@ const TYPE_ITEM_PATHS: Record<string, string> = {
   post: '/blog',
   project: '/projects',
   service: '/services',
+  integration: '/integrations',
 };
 
 export function buildIndexNowUrls(body: unknown): string[] {
@@ -51,7 +53,9 @@ export function buildIndexNowUrls(body: unknown): string[] {
     const itemUrl = `https://hrolgar.com${TYPE_ITEM_PATHS[docType]}/${slug}`;
     if (!urls.includes(itemUrl)) urls.push(itemUrl);
     // Service pages are translated; the Norwegian twin changed too.
-    if (docType === 'service') urls.push(`https://hrolgar.com/no/services/${slug}`);
+    if (docType === 'service' || docType === 'integration') {
+      urls.push(`https://hrolgar.com/no${TYPE_ITEM_PATHS[docType]}/${slug}`);
+    }
   }
 
   return urls;
@@ -125,7 +129,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ message: "Invalid secret" }, { status: 401 });
   }
 
-  for (const path of ["/", "/projects", "/experience", "/homelab", "/services", "/blog", "/contact", "/privacy"]) {
+  for (const path of ["/", "/projects", "/experience", "/homelab", "/services", "/integrations", "/blog", "/contact", "/privacy"]) {
     revalidatePath(path);
   }
   // The translated pages under app/[locale] are DELIBERATELY not revalidated here, and this
@@ -146,6 +150,7 @@ export async function POST(req: NextRequest) {
   revalidatePath("/blog/[slug]", "page");
   revalidatePath("/blog/category/[slug]", "page");
   revalidatePath("/services/[slug]", "page");
+  revalidatePath("/integrations/[slug]", "page");
   // The sitemap and robots are their own routes; without these a publish reaches every
   // page but leaves the sitemap advertising the old set of URLs.
   revalidatePath("/sitemap.xml");
