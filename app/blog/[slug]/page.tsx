@@ -159,6 +159,20 @@ export default async function BlogPostPage({ params }: PageProps) {
               </div>
             </div>
           )}
+          {/* Google sends readers to the posts, not the service pages, so give them a way across. */}
+          <aside className="mt-12 rounded border border-border bg-surface p-6">
+            <p className="text-base text-foreground mb-3">
+              I do this kind of work for clients too, mostly .NET backends, integrations and infrastructure that runs itself.
+            </p>
+            <a
+              href="/services"
+              className="text-sm font-medium text-primary hover:underline"
+              data-umami-event="post-services-click"
+              data-umami-event-slug={slug}
+            >
+              See what I offer →
+            </a>
+          </aside>
           <div id="read-depth-sentinel" aria-hidden="true" />
         </article>
         <ReadDepth kind="post" slug={slug} />

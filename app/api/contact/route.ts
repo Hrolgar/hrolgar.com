@@ -59,7 +59,8 @@ export async function POST(request: Request) {
     const tooFast = typeof elapsed !== "number" || elapsed < MIN_FILL_MS;
     if (trapped || tooFast) {
       console.log("Contact form dropped as bot:", { trapped, elapsed, formName });
-      return NextResponse.json({ success: true });
+      // Still looks like success to the bot; `filtered` only keeps it out of the conversion count.
+      return NextResponse.json({ success: true, filtered: true });
     }
 
     const emailRegex = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
