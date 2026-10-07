@@ -57,25 +57,26 @@ export default function Navbar({ navItems, siteName, showBlog, locale = DEFAULT_
             : "bg-transparent"
         }`}
       >
-        <div className="max-w-5xl mx-auto px-6 py-4 flex justify-between items-center">
-          <a href={localeHref("/", locale)} className="font-[family-name:var(--font-serif)] text-xl font-semibold text-foreground">
+        <div className="max-w-6xl mx-auto px-6 py-4 flex justify-between items-center gap-8">
+          <a href={localeHref("/", locale)} className="shrink-0 font-[family-name:var(--font-serif)] text-xl font-semibold text-foreground">
             {siteName || "Hrolgar"}
           </a>
 
-          <div className="hidden md:flex items-center gap-8">
-            <ul className="flex gap-8">
+          {/* lg, not md: with eight links the row no longer fits a tablet and squeezed the first
+              link into the logo. Below lg the hamburger takes over. */}
+          <div className="hidden lg:flex items-center gap-6">
+            <ul className="flex gap-6">
               {filteredPages.map((link) => (
                 <li key={link.href}>
                   <a
                     href={localeHref(link.href, locale)}
-                    className="text-sm font-medium text-muted hover:text-foreground transition-colors"
+                    className="whitespace-nowrap text-sm font-medium text-muted hover:text-foreground transition-colors"
                   >
                     {link.label}
                   </a>
                 </li>
               ))}
             </ul>
-            <LanguageSwitcher locale={locale} />
             <a
               href={localeHref("/contact", locale)}
               data-umami-event="nav-contact-click"
@@ -88,7 +89,7 @@ export default function Navbar({ navItems, siteName, showBlog, locale = DEFAULT_
 
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden flex flex-col gap-1.5 p-2"
+            className="lg:hidden flex flex-col gap-1.5 p-2"
             aria-label={isOpen ? "Close menu" : "Open menu"}
             aria-expanded={isOpen}
             aria-controls="mobile-menu"
@@ -113,8 +114,8 @@ export default function Navbar({ navItems, siteName, showBlog, locale = DEFAULT_
 
         <div
           id="mobile-menu"
-          className={`md:hidden overflow-hidden transition-all duration-300 ${
-            isOpen ? "max-h-96 border-b border-border" : "max-h-0"
+          className={`lg:hidden overflow-hidden transition-all duration-300 ${
+            isOpen ? "max-h-[32rem] border-b border-border" : "max-h-0"
           }`}
         >
           <ul className="px-6 py-4 space-y-4 bg-bg/95 backdrop-blur-md">
@@ -140,12 +141,13 @@ export default function Navbar({ navItems, siteName, showBlog, locale = DEFAULT_
                 {t("hireMe", locale)}
               </a>
             </li>
-            <li className="pt-2">
-              <LanguageSwitcher locale={locale} />
-            </li>
           </ul>
         </div>
       </nav>
+
+      {/* Out of the nav on purpose: it stays on screen wherever you are on the page, and the
+          nav row has no room left for it. Above BackToTop, which owns the bottom-right corner. */}
+      <LanguageSwitcher locale={locale} className="fixed bottom-20 right-6 z-40 shadow-lg" />
     </>
   );
 }
