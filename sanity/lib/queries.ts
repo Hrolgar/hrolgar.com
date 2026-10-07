@@ -18,6 +18,7 @@ import type {
   HomelabPage,
   PrivacyPage,
   Service,
+  Integration,
   FAQ,
   PageContent,
   ContactForm,
@@ -239,6 +240,27 @@ export async function getServiceBySlug(slug: string, locale: Locale = DEFAULT_LO
 export async function getServiceSlugs(): Promise<{ slug: { current: string }; _updatedAt?: string }[]> {
   return (await client.fetch(
     `*[_type == "service" && defined(slug.current)]{ slug, _updatedAt }`
+  )) || [];
+}
+
+// --- Integrations ---
+
+export async function getIntegrations(locale: Locale = DEFAULT_LOCALE): Promise<Integration[]> {
+  return (await localised(
+    `*[_type == "integration" && defined(slug.current)] | order(order asc, system asc) { _id, title, system, slug, summary }`, locale
+  )) || [];
+}
+
+export async function getIntegrationBySlug(slug: string, locale: Locale = DEFAULT_LOCALE): Promise<Integration | null> {
+  return localised(
+    `*[_type == "integration" && slug.current == $slug][0]`, locale,
+    { slug }
+  );
+}
+
+export async function getIntegrationSlugs(): Promise<{ slug: { current: string }; _updatedAt?: string }[]> {
+  return (await client.fetch(
+    `*[_type == "integration" && defined(slug.current)]{ slug, _updatedAt }`
   )) || [];
 }
 

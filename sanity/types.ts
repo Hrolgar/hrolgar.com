@@ -206,6 +206,19 @@ export interface Service {
   caseStudies?: { _id: string; title: string; summary?: string; slug: { current: string } }[];
 }
 
+export interface Integration {
+  _id: string;
+  _type: "integration";
+  _updatedAt?: string;
+  title: string;
+  system: string;
+  slug: { current: string };
+  seoTitle?: string;
+  summary?: string;
+  description?: PortableTextBlock[];
+  order?: number;
+}
+
 export interface Category {
   _id: string;
   _type: "category";

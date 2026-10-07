@@ -11,6 +11,7 @@ import certification from './certification'
 import homelabService from './homelabService'
 import homelabPage from './homelabPage'
 import service from './service'
+import integration from './integration'
 import faq from './faq'
 import contactForm from './contactForm'
 import pageContent from './pageContent'
@@ -31,6 +32,7 @@ export const schemaTypes = [
   homelabService,
   homelabPage,
   service,
+  integration,
   faq,
   contactForm,
   pageContent,

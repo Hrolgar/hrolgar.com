@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import { portableTextComponents } from "@/lib/portableText";
-import { getContact, getContactFormBySlug, getPageContent, getPrivacyPage, getServiceBySlug, getServiceSlugs, getSettings } from "@/sanity/lib/queries";
+import { getContact, getContactFormBySlug, getIntegrations, getPageContent, getPrivacyPage, getServiceBySlug, getServiceSlugs, getSettings } from "@/sanity/lib/queries";
 import ServiceInquiry from "@/components/ServiceInquiry";
 import { absoluteUrl, breadcrumbJsonLd, buildSeoMetadata, jsonLdScript, personJsonLd, withAlternates } from "@/lib/seo";
 import { t } from "@/lib/ui";
@@ -12,6 +12,8 @@ import type { Locale } from "@/sanity/locale";
 import { DEFAULT_LOCALE, localeHref, withLocale } from "@/sanity/locale";
 
 export const revalidate = 3600;
+
+const INTEGRATION_SERVICE_SLUG = "api-integration";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -57,7 +59,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export async function ServiceBody({ slug, locale = DEFAULT_LOCALE }: { slug: string; locale?: Locale }) {
-  const [service, contact, pageContent, settings, inquiryForm, privacy] = await Promise.all([
+  const [service, contact, pageContent, settings, inquiryForm, privacy, integrations] = await Promise.all([
     getServiceBySlug(slug, locale),
     getContact(locale),
     getPageContent(locale),
@@ -65,6 +67,8 @@ export async function ServiceBody({ slug, locale = DEFAULT_LOCALE }: { slug: str
     // One short form per language: contact forms are not field-level translated.
     getContactFormBySlug(locale === DEFAULT_LOCALE ? "service-inquiry" : `service-inquiry-${locale}`),
     getPrivacyPage(locale),
+    // The integration pages hang off this one service; the others do not list them.
+    slug === INTEGRATION_SERVICE_SLUG ? getIntegrations(locale) : Promise.resolve([]),
   ]);
 
   if (!service) {
@@ -141,6 +145,26 @@ export async function ServiceBody({ slug, locale = DEFAULT_LOCALE }: { slug: str
                     >
                       <p className="font-semibold text-foreground">{p.title}</p>
                       {p.summary && <p className="mt-2 text-sm leading-relaxed text-muted">{p.summary}</p>}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {integrations.length > 0 && (
+            <section className="mt-16">
+              <h2 className="font-[family-name:var(--font-serif)] text-2xl font-semibold text-foreground mb-6">
+                {t("integrationsOnService", locale)}
+              </h2>
+              <ul className="flex flex-wrap gap-3">
+                {integrations.map((i) => (
+                  <li key={i._id}>
+                    <a
+                      href={localeHref(`/integrations/${i.slug.current}`, locale)}
+                      className="inline-flex min-h-11 items-center rounded-[var(--radius)] border border-border bg-surface px-4 text-sm text-foreground transition-colors hover:border-primary"
+                    >
+                      {i.system}
                     </a>
                   </li>
                 ))}
