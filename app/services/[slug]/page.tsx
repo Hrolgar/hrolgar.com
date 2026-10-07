@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import { portableTextComponents } from "@/lib/portableText";
 import { getContact, getContactFormBySlug, getIntegrations, getPageContent, getPrivacyPage, getServiceBySlug, getServiceSlugs, getSettings } from "@/sanity/lib/queries";
 import ServiceInquiry from "@/components/ServiceInquiry";
+import InquiryLayout from "@/components/InquiryLayout";
 import { absoluteUrl, breadcrumbJsonLd, buildSeoMetadata, jsonLdScript, personJsonLd, withAlternates } from "@/lib/seo";
 import { t } from "@/lib/ui";
 import type { Locale } from "@/sanity/locale";
@@ -98,7 +99,18 @@ export async function ServiceBody({ slug, locale = DEFAULT_LOCALE }: { slug: str
       ]))}
       <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} showBlog={settings?.showBlog} locale={locale} />
       <main id="main-content" className="px-6 pb-16 pt-24">
-        <article className="mx-auto max-w-3xl">
+        <InquiryLayout
+          aside={inquiryForm && (
+            <section id="inquiry">
+              <ServiceInquiry form={inquiryForm} locale={locale} privacyNote={privacy?.formNote} service={service.title} />
+              <p className="mt-4 text-sm text-muted">
+                <a href={localeHref("/contact", locale)} className="underline underline-offset-4 hover:text-primary">
+                  {t("fullProjectForm", locale)}
+                </a>
+              </p>
+            </section>
+          )}
+        >
           <a
             href={localeHref("/services", locale)}
             className="mb-8 inline-flex min-h-11 items-center text-sm text-muted transition-colors hover:text-primary"
@@ -172,16 +184,7 @@ export async function ServiceBody({ slug, locale = DEFAULT_LOCALE }: { slug: str
             </section>
           )}
 
-          {inquiryForm ? (
-            <section id="inquiry" className="mt-16">
-              <ServiceInquiry form={inquiryForm} locale={locale} privacyNote={privacy?.formNote} service={service.title} />
-              <p className="mt-4 text-sm text-muted">
-                <a href={localeHref("/contact", locale)} className="underline underline-offset-4 hover:text-primary">
-                  {t("fullProjectForm", locale)}
-                </a>
-              </p>
-            </section>
-          ) : (
+          {!inquiryForm && (
             <section className="mt-16 rounded-[calc(var(--radius)*2)] border border-border bg-surface p-8 md:p-10">
               <p className="text-sm uppercase tracking-[0.24em] text-accent">{t("nextStep", locale)}</p>
               <h2 className="mt-4 font-[family-name:var(--font-serif)] text-2xl font-bold text-foreground">
@@ -200,7 +203,7 @@ export async function ServiceBody({ slug, locale = DEFAULT_LOCALE }: { slug: str
               </a>
             </section>
           )}
-        </article>
+        </InquiryLayout>
       </main>
       <Footer contact={contact} footerTagline={pageContent?.footerTagline} siteName={settings?.siteName} navItems={pageContent?.navItems} showBlog={settings?.showBlog} locale={locale} />
     </>

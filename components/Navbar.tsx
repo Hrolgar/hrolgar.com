@@ -146,8 +146,12 @@ export default function Navbar({ navItems, siteName, showBlog, locale = DEFAULT_
       </nav>
 
       {/* Out of the nav on purpose: it stays on screen wherever you are on the page, and the
-          nav row has no room left for it. Above BackToTop, which owns the bottom-right corner. */}
-      <LanguageSwitcher locale={locale} className="fixed bottom-20 right-6 z-40 shadow-lg" />
+          nav row has no room left for it. On mobile it sits above BackToTop; on desktop it moves
+          up under the nav, because the sticky inquiry form owns the right-hand side lower down. */}
+      <LanguageSwitcher
+        locale={locale}
+        className="fixed bottom-20 right-6 z-40 shadow-lg lg:bottom-auto lg:top-[5.25rem]"
+      />
     </>
   );
 }
