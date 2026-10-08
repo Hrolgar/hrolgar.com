@@ -111,7 +111,8 @@ export async function getDefaultOgImage(): Promise<string | undefined> {
 }
 
 export async function getOgImage(image?: SanityImage): Promise<string | undefined> {
-  if (image) return urlFor(image).width(1200).height(630).url();
+  // jpg: link previews (LinkedIn, some chat apps) don't render WebP covers reliably
+  if (image) return urlFor(image).width(1200).height(630).format("jpg").url();
   return getDefaultOgImage();
 }
 
