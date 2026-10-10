@@ -220,12 +220,11 @@ export default function ContactFormModal({
         throw new Error("Failed to submit contact form");
       }
 
-      // Which form, and whether it actually landed. The old single event fired on
-      // success only and did not say which form it was, so a rise in failures was
-      // indistinguishable from a drop in interest. Bot-filtered posts get their own
-      // result so they stop counting as enquiries.
+      // Which form, and whether it actually landed. Bot-filtered posts get their own event
+      // name, so goals and funnels on contact-form-submit count only real enquiries
+      // (Umami's goal report cannot filter on the result property).
       const body = (await response.json().catch(() => ({}))) as { filtered?: boolean };
-      window.umami?.track("contact-form-submit", {
+      window.umami?.track(body.filtered ? "contact-form-filtered" : "contact-form-submit", {
         form: form.slug?.current || form.name || "unknown",
         result: body.filtered ? "filtered" : "success",
       });
