@@ -114,7 +114,8 @@ const STRINGS = {
   },
   nb: {
     skipToContent: "Hopp til innhold",
-    hireMe: "Lei meg",
+    // Not "Lei meg": that reads as "I'm sad" / "tired of me" as easily as "hire me".
+    hireMe: "Få et tilbud",
     featured: "Utvalgt",
     featuredServices: "Utvalgte tjenester",
     view: "Se mer",
