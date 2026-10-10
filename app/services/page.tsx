@@ -10,6 +10,8 @@ import { t } from "@/lib/ui";
 
 export const revalidate = 3600;
 
+const WEBSITES_SERVICE_SLUG = "websites";
+
 export async function generateMetadata(): Promise<Metadata> {
   const meta = await buildSeoMetadata({
     title: "What I Do - Backend & Infrastructure Services",
@@ -38,6 +40,10 @@ export async function ServicesPageBody({ locale = DEFAULT_LOCALE }: { locale?: L
     getSettings(),
   ]);
   const p = localePrefix[locale];
+  // Websites is for a different buyer (local businesses, not tech teams), so it gets its own
+  // full-width band under the grid instead of being a lone seventh card.
+  const gridServices = services.filter((s) => s.slug?.current !== WEBSITES_SERVICE_SLUG);
+  const websites = services.find((s) => s.slug?.current === WEBSITES_SERVICE_SLUG);
 
   const servicesHeading = pageContent?.servicesHeading || "What I Do";
   const servicesIntro =
@@ -71,8 +77,9 @@ export async function ServicesPageBody({ locale = DEFAULT_LOCALE }: { locale?: L
 
           <section className="py-12 md:py-16">
             {services.length > 0 ? (
+              <>
               <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-                {services.map((service) => (
+                {gridServices.map((service) => (
                   <article
                     key={service._id}
                     className="flex min-h-full flex-col rounded-[calc(var(--radius)*2)] border border-border bg-surface p-6 transition-transform duration-200 hover:-translate-y-1 hover:border-primary"
@@ -97,6 +104,29 @@ export async function ServicesPageBody({ locale = DEFAULT_LOCALE }: { locale?: L
                   </article>
                 ))}
               </div>
+              {websites?.slug?.current && (
+                <article className="mt-6 flex flex-col gap-6 rounded-[calc(var(--radius)*2)] border border-border bg-surface p-6 transition-colors duration-200 hover:border-primary md:flex-row md:items-center md:p-8">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-accent/10 text-xl text-accent">
+                    {getServiceIcon(websites)}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs uppercase tracking-[0.24em] text-primary">{t("forLocalBusinesses", locale)}</p>
+                    <h2 className="mt-2 font-[family-name:var(--font-serif)] text-2xl font-semibold text-foreground">
+                      {websites.title}
+                    </h2>
+                    {websites.summary && (
+                      <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted md:text-base">{websites.summary}</p>
+                    )}
+                  </div>
+                  <a
+                    href={localeHref(`/services/${websites.slug.current}`, locale)}
+                    className="inline-flex min-h-11 shrink-0 items-center text-sm font-semibold text-primary transition-colors hover:text-secondary"
+                  >
+                    {t("learnMore", locale)}
+                  </a>
+                </article>
+              )}
+              </>
             ) : (
               <div className="rounded-[calc(var(--radius)*2)] border border-dashed border-border bg-surface/70 p-8 text-center">
                 <h2 className="font-[family-name:var(--font-serif)] text-2xl font-semibold text-foreground">
