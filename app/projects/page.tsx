@@ -35,7 +35,7 @@ export async function ProjectsBody({ locale = DEFAULT_LOCALE }: { locale?: Local
         { name: "Home", path: "/" },
         { name: "Projects", path: "/projects" },
       ]))}
-      <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} showBlog={settings?.showBlog} locale={locale} />
+      <Navbar navItems={pageContent?.navItems} buttonText={pageContent?.navButtonText} siteName={settings?.siteName} showBlog={settings?.showBlog} locale={locale} />
       <main id="main-content" className="pt-24 pb-16 px-6">
         <div className="max-w-5xl mx-auto">
           <ScrollReveal>

@@ -6,7 +6,7 @@ export default async function NotFound() {
   const [pageContent, settings] = await Promise.all([getPageContent(), getSettings()]);
   return (
     <>
-      <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} showBlog={settings?.showBlog} />
+      <Navbar navItems={pageContent?.navItems} buttonText={pageContent?.navButtonText} siteName={settings?.siteName} showBlog={settings?.showBlog} />
       <main id="main-content" className="min-h-screen flex items-center justify-center px-6">
         <div className="text-center animate-fade-in-up">
           <p className="text-sm font-medium text-primary uppercase tracking-widest mb-4">

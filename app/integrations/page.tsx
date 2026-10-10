@@ -37,7 +37,7 @@ export async function IntegrationsPageBody({ locale = DEFAULT_LOCALE }: { locale
         { name: t("navHome", locale), path: localeHref("/", locale) },
         { name: t("integrationsLabel", locale), path: localeHref("/integrations", locale) },
       ]))}
-      <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} showBlog={settings?.showBlog} locale={locale} />
+      <Navbar navItems={pageContent?.navItems} buttonText={pageContent?.navButtonText} siteName={settings?.siteName} showBlog={settings?.showBlog} locale={locale} />
       <main id="main-content" className="px-6 pb-16 pt-24 md:pb-24">
         <div className="mx-auto max-w-5xl">
           <section className="border-b border-border pb-12 md:pb-16">

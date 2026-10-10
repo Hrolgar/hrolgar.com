@@ -80,7 +80,7 @@ export default async function BlogPostPage({ params }: PageProps) {
         { name: "Blog", path: "/blog" },
         { name: post.title, path: canonicalPath },
       ]))}
-      <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} showBlog={settings?.showBlog} />
+      <Navbar navItems={pageContent?.navItems} buttonText={pageContent?.navButtonText} siteName={settings?.siteName} showBlog={settings?.showBlog} />
       <main id="main-content" className="pt-24 pb-16 px-6">
         <article className="max-w-3xl mx-auto">
           <a

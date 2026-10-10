@@ -192,6 +192,13 @@ export default defineType({
       group: 'navigation',
     }),
     defineField({
+      name: 'navButtonText',
+      title: 'Nav Button Text',
+      type: 'localeString',
+      group: 'navigation',
+      description: 'The highlighted button at the right of the menu, linking to Contact. Empty = "Hire Me" / "Jobb med meg".',
+    }),
+    defineField({
       name: 'footerTagline',
       title: 'Footer Tagline',
       type: 'localeString',

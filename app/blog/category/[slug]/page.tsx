@@ -62,7 +62,7 @@ export default async function CategoryPage({ params }: PageProps) {
         { name: "Blog", path: "/blog" },
         { name: category.title, path: `/blog/category/${slug}` },
       ]))}
-      <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} showBlog={settings?.showBlog} />
+      <Navbar navItems={pageContent?.navItems} buttonText={pageContent?.navButtonText} siteName={settings?.siteName} showBlog={settings?.showBlog} />
       <main id="main-content" className="pt-24 pb-16 px-6">
         <div className="max-w-5xl mx-auto">
           <div className="mb-12">
