@@ -171,6 +171,7 @@ export interface PageContent {
   serviceDetailCtaDescription?: string;
   serviceDetailCtaButtonText?: string;
   navItems?: Array<{ _key: string; label: string; href: string }>;
+  navButtonText?: string;
   footerTagline?: string;
   aboutHeading?: string;
   experienceHeading?: string;

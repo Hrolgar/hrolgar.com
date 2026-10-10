@@ -67,7 +67,7 @@ export async function HomeBody({ locale = DEFAULT_LOCALE }: { locale?: Locale })
   return (
     <>
       <ScrollProgress />
-      <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} showBlog={settings?.showBlog} locale={locale} />
+      <Navbar navItems={pageContent?.navItems} buttonText={pageContent?.navButtonText} siteName={settings?.siteName} showBlog={settings?.showBlog} locale={locale} />
       <main id="main-content">
         {resolveHomeSections(pageContent?.homeSections).map((key) => {
           switch (key) {

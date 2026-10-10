@@ -47,7 +47,7 @@ export async function ExperienceBody({ locale = DEFAULT_LOCALE }: { locale?: Loc
         { name: "Home", path: "/" },
         { name: "Experience", path: "/experience" },
       ]))}
-      <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} showBlog={settings?.showBlog} locale={locale} />
+      <Navbar navItems={pageContent?.navItems} buttonText={pageContent?.navButtonText} siteName={settings?.siteName} showBlog={settings?.showBlog} locale={locale} />
       <main id="main-content" className="pt-24 pb-16 px-6 md:pb-24">
         <div className="max-w-5xl mx-auto">
           <ScrollReveal>

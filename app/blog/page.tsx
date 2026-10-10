@@ -31,7 +31,7 @@ export async function BlogBody({ locale = DEFAULT_LOCALE }: { locale?: Locale })
         { name: "Home", path: "/" },
         { name: "Blog", path: "/blog" },
       ]))}
-      <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} showBlog={settings?.showBlog} locale={locale} />
+      <Navbar navItems={pageContent?.navItems} buttonText={pageContent?.navButtonText} siteName={settings?.siteName} showBlog={settings?.showBlog} locale={locale} />
       <main id="main-content" className="pt-24 pb-16 px-6">
         <div className="max-w-5xl mx-auto">
           <div className="mb-12">

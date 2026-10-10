@@ -16,12 +16,15 @@ interface NavItem {
 
 interface Props {
   navItems?: NavItem[] | null;
+  /** The contact button's text from Sanity (pageContent.navButtonText); falls back to the built-in label. */
+  buttonText?: string | null;
   siteName?: string | null;
   showBlog?: boolean;
   locale?: Locale;
 }
 
-export default function Navbar({ navItems, siteName, showBlog, locale = DEFAULT_LOCALE }: Props) {
+export default function Navbar({ navItems, buttonText, siteName, showBlog, locale = DEFAULT_LOCALE }: Props) {
+  const buttonLabel = buttonText || t("hireMe", locale);
   const pages = navItems && navItems.length > 0 ? navItems : defaultNav(locale);
   const filteredPages = pages.filter(p => showBlog !== false || p.href !== "/blog");
   const [isOpen, setIsOpen] = useState(false);
@@ -83,7 +86,7 @@ export default function Navbar({ navItems, siteName, showBlog, locale = DEFAULT_
               data-umami-event-source="navbar"
               className="inline-flex items-center rounded-[var(--radius)] bg-accent px-4 py-2 text-sm font-semibold text-bg transition-colors hover:bg-[color:color-mix(in_srgb,var(--color-accent)_88%,white)]"
             >
-              {t("hireMe", locale)}
+              {buttonLabel}
             </a>
           </div>
 
@@ -138,7 +141,7 @@ export default function Navbar({ navItems, siteName, showBlog, locale = DEFAULT_
                 data-umami-event-source="mobile-menu"
                 className="inline-flex items-center rounded-[var(--radius)] bg-accent px-4 py-2 text-sm font-semibold text-bg transition-colors hover:bg-[color:color-mix(in_srgb,var(--color-accent)_88%,white)]"
               >
-                {t("hireMe", locale)}
+                {buttonLabel}
               </a>
             </li>
           </ul>

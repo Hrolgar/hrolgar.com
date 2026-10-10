@@ -95,7 +95,7 @@ export async function IntegrationBody({ slug, locale = DEFAULT_LOCALE }: { slug:
         { name: t("integrationsLabel", locale), path: localeHref("/integrations", locale) },
         { name: integration.system, path },
       ]))}
-      <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} showBlog={settings?.showBlog} locale={locale} />
+      <Navbar navItems={pageContent?.navItems} buttonText={pageContent?.navButtonText} siteName={settings?.siteName} showBlog={settings?.showBlog} locale={locale} />
       <main id="main-content" className="px-6 pb-16 pt-24">
         <InquiryLayout
           aside={inquiryForm && (

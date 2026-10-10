@@ -38,7 +38,7 @@ export async function PrivacyBody({ locale = DEFAULT_LOCALE }: { locale?: Locale
         { name: "Home", path: "/" },
         { name: title, path: "/privacy" },
       ]))}
-      <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} showBlog={settings?.showBlog} locale={locale} />
+      <Navbar navItems={pageContent?.navItems} buttonText={pageContent?.navButtonText} siteName={settings?.siteName} showBlog={settings?.showBlog} locale={locale} />
       <main id="main-content" className="pt-24 pb-16 px-6 md:pb-24">
         <article className="max-w-3xl mx-auto">
           <h1 className="font-[family-name:var(--font-serif)] text-4xl md:text-5xl font-bold text-foreground mb-4">

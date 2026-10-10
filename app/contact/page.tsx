@@ -67,7 +67,7 @@ export async function ContactBody({ locale = DEFAULT_LOCALE }: { locale?: Locale
         const faqLd = faqPageJsonLd(faqs.length > 0 ? faqs : defaultFAQs);
         return faqLd ? jsonLdScript(faqLd) : null;
       })()}
-      <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} showBlog={settings?.showBlog} locale={locale} />
+      <Navbar navItems={pageContent?.navItems} buttonText={pageContent?.navButtonText} siteName={settings?.siteName} showBlog={settings?.showBlog} locale={locale} />
       <ContactPageClient
         locale={locale}
         contact={contact}

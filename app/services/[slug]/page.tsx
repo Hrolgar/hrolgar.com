@@ -97,7 +97,7 @@ export async function ServiceBody({ slug, locale = DEFAULT_LOCALE }: { slug: str
         { name: t("navServices", locale), path: localeHref("/services", locale) },
         { name: service.title, path },
       ]))}
-      <Navbar navItems={pageContent?.navItems} siteName={settings?.siteName} showBlog={settings?.showBlog} locale={locale} />
+      <Navbar navItems={pageContent?.navItems} buttonText={pageContent?.navButtonText} siteName={settings?.siteName} showBlog={settings?.showBlog} locale={locale} />
       <main id="main-content" className="px-6 pb-16 pt-24">
         <InquiryLayout
           aside={inquiryForm && (
