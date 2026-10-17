@@ -8,7 +8,7 @@ import Navbar from "@/components/Navbar";
 import ReadDepth from "@/components/ReadDepth";
 import Footer from "@/components/Footer";
 import type { Metadata } from "next";
-import { breadcrumbJsonLd, buildSeoMetadata, jsonLdScript, projectReviewJsonLd } from "@/lib/seo";
+import { breadcrumbJsonLd, buildSeoMetadata, jsonLdScript } from "@/lib/seo";
 import type { Project } from "@/sanity/types";
 
 export const revalidate = 3600;
@@ -102,10 +102,6 @@ export default async function ProjectPage({ params }: PageProps) {
         { name: "Projects", path: "/projects" },
         { name: project.title, path: `/projects/${slug}` },
       ]))}
-      {(() => {
-        const reviewLd = projectReviewJsonLd(project);
-        return reviewLd ? jsonLdScript(reviewLd) : null;
-      })()}
       <Navbar navItems={pageContent?.navItems} buttonText={pageContent?.navButtonText} siteName={settings?.siteName} showBlog={settings?.showBlog} />
       <main id="main-content" className="pt-24 pb-16 px-6">
         <article className="max-w-5xl mx-auto">
