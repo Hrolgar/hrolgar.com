@@ -154,6 +154,7 @@ export default async function RootLayout({
   return (
     <html lang="en" style={cssVars} className={`${dmSans.variable} ${fraunces.variable} ${jetbrainsMono.variable} antialiased`}>
       <head>
+        <link rel="preconnect" href="https://umami.hrolgar.com" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: jsonLdHtml(jsonLd) }}
